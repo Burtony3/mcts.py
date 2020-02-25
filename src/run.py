@@ -1,6 +1,6 @@
 import numpy as np
-from mcts.nodes import *
-from mcts.search import MonteCarloTreeSearch
+from nodes import *
+from search import MonteCarloTreeSearch
 from tictactoe import TicTacToeGameState
 
 

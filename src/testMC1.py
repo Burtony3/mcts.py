@@ -1,6 +1,6 @@
 import numpy as np
-from mcts.nodes2 import *
-from mcts.search import MonteCarloTreeSearch
+from nodes2 import *
+from search import MonteCarloTreeSearch
 from tictactoe2 import FlyByState
 import spiceypy as spice
 
