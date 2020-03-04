@@ -16,9 +16,13 @@ class FlyByState(object):
 
     @property
     def game_result(self):
+        # delta v function
         return None
 
     def is_game_over(self):
+        # constraints
+        # if arrival planet or if delta V cumulative cntraint is violated
+
         return self.game_result is not None
 
     def move(self, move):
