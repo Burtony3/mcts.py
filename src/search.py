@@ -1,4 +1,4 @@
-from nodes import MonteCarloTreeSearchNode
+from node import MonteCarloTreeSearchNode
 
 
 class MonteCarloTreeSearch:

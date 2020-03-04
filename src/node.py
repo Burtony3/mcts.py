@@ -1,10 +1,10 @@
 import numpy as np
 from collections import defaultdict
-from tictactoe2 import *
+from sequenceEnv import *
 
 
 class MonteCarloTreeSearchNode(object):
-    def __init__(self, state: FlyByState, parent=None):
+    def __init__(self, state: sequenceState, parent=None):
         self._number_of_visits = 0.
         self._results = defaultdict(int)
         self.state = state
