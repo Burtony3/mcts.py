@@ -2,15 +2,9 @@ import numpy as np
 import random
 
 
-class Planet(object):
+class mctsMove(object):
     def __init__(self, planet, value):
         self.planet = planet
-        self.value = value
-
-
-class Epoch(object):
-    def __init__(self, epoch, value):
-        self.epoch = epoch
         self.value = value
 
 
@@ -45,11 +39,11 @@ class sequenceState(object):
             T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
             if 0 <= 1 < len(self.sequence):
                 epochs = [self.sequence[1] + x * (self.l * int(T[int(self.sequence[-1])])) / 360 for x in range(9)]
-                return [Epoch(epoch, self.next_to_move) for epoch in epochs]
+                return [mctsMove(epoch, self.next_to_move) for epoch in epochs]
             else:
                 epochs = [x * (self.l * int(T[self.sequence[-1]])) / 360 for x in range(9)]
-                return [Epoch(epoch, self.next_to_move) for epoch in epochs]
+                return [mctsMove(epoch, self.next_to_move) for epoch in epochs]
         else:
             # Possible Planet Selection
             planets = [1, 2, 3, 4, 5, 6, 7, 8]
-            return [Planet(planet, self.next_to_move) for planet in planets]
+            return [mctsMove(planet, self.next_to_move) for planet in planets]
