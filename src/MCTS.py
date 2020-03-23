@@ -1,11 +1,16 @@
+from node import * as nodeNew
+import spiceypy as spk
+
+spk.furnsh(stuff)
+
 class MCTS(object):
     def __init__(maxIter, dvBudget, maxNumFlyby, launchWindow, finalBody; kwargs...):
         # Input Parse
 
 
         # Creating Root Node
-        self.node = []              # Allocates List
-        self.node[0] = nodeNew('3') # Root of all Nodes (nodeNew will replace node.py)
+        node = []                              # Allocates List
+        node.append(nodeNew('3', None, 0, 0))  # Root of all Nodes (nodeNew will replace node.py)
 
         # Running to Completion
         for i in range(maxIters):
@@ -17,10 +22,13 @@ class MCTS(object):
                 id = expand(id, finalBody)
 
             # Simulate
-            value = simulate(id, finalBody, maxNumFlyby, dvBudget)
+            if not string(node[id].state):
+                value = simulate(id, finalBody, maxNumFlyby, dvBudget)
 
-            # Backprop
-            backprop(id, value)
+                # Backprop
+                backprop(id, value)
 
         # Returning Results
         return node
+
+spk.kclear()

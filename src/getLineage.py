@@ -4,4 +4,6 @@ def getLineage(id):
         lineage.append(id)
         id = node[id].parent
     lineage.append(0)
+
+    # Returns most recent node @ idx = 0 & oldest parent @ idx = -1
     return lineage

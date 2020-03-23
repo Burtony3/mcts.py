@@ -1,6 +1,5 @@
 # Importing
 import numpy as np
-from sequenceEnv as env
 
 # Class Creation
 class node(object):
