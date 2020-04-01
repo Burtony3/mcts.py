@@ -12,5 +12,5 @@ class node(object):
         self.parent = parent    # Establishes Parent above (Single Scalar of IDs)
         self.child = None       # Children Below (Array of IDs)
         self.state = state      # Either NAIF ID String or Epoch
-        self.vInfIn = vInfIn    # V∞ into CURRET planet/epoch pair
+        self.vInfIn = vInfIn    # V∞ into CURRENT planet/epoch pair
         self.vInfOut = vInfOut  # V∞ out of PREVIOUS planet/epoch pair
