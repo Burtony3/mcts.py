@@ -9,9 +9,11 @@ def expand(id):
         vInfOut_ = None
     else:
         # We have to code the G function here
+        # TODO: create G function (eqn 5)
         states = G function # Creating the list of states
         for i in range(len(states)):
-        # Pruning nodes based on Periods and TOF
+        # TODO: Pruning nodes based on Periods and TOF
+        # TOF eqn in page 771 Section 3
         grandparent = lineage[1]
         dvAcc_ = node[grandparent].dvAcc
         vInfIn_ = np.zeros([3 1])

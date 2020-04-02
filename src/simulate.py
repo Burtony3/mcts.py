@@ -35,7 +35,6 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
     planet0 = # node[id].sometingwong
     epoch0 = # node[id].lineages epoch thing
 
-    dataout = []
     numflyby = (len(lineage)/2)-1
 
     # Exploring randomly in Simulate
@@ -53,9 +52,15 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
         planet0 = planet1
         epoch0 = epoch1
 
-        dataout.append()    #<--- append DV from lambert here (no checks for max dv
-        dvAcc = # summation of the dataout list
+        dvAcc += dv  # summation of the dataout list
+
 
         numflyby += 1
+
+    if currentBody is finalBody:
+        X = #calculate
+    else:
+        X = 0
+    return X
 
 
