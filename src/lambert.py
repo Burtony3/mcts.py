@@ -24,4 +24,4 @@ def lambert(p1, e1, p2, e2):
     vInfI = v2 - np.array(s2[3:5])
 
     # Returning Variables
-    return vInfO vInfI
+    return vInfO , vInfI

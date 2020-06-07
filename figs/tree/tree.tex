@@ -1,0 +1,77 @@
+% Red-black tree
+% Author: Madit
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\DeclareMathSymbol{\mh}{\mathord}{operators}{`\-}
+\usetikzlibrary{arrows}
+\tikzset{
+	treenode/.style = {align=center, inner sep=0pt, text centered,
+		font=\sffamily},
+		% Body Node
+		arn_n/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+			fill=black, text width=2.5em},% arbre rouge noir, noeud noir
+		arn_n2/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+			fill=black, text width=1.5em},
+		% Time Node
+		arn_r/.style = {treenode, circle, black, draw=black, 
+			text width=2.5em, very thick},% arbre rouge noir, noeud rouge
+		% Leaf Node???
+		arn_x/.style = {treenode, circle, draw=red,
+			minimum width=1.5em, very thick},% arbre rouge noir, nil
+		arn_e/.style = {treenode, rectangle, draw=black,
+			minimum width=0.5em, minimum height = 0.5em}% arbre rouge noir, nil
+}
+\begin{document}
+\begin{tikzpicture}[
+	->,
+	>=stealth',
+	level/.style={sibling distance = 1.5cm/#1,
+	level distance = 2cm}] 
+\node [arn_n] {$\Delta V$}
+	child{node [arn_r] {$2:1^\mh$}}
+	child{node [arn_r] {$2:1^+$}}
+	child{node [arn_r] {$3:1^\mh$}
+		child{node [arn_n2] {$P_0$}}	
+		child{node [arn_n2] {$P_1$}}	
+		child{node [arn_n2] {$P_2$}}	
+		child{node [arn_n2] {$\dots$}}	
+	}
+	child{node [arn_r] {$3:1^+$}}
+	child{node [arn_r] {$\ldots$}}
+%		node [label={[align=left]left:$n = 5$ \\ $x = 0.5$}] [arn_x] {$T_0$} 
+%		child{ node [arn_x] {$P_0$} 
+%				child{ node [arn_r] {$t_0$}}
+%				child{ node [arn_x] {$t_1$}
+%					child{node [arn_r] {$P_0$}}
+%					child{node [arn_x] {$P_1$}
+%						child{node [label={[align=left]right:Termination Condition = True} ] [arn_e] {}
+%							edge from parent
+%							node[right] {Random Exploration}  
+%						}					
+%					}
+%					child{node [arn_r] {$P_2$}}
+%				}
+%            }
+%		child{ node [arn_n] {$P_1$}
+%				child{ node [arn_r] {$t_0$}}
+%				child{ node [arn_r] {$t_1$}}
+%            }                            
+%	edge from parent
+%	node[above left] {$\textbf{UCB1 = 0.99}$}    
+%    }
+%    child{ node [label={[align=left]left:$n = 6$ \\ $x = 0.25$} ][arn_r] {$T_1$}
+%            child{ node [arn_n] {$P_0$} 
+%				child{ node [arn_r] {$t_0$}}
+%				child{ node [arn_r] {$t_1$}}
+%            }
+%            child{ node [arn_n] {$P_1$}
+%				child{ node [arn_r] {$t_0$}}
+%				child{ node [arn_r] {$t_1$}}
+%            }      
+%	edge from parent
+%	node[above right] {$UCB1 = 0.70$} 
+%	}
+;
+\end{tikzpicture}
+\end{document}

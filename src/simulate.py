@@ -2,6 +2,7 @@
 # Epoch = list of length m
 # NAIF  = list of length n
 import numpy as np
+import const
 
 def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
     # Getting Current Node Lineage
@@ -28,17 +29,20 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
     # I have a concern of how we are storing states -burto3
     t0 = lineage[-2].state
 
-    # Global G0 Array Constants     (G0 needs to be global!)
+    # G0 Array Constants     (G0 needs to be a property of mcts object)
     gLength = g0.shape[1]
     gHeight = g0.shape[0]
 
+    # Finding Last Planet/Epoch Pair
     planet0 = # node[id].sometingwong
     epoch0 = # node[id].lineages epoch thing
 
-    numflyby = (len(lineage)/2)-1
+    # Pulling Current Constraints
+    numFlyby = (len(lineage)/2)-1
+    dvAcc = node[id].dvAcc
 
-    # Exploring randomly in Simulate
-    while checkConstraints():
+    # Exploring randomly until constraints violoated
+    while const.check(planet0, dvAcc, numFlyby):
 
         randEpoch  = np.random.randint(gLength+1, size=1)[0]
         randPlanet = np.random.randint(gHeight+1, size=1)[0]
@@ -49,12 +53,12 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
         #lambert(planet0, epoch0, planet1, epoch1)  # check syntax of inputs
         # lambert returns vinfdep and vinfarr
 
+        # Setup for next loop through
         planet0 = planet1
         epoch0 = epoch1
 
+        # Storing new checks
         dvAcc += dv  # summation of the dataout list
-
-
         numflyby += 1
 
     if currentBody is finalBody:

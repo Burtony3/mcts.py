@@ -1,4 +1,4 @@
-from node import * as nodeNew
+import node as nodeNew
 import spiceypy as spk
 import numpy as np
 
@@ -6,28 +6,46 @@ import numpy as np
 spk.furnsh(stuff)
 
 class MCTS(object):
-    def __init__(maxIter, dvBudget, maxNumFlyby, launchWindow, finalBody, glength; kwargs...):
-        # Input Parse
-        # TODO: Make optional inputs
-
-        # Flyby Body List
-        fblist = ['1','2','3','4','5','6','7','8','9']
+    def __init__(self, finalBody, launchWindow, maxIters = 10000, dvBudget = 10, maxNumFlyby = float("inf"), detail = 30, flybyBodies = ["2", "3", "4", "5"]):
+        """
+        MCTS-Based Trajectory Combinational Solver
+        
+        Required Inputs:
+            finalBody    :: String of the NAIF ID of the Arrival Body
+            launchWindow :: List of strings with earliest & latest launch date (In form "MMM DD, YYYY")
+        Optional Inputs:
+            maxIters    :: Number of Nodes the Algorithm Creates (Default: 10,000)
+            dvBudget    :: Maximum allowable Δv for entire sequence in km/s (Default: 10 km/s)
+            maxNumFlyby :: Maximum number of flybys allowed before reaching final body (Default: inf)
+            detail      :: Number of indicies for launch window & flyby dates (Default: 30?)
+            flybyBodies :: List of NAIF ID Strings of planets available to be flown by (Default: ["2", "3", "4", "5"])
+            ? → maxTof      :: Largest allowable mission elapsed time (Default: )
+        Ouputs:
+            ? → ID   :: Leaf Node of Highest Value
+            ? → node :: List of all node objects
+        """
 
         # Creating Root Node
         node = []                              # Allocates List
         node.append(nodeNew('3', None, 0, 0))  # Root of all Nodes (nodeNew will replace node.py)
 
+        # FIXME:
+        bodyDict = dict()
+
         # Create TOF array (G)
         # TODO: Adjust periods for input ephemeris
         T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
         G0 = []
-        # the height of the G0 array must be the same value as the fblist (by def.)
+        for i in range(len(T)):
+            for j in range(detail):
+                G0.append( j*detail*T(i)/360 )
+        G0 = np.reshape(G0, (len(T), detail))
 
 
         #epochs = [self.sequence[1] + x * (self.l * int(T[int(self.sequence[-1])])) / 360 for x in range(9)]
 
         # Running to Completion
-        for i in range(maxIters):
+        for _ in range(maxIters):
             # Select
             id, expandBool = select()   # Loops until finds leaf node & boolean if expand
 
@@ -45,4 +63,5 @@ class MCTS(object):
         # Returning Results
         return node
 
-spk.kclear()
+if __name__ == "__main__":
+    run inputs
