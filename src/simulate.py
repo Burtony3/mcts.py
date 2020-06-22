@@ -34,8 +34,8 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
     gHeight = g0.shape[0]
 
     # Finding Last Planet/Epoch Pair
-    planet0 = # node[id].sometingwong
-    epoch0 = # node[id].lineages epoch thing
+    planet0 = node[lineage[1]].state # node[id].sometingwong
+    epoch0 = node[lineage[0]].state  # node[id].lineages epoch thing
 
     # Pulling Current Constraints
     numFlyby = (len(lineage)/2)-1
@@ -44,13 +44,16 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
     # Exploring randomly until constraints violoated
     while const.check(planet0, dvAcc, numFlyby):
 
+        # Randomly Choosing Planet & Epoch Pair
         randEpoch  = np.random.randint(gLength+1, size=1)[0]
         randPlanet = np.random.randint(gHeight+1, size=1)[0]
 
+        # Translating to notation used in PyKep Lambert
         planet1 = fblist[randPlanet]
         epoch1 =  t0 + G0   # <-- G0 should be a global var (not literally adding, but giving G0 an epoch value)
 
-        #lambert(planet0, epoch0, planet1, epoch1)  # check syntax of inputs
+        # Performing Lambert Calculation
+        lambert(planet0, epoch0, planet1, epoch1)  # check syntax of inputs
         # lambert returns vinfdep and vinfarr
 
         # Setup for next loop through
@@ -62,7 +65,7 @@ def simulate(id, finalBody, maxNumFlyby, dvBudget, fblist):
         numflyby += 1
 
     if currentBody is finalBody:
-        X = #calculate
+        X = # TODO: Calculate budget usage percentage (eq. 6 | pg. 771 | @izzo)
     else:
         X = 0
     return X

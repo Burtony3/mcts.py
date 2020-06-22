@@ -2,23 +2,22 @@ import math
 
 # Selection
 def select():
-    cp = 1/sqrt(2.0)
+    # Constant Initialization
+    cp = 1/math.sqrt(2.0) # Cost Adjustment Parameter
+    id = 0                # Starting at top of tree
+    node = self.node      # FIXME: Redefining node (Necessary?)
 
-    id = 0
     while node[id].children != None:
-
         ucb1 = []
+        
         # Checks Node's children
         for i in range(len(node[id].children)):
             X = node[node[id].children[i]].cost
             N = node[id].n
             n = node[node[id].children[i]].n
 
-            if n == 0:
-                # Sets UCB to inf if not been visited yet
-                ucb1.append(inf)
+            if n == 0: # Immediatly selects first unvisited node
                 id = node[id].children[i]
-                # Saves first child that has inf value (left to right arb. selection from video)
                 break
             else:
                 ucb1.append(X + cp*math.sqrt(math.log1p(N)/n))
