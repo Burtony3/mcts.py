@@ -1,27 +1,28 @@
 class MCTS(object):
-    def __init__(self, finalBody, launchWindow, maxIters = 10000, dvBudget = 10, maxNumFlyby = float("inf"), detail = 30, flybyBodies = ["2", "3", "4", "5"], debug = False):
-        """
-        MCTS-Based Trajectory Combinational Solver
-        
-        Required Inputs:
-            finalBody    :: String of the NAIF ID of the Arrival Body
-            launchWindow :: List of strings with earliest & latest launch date (In form "MMM DD, YYYY")
-        Optional Inputs:
-            maxIters     :: Number of Nodes the Algorithm Creates (Default: 10,000)
-            dvBudget     :: Maximum allowable Δv for entire sequence in km/s (Default: 10 km/s)
-            maxNumFlyby  :: Maximum number of flybys allowed before reaching final body (Default: inf)
-            detail       :: Number of indicies for launch window & flyby dates (Default: 30?)
-            flybyBodies  :: List of NAIF ID Strings of planets available to be flown by (Default: ["2", "3", "4", "5"])
-            ? → maxTof   :: Largest allowable mission elapsed time (Default: )
-        Ouputs:
-            ? → ID       :: Leaf Node of Highest Value
-            ? → node     :: List of all node objects
-        """
-        self.startTime = time.time()
+    def __init__(self, 
+        finalBody,                          # String of NAIF ID
+        launchWindow,                       # Beginning and End Date String
+        maxIters    = 10000,                # Maximum number of calculation iterations
+        dvBudget    = 10,                   # Maximum correction fuel budget
+        maxNumFlyby = float("inf"),         # Maximum number of flyby's in a sequence
+        detail      = 30,                   # Number of indicies in launch & epoch nodes
+        flybyBodies = ["2", "3", "4", "5"], # List of flyby body possibilities
+        debug       = False):               # Debug printing
+
+        # ------------------------- Package Installation ------------------------- # 
+        self.spk = __import__('spiceypy')
+        self.np = __import__('numpy')
+        self.math = __import__('math')
+        self.tabulate = __import__('tabulate')
+        self.time = __import__('time')
+        # ------------------------------------------------------------------------ #
+
+        # Calculation Start Time
+        self.startTime = self.time.time()
 
         # ========================= DUMMY VALUES ========================= #
         self.planets = ['2', '3', '4', '5', '6']            # Planets Venus through Saturn
-        self.dates = [2459017.5 + i*30 for i in range(6)]  # jdates from 2020-06-16 to 2022-06-16
+        self.dates = [2459017.5 + i*30 for i in range(50)]  # jdates from 2020-06-16 to 2022-06-16
         # ================================================================ #
 
         # Initializing Tree
@@ -30,11 +31,12 @@ class MCTS(object):
         self.node[0].children = []
         for i in range(len(self.dates)):              # Looping through launch dates
             self.node.append(nodeObj(self.dates[i], layer=2))
-            len_ = len(self.node)-1                   # Getting id of launch date
-            for j in range(len(self.planets)):        # Looping through flyby planets
-                self.node.append(nodeObj(self.planets[j], parent=len_, layer=3))
-            self.node[len_].children = [i for i in range(len_+1, len(self.node))]
-            self.node[0].children.append(len_)
+            self.node[0].children.append(len(self.node)-1)
+            # len_ = len(self.node)-1                   # Getting id of launch date
+            # for j in range(len(self.planets)):        # Looping through flyby planets
+            #     self.node.append(nodeObj(self.planets[j], parent=len_, layer=3))
+            # self.node[len_].children = [i for i in range(len_+1, len(self.node))]
+            # self.node[0].children.append(len_)
 
         # Initializing Constraint Class
         const = constObj(finalBody, dvBudget, maxNumFlyby)
@@ -63,33 +65,38 @@ class MCTS(object):
             # print("Chosen node id = ", id, " | number of node visits = ")
             
             # Expand?
-            if not self.node[id].children: # Expand if no children
+            if not self.node[id].children and self.node[id].n != 0: # Expand if no children
                 id = self.expand(id)
 
-            """
+            self.simulate(id)
+
+        """
             # Simulate
             if not string(node[id].state):
                 value = simulate(id, finalBody, maxNumFlyby, dvBudget, fblist)     #update function call's inputs
 
                 # Backprop
                 backprop(id, value)
-            """
+        """
 
         ### DEBUGG PRINTING ###
         if debug:
             self.debug()
 
     ## ——————————————————————————————————————————————————————————————————————————— ##
-    ## —————————————————————————————— SUB-FUNCTIONS —————————————————————————————— ##
+    ## —————————————————————————————— SUB-ROUTINES ——————————————————————————————— ##
     ## ——————————————————————————————————————————————————————————————————————————— ##
         
     def select(self):
         # Constant Initialization
-        cp = 1/math.sqrt(2.0)  # Cost Adjustment Parameter
+        cp = 1/self.math.sqrt(2.0)  # Cost Adjustment Parameter
         id = 0                 # Starting at top of tree
         node = self.node       # Reassigning node for simplicity
 
         while node[id].children != None:
+            # Updating Visits
+            self.node[id].n = self.node[id].n + 1
+
             ucb1 = []
             len_ = len(node[id].children)
             # Checks Node's children
@@ -102,7 +109,7 @@ class MCTS(object):
                     id = node[id].children[i]
                     break
                 else:
-                    ucb1.append(X + cp*math.sqrt(math.log1p(N)/n))
+                    ucb1.append(X + cp*self.math.sqrt(self.math.log1p(N)/n))
 
             # Checking whether UCB1 is empty or not
             if len(ucb1) is len_:
@@ -112,8 +119,6 @@ class MCTS(object):
                 # Set the id to this child's index in the Node list
                 id = node[id].children[indexChild]
 
-            # Updating Visits
-            self.node[id].n = self.node[id].n + 1
 
         """
         # Skips expand step if already has visits
@@ -124,12 +129,10 @@ class MCTS(object):
             expandBool = True
         """
 
-        # Saving back to self
-        self.node
-
         return id
 
     def expand(self, id):
+        np = self.np
 
         # Getting lineage to current node
         lineage = self.getLineage(id)
@@ -204,9 +207,16 @@ class MCTS(object):
 
         return id
 
+    def simulate(self, id):
+        self.node[id].n = self.node[id].n + 1
+
+    ## -------------------------------------------------------------------------------- ##
+    ## ------------------------------- HELPER FUNCTIONS ------------------------------- ##
+    ## -------------------------------------------------------------------------------- ##
+
     def getLineage(self, id):
         lineage = []
-        while id is not 0:
+        while id != 0:
             lineage.append(id)
             id = self.node[id].parent
         lineage.append(0)
@@ -224,7 +234,7 @@ class MCTS(object):
         tree = self.node
         if len(tree) > 500:
             r = input("TREE EXCEEDS 500 NODES CONTINUE? (Y/N): ")
-            r = r == "Y"
+            r = r == "Y" or r == "y"
         else:
             r = True
         if r:
@@ -242,9 +252,9 @@ class MCTS(object):
                     tree[i].cost, 
                     tree[i].parent, 
                     tree[i].children])
-            print(tabulate(cells, ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"]))
+            print(self.tabulate.tabulate(cells, ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"]))
         print(" ")
-        print("RUN TIME: ", round(time.time() - self.startTime, ndigits=5), " SECONDS")
+        print("RUN TIME: ", round(self.time.time() - self.startTime, ndigits=5), " SECONDS")
         # print("MAX LAYER: ", max(layer for tree in tree))
         # print("ITERATIONS: ", maxIters)
         print(" ")
@@ -257,6 +267,7 @@ class MCTS(object):
 
 class nodeObj:
     def __init__(self, state, parent=0, dvAcc=0, vInfIn=float("NaN"), layer = None):
+        rnd = __import__('random')
         self.n = 0              # Visits in UCB1 Function
         # Estimated Reward in UCB1 Function (if -1 = dead node?)
         self.cost = rnd.uniform(0, 1)
@@ -286,8 +297,7 @@ class constObj:
         self.finalBody = finalBody
 
     def check(self, finalBody, dv, numFlyby):
-        constList = [finalBody != self.finalBody,
-                     dv < self.dv, numFlyby < self.flyby]
+        constList = [finalBody != self.finalBody, dv < self.dv, numFlyby < self.flyby]
         return all(constList)
 
 ### ============================================================================== ###
@@ -295,15 +305,12 @@ class constObj:
 ### ============================================================================== ###
 
 if __name__ == "__main__":
-    import spiceypy as spk
-    import numpy as np
-    import math
-    import random as rnd
-    from tabulate import tabulate
-    import time
-
     # TODO: Actually import bsp/pck/tls files
     # spk.furnsh(stuff)
 
 
-    mcts = MCTS('5', ['Apr 01, 2020', 'Jun 01, 2020'], maxIters=50, debug = True)
+    mcts = MCTS(
+        '5', 
+        ['Apr 01, 2020', 'Jun 01, 2020'], 
+        maxIters=500, 
+        debug = True)
