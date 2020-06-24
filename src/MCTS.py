@@ -1,37 +1,47 @@
 class MCTS(object):
-    def __init__(self, 
-        finalBody,                          # String of NAIF ID
-        launchWindow,                       # Beginning and End Date String
-        maxIters    = 10000,                # Maximum number of calculation iterations
-        dvBudget    = 10,                   # Maximum correction fuel budget
-        maxNumFlyby = float("inf"),         # Maximum number of flyby's in a sequence
-        detail      = 30,                   # Number of indicies in launch & epoch nodes
-        flybyBodies = ["2", "3", "4", "5"], # List of flyby body possibilities
-        debug       = False):               # Debug printing
+    def __init__(
+        self,
+        finalBody,  # String of NAIF ID
+        launchWindow,  # Beginning and End Date String
+        maxIters=10000,  # Maximum number of calculation iterations
+        dvBudget=10,  # Maximum correction fuel budget
+        maxNumFlyby=float("inf"),  # Maximum number of flyby's in a sequence
+        detail=30,  # Number of indicies in launch & epoch nodes
+        flybyBodies=["2", "3", "4", "5"],  # List of flyby body possibilities
+        debug=False,
+    ):  # Debug printing
 
-        # ------------------------- Package Installation ------------------------- # 
-        self.spk = __import__('spiceypy')
-        self.np = __import__('numpy')
-        self.math = __import__('math')
-        self.tabulate = __import__('tabulate')
-        self.time = __import__('time')
+        # ------------------------- Package Installation ------------------------- #
+        self.spk = __import__("spiceypy")
+        self.np = __import__("numpy")
+        self.math = __import__("math")
+        self.tabulate = __import__("tabulate")
+        self.time = __import__("time")
+        self.rnd = __import__("random")
         # ------------------------------------------------------------------------ #
 
         # Calculation Start Time
         self.startTime = self.time.time()
 
-        # ========================= DUMMY VALUES ========================= #
-        self.planets = ['2', '3', '4', '5', '6']            # Planets Venus through Saturn
-        self.dates = [2459017.5 + i*30 for i in range(50)]  # jdates from 2020-06-16 to 2022-06-16
-        # ================================================================ #
+        # Furnshing Kernels
+        self.spk.furnsh("../data/spk/naif0009.tls")
+        self.spk.furnsh("../data/spk/de438.bsp")
+
+        # ============================= DUMMY VALUES ============================= #
+        self.planets = ["2", "3", "4", "5", "6"]  # Planets Venus through Saturn
+        self.dates = self.np.linspace(
+            self.spk.utc2et(launchWindow[0]),
+            self.spk.utc2et(launchWindow[1]),
+            detail) # jdates from 2020-06-16 to 2022-06-16
+        # ======================================================================== #
 
         # Initializing Tree
-        self.node = []                                # Allocating List
-        self.node.append(nodeObj('3', parent=None, layer=1))   # Tree Root (id = 0)
+        self.node = []  # Allocating List
+        self.node.append(nodeObj("3", parent=None, layer=1))  # Tree Root (id = 0)
         self.node[0].children = []
-        for i in range(len(self.dates)):              # Looping through launch dates
+        for i in range(len(self.dates)):  # Looping through launch dates
             self.node.append(nodeObj(self.dates[i], layer=2))
-            self.node[0].children.append(len(self.node)-1)
+            self.node[0].children.append(len(self.node) - 1)
             # len_ = len(self.node)-1                   # Getting id of launch date
             # for j in range(len(self.planets)):        # Looping through flyby planets
             #     self.node.append(nodeObj(self.planets[j], parent=len_, layer=3))
@@ -61,14 +71,16 @@ class MCTS(object):
         # Running to Completion
         for _ in range(maxIters):
             # Select
-            id = self.select()   # Loops until finds leaf node & boolean if expand
+            id = self.select()  # Loops until finds leaf node & boolean if expand
             # print("Chosen node id = ", id, " | number of node visits = ")
-            
+
             # Expand?
-            if not self.node[id].children and self.node[id].n != 0: # Expand if no children
+            if (
+                not self.node[id].children and self.node[id].n != 0
+            ):  # Expand if no children
                 id = self.expand(id)
 
-            self.simulate(id)
+            self.simulate(id)  # <---- TEMP
 
         """
             # Simulate
@@ -83,19 +95,19 @@ class MCTS(object):
         if debug:
             self.debug()
 
-    ## ——————————————————————————————————————————————————————————————————————————— ##
-    ## —————————————————————————————— SUB-ROUTINES ——————————————————————————————— ##
-    ## ——————————————————————————————————————————————————————————————————————————— ##
-        
+    ## ———————————————————————————————————————————————————————————————————————————— ##
+    ## —————————————————————————————— SUB-ROUTINES ———————————————————————————————— ##
+    ## ———————————————————————————————————————————————————————————————————————————— ##
+
     def select(self):
         # Constant Initialization
-        cp = 1/self.math.sqrt(2.0)  # Cost Adjustment Parameter
-        id = 0                 # Starting at top of tree
-        node = self.node       # Reassigning node for simplicity
+        cp = 1 / self.math.sqrt(2.0)  # Cost Adjustment Parameter
+        id = 0  # Starting at top of tree
+        node = self.node  # Reassigning node for simplicity
 
         while node[id].children != None:
             # Updating Visits
-            self.node[id].n = self.node[id].n + 1
+            self.node[id].n += 1
 
             ucb1 = []
             len_ = len(node[id].children)
@@ -109,7 +121,7 @@ class MCTS(object):
                     id = node[id].children[i]
                     break
                 else:
-                    ucb1.append(X + cp*self.math.sqrt(self.math.log1p(N)/n))
+                    ucb1.append(X + cp * self.math.sqrt(self.math.log1p(N) / n))
 
             # Checking whether UCB1 is empty or not
             if len(ucb1) is len_:
@@ -118,7 +130,6 @@ class MCTS(object):
 
                 # Set the id to this child's index in the Node list
                 id = node[id].children[indexChild]
-
 
         """
         # Skips expand step if already has visits
@@ -132,6 +143,8 @@ class MCTS(object):
         return id
 
     def expand(self, id):
+        self.node[id].n += 1
+
         np = self.np
 
         # Getting lineage to current node
@@ -139,14 +152,14 @@ class MCTS(object):
 
         # Shortenning node variable
         node = self.node
-        
+
         # Changing expand node inputs based on node type
         if len(lineage) % 2 == 0:
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
             # ~~~~~~~~~~~~~~ Planet Node ~~~~~~~~~~~~~~ #
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-            states = self.planets # ← PLACEHOLDER
+            states = self.planets  # ← PLACEHOLDER
             dvAcc_ = None
             vInfIn_ = None
             vInfOut_ = None
@@ -163,7 +176,7 @@ class MCTS(object):
             # Get column that has the G state values (TOF vals.)
             states = G0[G0row]
             """
-            
+
             ### 🚩 STOPPED HERE 🚩
 
             """
@@ -176,7 +189,7 @@ class MCTS(object):
             outputStates[:] = [states[i] if states[i] < Ti_upper and states[i] > Ti_lower for i in len(states)]
             """
 
-            states = self.dates # ← Placeholder
+            states = self.dates  # ← Placeholder
 
             """
             # Checks for if outputStates meets Ti bounds, then adds it to states
@@ -197,7 +210,9 @@ class MCTS(object):
         len_ = len(node)
 
         for i in range(len(states)):
-            self.node.append(nodeObj(states[i], parent=lineage[0], layer=len(lineage)+1))
+            self.node.append(
+                nodeObj(states[i], parent=lineage[0], layer=len(lineage) + 1)
+            )
 
             if i == 0:
                 id = len(node)
@@ -208,7 +223,8 @@ class MCTS(object):
         return id
 
     def simulate(self, id):
-        self.node[id].n = self.node[id].n + 1
+        self.node[id].n += 1
+        self.node[id].cost = self.rnd.uniform(0, 1)
 
     ## -------------------------------------------------------------------------------- ##
     ## ------------------------------- HELPER FUNCTIONS ------------------------------- ##
@@ -230,6 +246,7 @@ class MCTS(object):
         print("### ==================== DEBUGGING ==================== ###")
         print("### =================================================== ###")
         print(" ")
+        time_ = self.time.time() - self.startTime
         cells = []
         tree = self.node
         if len(tree) > 500:
@@ -244,51 +261,66 @@ class MCTS(object):
                     type_ = "Planet"
                 else:
                     type_ = "Epoch"
-                cells.append([i, 
-                    tree[i].layer, 
-                    tree[i].state, 
-                    type_, 
-                    tree[i].n, 
-                    tree[i].cost, 
-                    tree[i].parent, 
-                    tree[i].children])
-            print(self.tabulate.tabulate(cells, ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"]))
+                children = tree[i].children
+                if tree[i].children and len(tree[i].children) > 4:
+                    children[4:] = ["..."]
+                cells.append(
+                    [
+                        i,
+                        tree[i].layer,
+                        tree[i].state,
+                        type_,
+                        tree[i].n,
+                        tree[i].cost,
+                        tree[i].parent,
+                        children,
+                    ]
+                )
+            print(
+                self.tabulate.tabulate(
+                    cells,
+                    ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"],
+                )
+            )
         print(" ")
-        print("RUN TIME: ", round(self.time.time() - self.startTime, ndigits=5), " SECONDS")
-        # print("MAX LAYER: ", max(layer for tree in tree))
-        # print("ITERATIONS: ", maxIters)
+        print("RUN TIME: ", round(time_, ndigits=5), " SECONDS")
+        nLayer = []
+        for i in range(len(tree)):
+            if tree[i].layer > len(nLayer):
+                nLayer.append(tree[i].n)
+            else:
+                nLayer[tree[i].layer - 1] += tree[i].n
+        print("LAYER VISITS:", nLayer)
         print(" ")
-
 
 
 ### ========================================================================== ###
 ### =============================== NODE CLASS =============================== ###
 ### ========================================================================== ###
 
+
 class nodeObj:
-    def __init__(self, state, parent=0, dvAcc=0, vInfIn=float("NaN"), layer = None):
-        rnd = __import__('random')
-        self.n = 0              # Visits in UCB1 Function
+    def __init__(self, state, parent=0, dvAcc=0, vInfIn=float("NaN"), layer=None):
+        self.n = 0  # Visits in UCB1 Function
         # Estimated Reward in UCB1 Function (if -1 = dead node?)
-        self.cost = rnd.uniform(0, 1)
-        self.dvAcc = dvAcc      # Δv used up to that point
+        self.cost = None
+        self.dvAcc = dvAcc  # Δv used up to that point
         # Establishes Parent above (Single Scalar of IDs)
         self.parent = parent
-        self.children = None    # Children Below (Array of IDs)
-        self.state = state      # Either NAIF ID String or Epoch
-        self.vInfIn = vInfIn    # V∞ into CURRENT planet/epoch pair
+        self.children = None  # Children Below (Array of IDs)
+        self.state = state  # Either NAIF ID String or Epoch
+        self.vInfIn = vInfIn  # V∞ into CURRENT planet/epoch pair
         self.vInfOut = None  # V∞ out of PREVIOUS planet/epoch pair
         self.layer = layer
-
-    def visit(self):
-        self.n = self.n+1
 
     def update(self):
         print("dif")
 
+
 ### ================================================================================ ###
 ### ============================== CONSTRAINTS CLASS =============================== ###
 ### ================================================================================ ###
+
 
 class constObj:
     def __init__(self, finalBody, dvBudget, maxNumFlyby):
@@ -300,17 +332,13 @@ class constObj:
         constList = [finalBody != self.finalBody, dv < self.dv, numFlyby < self.flyby]
         return all(constList)
 
+
 ### ============================================================================== ###
 ### =============================== INITIALIZATION =============================== ###
 ### ============================================================================== ###
 
 if __name__ == "__main__":
-    # TODO: Actually import bsp/pck/tls files
-    # spk.furnsh(stuff)
-
-
     mcts = MCTS(
-        '5', 
-        ['Apr 01, 2020', 'Jun 01, 2020'], 
-        maxIters=500, 
-        debug = True)
+        "5", ["Apr 01, 2020", "Jun 01, 2020"], maxIters=100, detail=6, debug=True
+    )
+
