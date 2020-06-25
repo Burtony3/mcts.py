@@ -12,61 +12,60 @@ class MCTS(object):
     ):  # Debug printing
 
         # ------------------------- Package Installation ------------------------- #
-        self.spk = __import__("spiceypy")
-        self.np = __import__("numpy")
-        self.math = __import__("math")
+        self.spk      = __import__("spiceypy")
+        self.np       = __import__("numpy")
+        self.math     = __import__("math")
         self.tabulate = __import__("tabulate")
-        self.time = __import__("time")
-        self.rnd = __import__("random")
+        self.time     = __import__("time")
+        self.rnd      = __import__("random")
+        self.pk       = __import__("pykep")
         # ------------------------------------------------------------------------ #
 
         # Calculation Start Time
         self.startTime = self.time.time()
+
+        self.detail = detail
 
         # Furnshing Kernels
         self.spk.furnsh("../data/spk/naif0009.tls")
         self.spk.furnsh("../data/spk/de438.bsp")
 
         # ============================= DUMMY VALUES ============================= #
-        self.planets = ["2", "3", "4", "5", "6"]  # Planets Venus through Saturn
-        self.dates = self.np.linspace(
+        self.P = flybyBodies  # Planets Venus through Saturn
+        self.t0 = self.np.linspace(
             self.spk.utc2et(launchWindow[0]),
             self.spk.utc2et(launchWindow[1]),
-            detail) # jdates from 2020-06-16 to 2022-06-16
+            detail
+        )
         # ======================================================================== #
 
         # Initializing Tree
         self.node = []  # Allocating List
         self.node.append(nodeObj("3", parent=None, layer=1))  # Tree Root (id = 0)
         self.node[0].children = []
-        for i in range(len(self.dates)):  # Looping through launch dates
-            self.node.append(nodeObj(self.dates[i], layer=2))
+        for i in range(len(self.t0)):  # Looping through launch dates
+            self.node.append(nodeObj(self.t0[i], layer=2))
             self.node[0].children.append(len(self.node) - 1)
-            # len_ = len(self.node)-1                   # Getting id of launch date
-            # for j in range(len(self.planets)):        # Looping through flyby planets
-            #     self.node.append(nodeObj(self.planets[j], parent=len_, layer=3))
-            # self.node[len_].children = [i for i in range(len_+1, len(self.node))]
-            # self.node[0].children.append(len_)
 
         # Initializing Constraint Class
         const = constObj(finalBody, dvBudget, maxNumFlyby)
 
-        """
-        # TODO: Convert NAIF ID's to row indexes for G0 array
-        bodyDict = dict()
+        # Converts NAIF ID's to row indexes for G0 array
+        self.bodyDict = {}
+        for i in range(len(self.P)):
+            self.bodyDict[self.P[i]] = i
 
         # Create TOF array (G)
-        # TODO: Adjust periods for input ephemeris
-        T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
+        # T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
+        T = self.np.array([224.7, 365.2, 687.0, 4331]) * 84600
         G0 = []
         for i in range(len(T)):
             for j in range(detail):
-                G0.append( j*detail*T(i)/360 )
-        G0 = np.reshape(G0, (len(T), detail))
+                G0.append(j*(360/detail)*T[i]/360)
+        self.G0 = self.np.reshape(G0, (len(T), detail))
 
 
         # epochs = [self.sequence[1] + x * (self.l * int(T[int(self.sequence[-1])])) / 360 for x in range(9)]
-        """
 
         # Running to Completion
         for _ in range(maxIters):
@@ -75,9 +74,7 @@ class MCTS(object):
             # print("Chosen node id = ", id, " | number of node visits = ")
 
             # Expand?
-            if (
-                not self.node[id].children and self.node[id].n != 0
-            ):  # Expand if no children
+            if not self.node[id].children and self.node[id].n != 0:  # Expand if no children
                 id = self.expand(id)
 
             self.simulate(id)  # <---- TEMP
@@ -159,7 +156,7 @@ class MCTS(object):
             # ~~~~~~~~~~~~~~ Planet Node ~~~~~~~~~~~~~~ #
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-            states = self.planets  # ← PLACEHOLDER
+            states = self.P  # ← PLACEHOLDER
             dvAcc_ = None
             vInfIn_ = None
             vInfOut_ = None
@@ -168,6 +165,8 @@ class MCTS(object):
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
             # ~~~~~~~~~~~~~~~ Epoch Node ~~~~~~~~~~~~~~ #
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+            lineage = self.getLineage(id)
 
             """
             # FIXME: Needs a dictionary in MCTS.py (bodyDict) to conv. bdy. str->num
@@ -188,8 +187,8 @@ class MCTS(object):
 
             outputStates[:] = [states[i] if states[i] < Ti_upper and states[i] > Ti_lower for i in len(states)]
             """
-
-            states = self.dates  # ← Placeholder
+            idx = self.bodyDict[self.node[id].state]
+            states = self.t0[idx] + self.G0[idx, :]
 
             """
             # Checks for if outputStates meets Ti bounds, then adds it to states
@@ -210,9 +209,8 @@ class MCTS(object):
         len_ = len(node)
 
         for i in range(len(states)):
-            self.node.append(
-                nodeObj(states[i], parent=lineage[0], layer=len(lineage) + 1)
-            )
+            self.node.append(nodeObj(states[i], parent=lineage[0], layer=len(lineage) + 1))
+            
 
             if i == 0:
                 id = len(node)
@@ -279,11 +277,12 @@ class MCTS(object):
             print(
                 self.tabulate.tabulate(
                     cells,
-                    ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"],
+                    ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"]
                 )
             )
         print(" ")
-        print("RUN TIME: ", round(time_, ndigits=5), " SECONDS")
+        print("EPOCH DEFINITION ARRAY (G0):\n", self.np.round(self.G0/84600, 3), "\n")
+        print("RUN TIME:", round(time_, ndigits=5), " SECONDS")
         nLayer = []
         for i in range(len(tree)):
             if tree[i].layer > len(nLayer):
@@ -291,6 +290,7 @@ class MCTS(object):
             else:
                 nLayer[tree[i].layer - 1] += tree[i].n
         print("LAYER VISITS:", nLayer)
+        print("EQUIVALENT RESOLUTION PARAMETER:", 360/self.detail, "\bᵒ")
         print(" ")
 
 
@@ -339,6 +339,6 @@ class constObj:
 
 if __name__ == "__main__":
     mcts = MCTS(
-        "5", ["Apr 01, 2020", "Jun 01, 2020"], maxIters=100, detail=6, debug=True
+        "5", ["Apr 01, 2020", "Jun 01, 2020"], maxIters=500, detail=16, debug=True
     )
 
