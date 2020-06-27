@@ -9,6 +9,7 @@ class MCTS(object):
         detail=30,  # Number of indicies in launch & epoch nodes
         flybyBodies=["2", "3", "4", "5"],  # List of flyby body possibilities
         debug=False,
+        oldTreeStyle=True,
     ):  # Debug printing
 
         # ------------------------- Package Installation ------------------------- #
@@ -24,6 +25,8 @@ class MCTS(object):
         # Calculation Start Time
         self.startTime = self.time.time()
 
+        self.oldTreeStyle = oldTreeStyle
+
         self.detail = detail
 
         # Furnshing Kernels
@@ -37,15 +40,22 @@ class MCTS(object):
             self.spk.utc2et(launchWindow[1]),
             detail
         )
-        # ======================================================================== #
+        # ======================================================================== # 
 
         # Initializing Tree
         self.node = []  # Allocating List
-        self.node.append(nodeObj("3", parent=None, layer=1))  # Tree Root (id = 0)
-        self.node[0].children = []
-        for i in range(len(self.t0)):  # Looping through launch dates
-            self.node.append(nodeObj(self.t0[i], layer=2))
-            self.node[0].children.append(len(self.node) - 1)
+        if oldTreeStyle:
+            self.node.append(nodeObj("3", parent=None, layer=1))  # Tree Root (id = 0)
+            self.node[0].children = []
+            for i in range(len(self.t0)):  # Looping through launch dates
+                self.node.append(nodeObj(self.t0[i], layer=2))
+                self.node[0].children.append(len(self.node) - 1)
+        else:
+            self.node.append(nodeObj(None, parent=None, layer=1))
+            self.node[0].children = []
+            for i in range(len(self.t0)):
+                self.node.append(nodeObj(("3", self.t0[i]), layer=2))
+                self.node[0].children.append(len(self.node) - 1)
 
         # Initializing Constraint Class
         const = constObj(finalBody, dvBudget, maxNumFlyby)
@@ -58,10 +68,11 @@ class MCTS(object):
         # Create TOF array (G)
         # T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
         T = self.np.array([224.7, 365.2, 687.0, 4331]) * 84600
+        Δ = 360/detail
         G0 = []
         for i in range(len(T)):
             for j in range(detail):
-                G0.append(j*(360/detail)*T[i]/360)
+                G0.append((j+1)*Δ*T[i]/360)
         self.G0 = self.np.reshape(G0, (len(T), detail))
 
 
@@ -74,9 +85,10 @@ class MCTS(object):
             # print("Chosen node id = ", id, " | number of node visits = ")
 
             # Expand?
-            if not self.node[id].children and self.node[id].n != 0:  # Expand if no children
+            if not self.node[id].children and (self.node[id].n != 0 or self.node[id].layer == 2):  # Expand if no children
                 id = self.expand(id)
 
+            
             self.simulate(id)  # <---- TEMP
 
         """
@@ -118,6 +130,7 @@ class MCTS(object):
                     id = node[id].children[i]
                     break
                 else:
+                    print(ucb1, id, X, N, n, len(self.node))
                     ucb1.append(X + cp * self.math.sqrt(self.math.log1p(N) / n))
 
             # Checking whether UCB1 is empty or not
@@ -151,59 +164,66 @@ class MCTS(object):
         node = self.node
 
         # Changing expand node inputs based on node type
-        if len(lineage) % 2 == 0:
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-            # ~~~~~~~~~~~~~~ Planet Node ~~~~~~~~~~~~~~ #
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+        if self.oldTreeStyle:
+            if len(lineage) % 2 == 0:
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                # ~~~~~~~~~~~~~~ Planet Node ~~~~~~~~~~~~~~ #
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-            states = self.P  # ← PLACEHOLDER
-            dvAcc_ = None
-            vInfIn_ = None
-            vInfOut_ = None
+                states = self.P  # ← PLACEHOLDER
+                dvAcc_ = None
+                vInfIn_ = None
+                vInfOut_ = None
 
+            else:
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                # ~~~~~~~~~~~~~~~ Epoch Node ~~~~~~~~~~~~~~ #
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+                lineage = self.getLineage(id)
+
+                """
+                # FIXME: Needs a dictionary in MCTS.py (bodyDict) to conv. bdy. str->num
+                # Get row index of the G array from MCTS.py
+                G0row = bodyDict(node[parent].state)
+                # Get column that has the G state values (TOF vals.)
+                states = G0[G0row]
+
+                # TODO: Pruning nodes based on Periods and TOF
+                # TOF eqn in page 771 Section 3
+                # Should they be periods or ET?
+                Ti_lower = 0.1*(node[lineage[3]].state + node[lineage[1]].state)
+                Ti_upper = 2.0*(grandparent.state + parent.state)
+
+                outputStates[:] = [states[i] if states[i] < Ti_upper and states[i] > Ti_lower for i in len(states)]
+                """
+                idx = self.bodyDict[self.node[id].state]
+                states = self.t0[idx] + self.G0[idx, :]
+
+                """
+                # Checks for if outputStates meets Ti bounds, then adds it to states
+                for i in range(len(states)):
+                    if (states[i] > Ti_lower) and (states[i] < Ti_upper):
+                        outputStates.append(states[i])
+
+                # Inserting bounds as possible dates
+                outputStates.append(Ti_upper)
+                outputStates.insert(0, Ti_lower)
+                """
+
+                dvAcc_ = node[lineage[1]].dvAcc
+                vInfIn_ = np.zeros([3, 1])
+                vInfOut_ = np.zeros([3, 1])
         else:
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-            # ~~~~~~~~~~~~~~~ Epoch Node ~~~~~~~~~~~~~~ #
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-
             lineage = self.getLineage(id)
-
-            """
-            # FIXME: Needs a dictionary in MCTS.py (bodyDict) to conv. bdy. str->num
-            # Get row index of the G array from MCTS.py
-            G0row = bodyDict(node[parent].state)
-            # Get column that has the G state values (TOF vals.)
-            states = G0[G0row]
-            """
-
-            ### 🚩 STOPPED HERE 🚩
-
-            """
-            # TODO: Pruning nodes based on Periods and TOF
-            # TOF eqn in page 771 Section 3
-            # Should they be periods or ET?
-            Ti_lower = 0.1*(node[lineage[3]].state + node[lineage[1]].state)
-            Ti_upper = 2.0*(grandparent.state + parent.state)
-
-            outputStates[:] = [states[i] if states[i] < Ti_upper and states[i] > Ti_lower for i in len(states)]
-            """
-            idx = self.bodyDict[self.node[id].state]
-            states = self.t0[idx] + self.G0[idx, :]
-
-            """
-            # Checks for if outputStates meets Ti bounds, then adds it to states
-            for i in range(len(states)):
-                if (states[i] > Ti_lower) and (states[i] < Ti_upper):
-                    outputStates.append(states[i])
-
-            # Inserting bounds as possible dates
-            outputStates.append(Ti_upper)
-            outputStates.insert(0, Ti_lower)
-            """
-
-            dvAcc_ = node[lineage[1]].dvAcc
-            vInfIn_ = np.zeros([3, 1])
-            vInfOut_ = np.zeros([3, 1])
+            states = []
+            for i in range(len(self.P)):
+                idx = self.bodyDict[self.P[i]]
+                for j in range(len(self.t0)):
+                    states.append((
+                        self.P[i], 
+                        self.node[lineage[-2]].state[1] + self.G0[idx, j],
+                    ))
 
         # Getting Current Length of Node
         len_ = len(node)
@@ -221,8 +241,55 @@ class MCTS(object):
         return id
 
     def simulate(self, id):
+        lineage = self.getLineage(id)
+        parent = lineage[1]
         self.node[id].n += 1
         self.node[id].cost = self.rnd.uniform(0, 1)
+        
+        # Departure Body State
+        depState = self.spk.spkezr(
+            self.node[parent].state[0],
+            self.node[parent].state[1],
+            'J2000',
+            'NONE',
+            '0'
+        )[0]
+
+        # Arrival Body State
+        arrState = self.spk.spkezr(
+            self.node[id].state[0],
+            self.node[id].state[1],
+            'J2000',
+            'NONE',
+            '0'
+        )[0]
+
+        # Calculating Time of Flight
+        tof = self.node[id].state[1] - self.node[parent].state[1]
+
+
+        if tof > 0:
+
+            # Running Lambert Problem
+            # print(depState[0:2],arrState[0:2],tof)
+            l = self.pk.lambert_problem(
+                r1 = depState[0:3],
+                r2 = arrState[0:3],
+                tof = tof,
+                mu = self.pk.MU_SUN*1e-9
+            )
+
+            # Retrieving Lambert Calculation Velocities
+            v0 = l.get_v1()
+            v = l.get_v2()
+
+            # Calculating V∞'s
+            self.node[id].vInfOut = v0 - depState[3:6]
+            self.node[id].vInfIn = v - arrState[3:6]
+
+        
+
+        
 
     ## -------------------------------------------------------------------------------- ##
     ## ------------------------------- HELPER FUNCTIONS ------------------------------- ##
@@ -262,12 +329,14 @@ class MCTS(object):
                 children = tree[i].children
                 if tree[i].children and len(tree[i].children) > 4:
                     children[4:] = ["..."]
+                if tree[i].cost:
+                    tree[i].cost = round(tree[i].cost, ndigits=3)
                 cells.append(
                     [
                         i,
                         tree[i].layer,
                         tree[i].state,
-                        type_,
+                        # type_,
                         tree[i].n,
                         tree[i].cost,
                         tree[i].parent,
@@ -277,7 +346,7 @@ class MCTS(object):
             print(
                 self.tabulate.tabulate(
                     cells,
-                    ["id", "Layer", "State", "Type", "n", "Cost", "Par", "Children"]
+                    ["id", "L", "State", "n", "Cost", "Par", "Children"]
                 )
             )
         print(" ")
@@ -303,7 +372,7 @@ class nodeObj:
     def __init__(self, state, parent=0, dvAcc=0, vInfIn=float("NaN"), layer=None):
         self.n = 0  # Visits in UCB1 Function
         # Estimated Reward in UCB1 Function (if -1 = dead node?)
-        self.cost = None
+        self.cost = []
         self.dvAcc = dvAcc  # Δv used up to that point
         # Establishes Parent above (Single Scalar of IDs)
         self.parent = parent
@@ -339,6 +408,6 @@ class constObj:
 
 if __name__ == "__main__":
     mcts = MCTS(
-        "5", ["Apr 01, 2020", "Jun 01, 2020"], maxIters=500, detail=16, debug=True
+        "5", ["Apr 01, 2020", "Jun 01, 2020"], maxIters=100, detail=8, debug=True, oldTreeStyle=False
     )
 
