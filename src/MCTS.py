@@ -43,6 +43,7 @@ class MCTS(object):
         # ======================================================================== # 
 
         # Initializing Tree
+        self.treeArt()
         self.node = []  # Allocating List
         if oldTreeStyle:
             self.node.append(nodeObj("3", parent=None, layer=1))  # Tree Root (id = 0)
@@ -219,6 +220,7 @@ class MCTS(object):
             states = []
             for i in range(len(self.P)):
                 idx = self.bodyDict[self.P[i]]
+                # ← Node Pruning
                 for j in range(len(self.t0)):
                     states.append((
                         self.P[i], 
@@ -304,6 +306,29 @@ class MCTS(object):
 
         # Returns most recent node @ idx = 0 & oldest parent @ idx = -1
         return lineage
+
+    def treeArt(self):
+        print("\n\n        . . .")
+        print("      .        .  .     ..    .")
+        print("   .                 .         .  .")
+        print("                   .")
+        print("                  .                ..")
+        print("  .          .            .              .")
+        print("  .            '.,        .               .   Algorithm Developed for use in AAS 20-686:")
+        print("  .              'b      *                    Implementation of Deep Space Maneuvers in ")
+        print("   .              '$    #.                ..  Broad Search Trajectories Using Monte Carlo")
+        print("  .    .           $:   #:               .    Tree Search")
+        print("..      .  ..      *#  @):        .   . .")
+        print("             .     :@,@):   ,.**:'   .")
+        print(" .      .,         :@@*: ..**'      .   .     Created by: Burton Yale, Rohan Patel,")
+        print("          '#o.    .:(@'.@*\"\'  .                           & Jehosafat Cabrera")
+        print("  .  .       'bq,..:,@@*'   ,*      .  .")
+        print("             ,p$q8,:@)'  .p*'      .")
+        print("      .     '  . '@@Pp@@*'    .  .")
+        print("       .  . ..    Y7'.'     .  .")
+        print("                 :@):.")
+        print("                .:@:'.")
+        print("______________.::(@:.______________________ \n\n")
 
     def debug(self):
         print(" ")
