@@ -10,9 +10,9 @@ from matplotlib.widgets import Slider
 # ===================== USER INPUTS ===================== #
 Δ    = 64               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Nov 22, 2021"   # Launch Date
-p2   = '2'              # Flyby Planet NAIF ID
-p3   = '4'              # Arrival Planet NAIF ID
+utc1 = "Nov 22, 1850"   # Launch Date
+p2   = '5'              # Flyby Planet NAIF ID
+p3   = '8'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -23,9 +23,9 @@ abcorr = "NONE"
 J2000_jd = 2451544.5
 
 # DICTIONARIES
-pkP = {'2': 'venus', '3': 'earth', '4': 'mars', '5': 'jupiter', '6': 'saturn'}
-tau = {'2': 224.7,   '3': 365.25,  '4': 687,    '5': 4331,      '6': 10747}
-col = {'2': 'y',     '3': 'b',     '4': 'r',    '5': 'g',       '6': 'm'}
+pkP = {'1': 'mercury', '2': 'venus',   '3': 'earth', '4': 'mars', '5': 'jupiter', '6': 'saturn',  '7': 'uranus',  '8': 'neptune'}
+tau = {'1': 87.97,     '2': 224.7,     '3': 365.25,  '4': 687,    '5': 4331,      '6': 10747,     '7': 30589,     '8': 59800}
+col = {'1': '#5a6165', '2': '#955c1c', '3': 'b',     '4': 'r',    '5': '#9e7a5b', '6': '#c9c0a9', '7': '#8eb0b8', '8': '#4d80d7'}
 
 # 3D PLOT AXIS EQUIL
 def axisEqual3D(ax):
