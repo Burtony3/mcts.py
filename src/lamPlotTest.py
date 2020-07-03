@@ -10,9 +10,9 @@ from matplotlib.widgets import Slider
 # ===================== USER INPUTS ===================== #
 Δ    = 64               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Nov 22, 1850"   # Launch Date
-p2   = '5'              # Flyby Planet NAIF ID
-p3   = '8'              # Arrival Planet NAIF ID
+utc1 = "May 05, 2020"   # Launch Date
+p2   = '2'              # Flyby Planet NAIF ID
+p3   = '3'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -83,9 +83,12 @@ def updateLam():
     C3, tof, Δv = getLamProps(l_, l2_, s1, s2[idx1])
 
     # APPLYING TO FIGURE
-    ax.set_title("LAUNCH C3: {:.2f} $km^2/s^2$\nTIME OF FLIGHT: {:.2f} + {:.2f} DAYS\nCORRECTION Δv: {:.2f} $km/s$".format(C3, tof[0], tof[1], Δv))
-    axisEqual3D(ax)
+    # ax.set_title("LAUNCH C3: {:.2f} $km^2/s^2$\nTIME OF FLIGHT: {:.2f} + {:.2f} DAYS\nCORRECTION Δv: {:.2f} $km/s$".format(C3, tof[0], tof[1], Δv))
+    d2 = spk.et2utc(et2_, 'C', 14, 12)
+    d3 = spk.et2utc(et3_, 'C', 14, 12)
+    ax.set_title("LAUNCH C3: {:.2f} $km^2/s^2$\nFLYBY DATE: {:s}\nARRIVAL DATE: {:s}\nCORRECTION Δv: {:.2f} $km/s$".format(C3, d2, d3, Δv))
     fig.canvas.draw_idle()
+    axisEqual3D(ax)
 
 # GETS LAMBERT ARC PROPERTIES
 def getLamProps(l, l2, state1, state2):
