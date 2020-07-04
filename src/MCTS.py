@@ -99,7 +99,8 @@ class MCTS(object):
         # epochs = [self.sequence[1] + x * (self.l * int(T[int(self.sequence[-1])])) / 360 for x in range(9)]
 
         # Running to Completion
-        for _ in range(maxIters):
+        for itr in range(maxIters):
+            print("Current Iteration: {0}".format(itr), end="\r")
             # Select
             id = self.select()  # Loops until finds leaf node & boolean if expand
             # print("Chosen node id = ", id, " | number of node visits = ")
@@ -145,6 +146,7 @@ class MCTS(object):
             ucb1 = []
             len_ = len(node[id].children)
 
+            id_ = id
 
             # LOOPING THROUGH AVAILABLE CHILDREN
             for i in range(len_):
@@ -164,22 +166,20 @@ class MCTS(object):
                 else:                          # Skipping Terminal Node
                     ucb1.append(X + cp * self.math.sqrt(self.math.log1p(N) / n))
 
+            # print(id, [round(val, ndigits=3) for val in ucb1]) if len(ucb1) == len_ else print(id_, id)
+
             # Checking whether UCB1 is empty or not
             if len(ucb1) is len_:
                 # Find UCB w/ max value
                 indexChild = ucb1.index(max(ucb1))
-
-                # Set the id to this child's index in the Node list
+                """
+                if all([val == 0 for val in ucb1]): 
+                    self.node[id].isTerminal = True
+                    # id = 0
+                else:
+                    # Set the id to this child's index in the Node list
+                """
                 id = node[id].children[indexChild]
-
-        """
-        # Skips expand step if already has visits
-        # TODO: Check if needed?
-        if node[id].n == 0:
-            expandBool = False
-        else:
-            expandBool = True
-        """
 
         return id
 
@@ -240,10 +240,14 @@ class MCTS(object):
 
             if i == 0:
                 id = len(node)
-
+        
         # Assigning new children ID's to parent node
         self.node[lineage[0]].children = [i for i in range(len_, len(node))]
 
+        """
+        if all([self.node[id].isTerminal for id in self.node[lineage[0]].children]):
+            self.node[lineage[0]].isTerminal = True
+        """
         return id
 
     def simulate(self, id):
@@ -325,20 +329,20 @@ class MCTS(object):
             states.append(self.node[id].state)
         return states.reverse()
 
-    def getResults(self):
+    def getResults(self, minFlyby = 0):
         node = self.node
         attr = []
-        head = ["ID", "Layer", "Lineage", "Δv Left"]
+        head = ["ID", "Flybys", "Lineage", "Δv Left"]
         for id in range(len(node)):
             if node[id].children == None and node[id].Δv != 0 and node[id].state[0] == self.finalBody:
                 attr.append(
                     [id,
-                    node[id].layer,
+                    node[id].layer-3,
                     self.getLineage(id),
                     round(node[id].Δv, ndigits=5)
                     ]
                 )
-        print(self.tabulate.tabulate(attr, head))
+        print(self.tabulate.tabulate(sorted(attr, key = lambda x: (x[1], x[3]), reverse = True), head))
 
     def plotPath(self, id):
         def axisEqual3D(ax):
@@ -365,11 +369,12 @@ class MCTS(object):
                 pl, 
                 t0 = pk.epoch(float(self.spk.et2utc(self.node[id].state[1], 'J', 10)[3:]) - J2000_jd), 
                 axes = ax, 
-                color=self.col[self.node[id].state[0]]
+                color=self.col[self.node[id].state[0]],
+                units = 149597870700,
             )
         for id in lineage[:-1]:
             l = self.computeLambert(id)
-            pk.orbit_plots.plot_lambert(l, axes = ax, color='c')
+            pk.orbit_plots.plot_lambert(l, axes = ax, color='c', units = 149597870700)
         axisEqual3D(ax)
         plt.show()
 
@@ -412,7 +417,7 @@ class MCTS(object):
         cells = []
         tree = self.node
         if len(tree) > 500:
-            r = input("TREE EXCEEDS 500 NODES CONTINUE? (Y/N): ")
+            r = input("PRINT ALL {0} NODES? (Y/N): ".format(len(tree)))
             r = r == "Y" or r == "y"
         else:
             r = True
@@ -498,6 +503,8 @@ class constObj:
     def check(self, finalBody, dv, numFlyby):
         constList = [finalBody != self.finalBody, dv < self.dv, numFlyby < self.flyby]
         return all(constList)
+for x in range(10):
+    print("{0}\r".format(x))
 """
 
 ### ============================================================================== ###
@@ -505,11 +512,9 @@ class constObj:
 ### ============================================================================== ###
 """
 from MCTS import *
-mcts = MCTS('5', ["Apr 01, 2020", "Jun 01, 2020"], maxIters=5000, detail=16, oldTreeStyle=False)
+mcts = MCTS('5', ["Apr 01, 2022", "Jun 01, 2022"], maxIters=5000, detail=32, debug = True, oldTreeStyle=False)
 mcts.getResults()
 """
 
 if __name__ == "__main__":
     print("run")
-
-
