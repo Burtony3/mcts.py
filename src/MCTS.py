@@ -9,7 +9,7 @@ class MCTS(object):
         detail=30,  # Number of indicies in launch & epoch nodes
         flybyBodies=['2', '3', '4'],  # List of flyby body possibilities
         debug=False,
-        oldTreeStyle=True,
+        oldTreeStyle=False,
         frame = 'ECLIPJ2000',
         abcorr = 'NONE',
         cntrBody = '0',
@@ -40,6 +40,8 @@ class MCTS(object):
         self.abcorr = abcorr
         self.cntrBody = cntrBody
         self.C3max = C3max
+        self.ΔvBudget = ΔvBudget
+        self.numLam = 0
 
         # FURNISHING KERNELS
         self.spk.furnsh("../data/spk/naif0009.tls")
@@ -49,11 +51,13 @@ class MCTS(object):
 
         self.P = flybyBodies + [finalBody]  # Planets Venus through Saturn
         # ============================= DUMMY VALUES ============================= #
-        self.t0 = self.np.linspace(
-            self.spk.utc2et(launchWindow[0]),
-            self.spk.utc2et(launchWindow[1]),
-            detail
-        )
+        t0 = self.spk.utc2et(launchWindow[0])
+        t1 = self.spk.utc2et(launchWindow[1])
+        if (t1 - t0)/86400 < 365:
+            n = 1
+        else:
+            n = int((t1 - t0)/86400 // 365)
+        self.t0 = self.np.linspace(t0, t1, n*detail)
         # ======================================================================== # 
 
         # INITIALIZING DICTIONARIES
@@ -100,7 +104,7 @@ class MCTS(object):
 
         # Running to Completion
         for itr in range(maxIters):
-            print("Current Iteration: {0}".format(itr), end="\r")
+            print("Current Iteration: {0}/{1}".format(itr, maxIters), end="\r")
             # Select
             id = self.select()  # Loops until finds leaf node & boolean if expand
             # print("Chosen node id = ", id, " | number of node visits = ")
@@ -109,8 +113,9 @@ class MCTS(object):
             if not self.node[id].children and (self.node[id].n != 0): #or self.node[id].layer == 2):  # Expand if no children
                 id = self.expand(id)
 
-            
-            self.simulate(id)  # <---- TEMP
+            X = self.simulate(id)  # <---- TEMP
+
+            self.backprop(id, X)
 
         """
             # Simulate
@@ -120,6 +125,8 @@ class MCTS(object):
                 # Backprop
                 backprop(id, value)
         """
+
+        print("Current Iteration: {0}/{0}".format(maxIters))
 
         ### DEBUGG PRINTING ###
         if debug:
@@ -146,8 +153,6 @@ class MCTS(object):
             ucb1 = []
             len_ = len(node[id].children)
 
-            id_ = id
-
             # LOOPING THROUGH AVAILABLE CHILDREN
             for i in range(len_):
                 # print(id)
@@ -156,13 +161,11 @@ class MCTS(object):
                 n = node[node[id].children[i]].n
                 isTerminal = node[node[id].children[i]].isTerminal
 
-                if n == 0 and not isTerminal:  # Selecting first unvisited node
+                if isTerminal:  # Selecting first unvisited node
+                    ucb1.append(0)
+                elif n == 0 and not isTerminal:           # Calculating Value
                     id = node[id].children[i]
                     break
-                elif isTerminal:           # Calculating Value
-                    # print(ucb1, id, X, N, n, len(self.node))
-                    # self.debug())
-                    ucb1.append(0)
                 else:                          # Skipping Terminal Node
                     ucb1.append(X + cp * self.math.sqrt(self.math.log1p(N) / n))
 
@@ -199,7 +202,7 @@ class MCTS(object):
         for i in range(len(P_)):
             idx = self.bodyDict[P_[i]]
             # ← Node Pruning
-            for j in range(len(self.t0)):
+            for j in range(self.detail):
                 states.append((
                     P_[i], 
                     self.node[lineage[0]].state[1] + self.G0[idx, j],
@@ -219,8 +222,8 @@ class MCTS(object):
             # INCLUDING Δv CALCULATINGS AND TERMINAL STATES
             if self.node[-1].layer == 3:
                 # self.debug()
-                l0 = self.computeLambert(len(self.node)-1)
-                Δv = self.computeΔv(len(self.node)-1, l0)
+                l0 = self.computeLambert(id = len(self.node)-1)
+                Δv = self.computeΔv(id = len(self.node)-1, l0 = l0)
                 self.node[-1].Δv -= Δv
                 self.node[-1].Δv = max(0, self.node[-1].Δv)
                 if self.node[-1].Δv == 0:
@@ -230,34 +233,89 @@ class MCTS(object):
                 # print(self.node[-1].parent, len(self.node)-1)
                 # print(self.spk.et2utc(self.node[lineage[0]].state[1], 'C', 14, 12), "→", self.spk.et2utc(self.node[-1].state[1], 'C', 14, 12))
                 # self.debug()
-                l0 = self.computeLambert(len(self.node)-1)
-                l1 = self.computeLambert(lineage[0])
-                Δv = self.computeΔv(len(self.node)-1, l0, l1)
+                l0 = self.computeLambert(id = len(self.node)-1)
+                l1 = self.computeLambert(id = lineage[0])
+                Δv = self.computeΔv(id = len(self.node)-1, l0 = l0, l1 = l1)
                 self.node[-1].Δv -= Δv
                 self.node[-1].Δv = max(0, self.node[-1].Δv)
                 if self.node[-1].Δv == 0:
                     self.node[-1].isTerminal = True
-
-            if i == 0:
-                id = len(node)
         
         # Assigning new children ID's to parent node
         self.node[lineage[0]].children = [i for i in range(len_, len(node))]
 
-        """
-        if all([self.node[id].isTerminal for id in self.node[lineage[0]].children]):
-            self.node[lineage[0]].isTerminal = True
-        """
+        id_ = []
+        for i in self.node[lineage[0]].children:
+            if not self.node[i].isTerminal:
+                id_.append(i)
+
+        if len(id_) != 0:
+            dv = [self.node[i].Δv for i in id_]
+            id = id_[dv.index(max(dv))]
+
+        if id == lineage[0]:
+            id = self.node[lineage[0]].children[0]
+        
         return id
 
     def simulate(self, id):
         lineage = self.getLineage(id)
         parent = lineage[1]
         self.node[id].n += 1
+
+        P_ = self.flybyBodies + [self.finalBody]
+        P_.remove(self.node[id].state[0])
+
+        fakeStates = [(P, self.node[id].state[1] + self.G0[self.bodyDict[P], i]) for P in P_ for i in range(self.detail)]
+
+        X = []
+        
+        for state in fakeStates:
+            state = [self.node[id].state, state]
+            Δv = self.node[id].Δv
+            l0 = self.computeLambert(id = id) if self.node[id].layer > 2 else None
+            while Δv > 0 or state[-1][0] != self.finalBody:
+                # CALCULATING LAMBERT AND UPDATING Δv
+                l1 = self.computeLambert(state0 = state[-2], state1 = state[-1])
+                if len(state) == 2 and self.node[id].layer == 2:
+                    Δv -= self.computeΔv(id = id, l0 = l1, pState = "dum")
+                else:
+                    Δv -= self.computeΔv(l0 = l0, l1 = l1, pState = state[-2])
+
+                # APPENDING MATRIX AND RE-ASSIGNING VALUES
+                l0 = l1
+                P_ = self.flybyBodies + [self.finalBody]
+                P_.remove(state[-1][0])
+                i = self.rnd.randint(0, len(P_)-1)
+                j = self.rnd.randint(0, self.detail-1)
+                state.append((P_[i], state[-1][1] + self.G0[self.bodyDict[P_[i]], j]))
+                
+            if Δv < 0:
+                bonus = 0.025
+                X.append(bonus*(len(state)-2))
+            else:
+                X.append(Δv/self.ΔvBudget)
+
+        X = sum(X)/len(X)
+
+        return X
+
+        """
+        ### OLD METHOD ###
         if self.node[id].Δv != 0:
-            self.node[id].X = self.rnd.uniform(0, 1)
+            # self.node[id].X = self.rnd.uniform(0, 1)
+            self.node[id].X = (self.node[id].Δv)/self.ΔvBudget
         else:
-            self.node[id].X = 0    
+            self.node[id].X = 0 
+        """
+
+    def backprop(self, id, X):
+        lineage = self.getLineage(id)
+
+        for id in lineage:
+            # print(type(self.node[id].X), type(self.node[id].N), X)
+            self.node[id].X = (self.node[id].X*self.node[id].N + X)/(self.node[id].N + 1)
+            self.node[id].N += 1
 
     ## -------------------------------------------------------------------------------- ##
     ## ------------------------------- HELPER FUNCTIONS ------------------------------- ##
@@ -273,17 +331,24 @@ class MCTS(object):
         # Returns most recent node @ idx = 0 & oldest parent @ idx = -1
         return lineage
 
-    def computeLambert(self, id):
+    def computeLambert(self, id = None, state0 = None, state1 = None):
+        self.numLam += 1
         # IMPORTING TOOLBOXES
         spk = self.spk
         pk = self.pk
+        # print(id, self.node[id].parent, state0, state1)
 
-        # GETTING PARENT
-        parent = self.node[id].parent
+        if id:
+            
+            # GETTING PARENT
+            parent = self.node[id].parent
 
-        # GETTING STATES
-        p0, et0 = self.node[parent].state
-        p1, et1 = self.node[id].state
+            # GETTING STATES
+            p0, et0 = self.node[parent].state
+            p1, et1 = self.node[id].state
+        else:
+            p0, et0 = state0
+            p1, et1 = state1
 
         # GETTING SPICE STATE
         s0 = spk.spkezr(p0, et0, self.frame, self.abcorr, self.cntrBody)[0]
@@ -299,13 +364,22 @@ class MCTS(object):
 
         return l
 
-    def computeΔv(self, id, l0, l1 = None):
+    def computeΔv(self, id = id, l0 = None, l1 = None, pState = None):
         # l₀ :: Lambert Arc from Parent → ID
         # l₁ ::                  Grandparent → Parent
-        parent = self.node[id].parent
+        if id and not pState:
+            parent = self.node[id].parent
+            p = self.node[parent].state[0]
+            et = self.node[parent].state[1]
+        elif id and not l1 and type(pState) == str:
+            p = self.node[id].state[0]
+            et = self.node[id].state[1]
+        else:
+            p = pState[0]
+            et = pState[1]
         vp = self.spk.spkezr(
-            self.node[parent].state[0],
-            self.node[parent].state[1],
+            p,
+            et,
             self.frame,
             self.abcorr,
             self.cntrBody
@@ -373,7 +447,7 @@ class MCTS(object):
                 units = 149597870700,
             )
         for id in lineage[:-1]:
-            l = self.computeLambert(id)
+            l = self.computeLambert(id = id)
             pk.orbit_plots.plot_lambert(l, axes = ax, color='c', units = 149597870700)
         axisEqual3D(ax)
         plt.show()
@@ -423,7 +497,8 @@ class MCTS(object):
             r = True
         if r:
             print("↓TREE PRODUCED↓")
-            for i in range(len(tree)):
+            length = 1001 if len(tree) > 1000 else len(tree)
+            for i in range(length):
                 if i != 0:
                     state = (tree[i].state[0], self.spk.et2utc(tree[i].state[1], 'C', 14, 12))
                 else:
@@ -447,6 +522,7 @@ class MCTS(object):
                         children,
                     ]
                 )
+            
             print(
                 self.tabulate.tabulate(
                     cells,
@@ -454,7 +530,7 @@ class MCTS(object):
                 )
             )
         print(" ")
-        print("EPOCH DEFINITION ARRAY (G0):\n", self.np.round(self.G0/84600, 3), "\n")
+        # print("EPOCH DEFINITION ARRAY (G0):\n", self.np.round(self.G0/84600, 3), "\n")
         print("RUN TIME:", round(time_, ndigits=5), " SECONDS")
         nLayer = []
         for i in range(len(tree)):
@@ -463,7 +539,11 @@ class MCTS(object):
             else:
                 nLayer[tree[i].layer - 1] += tree[i].n
         print("LAYER VISITS:", nLayer)
+        numNodesInLayer = [0 for _ in range(len(nLayer))]
+        for id in range(len(tree)): numNodesInLayer[tree[id].layer - 1] += 1
+        print("NODES IN LAYERS:", numNodesInLayer)
         print("EQUIVALENT RESOLUTION PARAMETER:", 360/self.detail, "\bᵒ")
+        print("NUMBER OF LAMBERT ARCS CALCULATED:", self.numLam)
         print(" ")
 
 
@@ -475,8 +555,9 @@ class MCTS(object):
 class nodeObj:
     def __init__(self, state, parent=0, Δv=0, vInfIn=float("NaN"), layer=None, isTerminal=False):
         self.n = 0  # Visits in UCB1 Function
+        self.N = 0
         # Estimated Reward in UCB1 Function (if -1 = dead node?)
-        self.X = []
+        self.X = 0
         self.Δv = Δv  # Δv used up to that point
         # Establishes Parent above (Single Scalar of IDs)
         self.parent = parent
@@ -503,8 +584,6 @@ class constObj:
     def check(self, finalBody, dv, numFlyby):
         constList = [finalBody != self.finalBody, dv < self.dv, numFlyby < self.flyby]
         return all(constList)
-for x in range(10):
-    print("{0}\r".format(x))
 """
 
 ### ============================================================================== ###
@@ -512,7 +591,7 @@ for x in range(10):
 ### ============================================================================== ###
 """
 from MCTS import *
-mcts = MCTS('5', ["Apr 01, 2022", "Jun 01, 2022"], maxIters=5000, detail=32, debug = True, oldTreeStyle=False)
+mcts = MCTS('5', ["Jan 01, 2005", "Jan 02, 2008"], maxIters=5000, detail=16, debug = True, C3max=50)
 mcts.getResults()
 """
 
