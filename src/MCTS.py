@@ -35,6 +35,8 @@ class MCTS(object):
         self.finalBody = finalBody
         self.flybyBodies = flybyBodies
         self.oldTreeStyle = oldTreeStyle
+        self.launchWindow = launchWindow
+        self.maxIters = maxIters
         self.detail = detail
         self.frame = frame
         self.abcorr = abcorr
@@ -198,7 +200,7 @@ class MCTS(object):
         lineage = self.getLineage(id)
         states = []
         P_ = self.flybyBodies + [self.finalBody]
-        P_.remove(self.node[id].state[0])
+        # P_.remove(self.node[id].state[0])
         for i in range(len(P_)):
             idx = self.bodyDict[P_[i]]
             # ← Node Pruning
@@ -264,7 +266,8 @@ class MCTS(object):
         self.node[id].n += 1
 
         P_ = self.flybyBodies + [self.finalBody]
-        P_.remove(self.node[id].state[0])
+        if self.node[id].state[0] != 3:
+            P_.remove(self.node[id].state[0])
 
         fakeStates = [(P, self.node[id].state[1] + self.G0[self.bodyDict[P], i]) for P in P_ for i in range(self.detail)]
 
@@ -364,7 +367,7 @@ class MCTS(object):
 
         return l
 
-    def computeΔv(self, id = id, l0 = None, l1 = None, pState = None):
+    def computeΔv(self, id = None, l0 = None, l1 = None, pState = None):
         # l₀ :: Lambert Arc from Parent → ID
         # l₁ ::                  Grandparent → Parent
         if id and not pState:
@@ -394,6 +397,19 @@ class MCTS(object):
             vi = self.np.array(l1.get_v2()[0])/1000 - vp
             vo = self.np.array(l0.get_v1()[0])/1000 - vp
             Δv = self.np.linalg.norm(vo - vi)
+
+        
+        if id and self.node[id].state[0] == self.finalBody:
+            vp = self.spk.spkezr(
+                self.finalBody,
+                self.node[id].state[1],
+                self.frame,
+                self.abcorr,
+                self.cntrBody
+            )[0][3:]
+            vi = self.np.array(l0.get_v2()[0])/1000
+            Δv += self.np.linalg.norm(vi - vp)
+
         # print(Δv)
         return Δv
 
@@ -403,10 +419,10 @@ class MCTS(object):
             states.append(self.node[id].state)
         return states.reverse()
 
-    def getResults(self, minFlyby = 0):
+    def getResults(self, minFlyby = 0, printR = True):
         node = self.node
-        attr = []
         head = ["ID", "Flybys", "Lineage", "Δv Left"]
+        attr = []
         for id in range(len(node)):
             if node[id].children == None and node[id].Δv != 0 and node[id].state[0] == self.finalBody:
                 attr.append(
@@ -416,7 +432,10 @@ class MCTS(object):
                     round(node[id].Δv, ndigits=5)
                     ]
                 )
-        print(self.tabulate.tabulate(sorted(attr, key = lambda x: (x[1], x[3]), reverse = True), head))
+        attr = sorted(attr, key = lambda x: (x[1], x[3]), reverse=True)
+        if printR: print(self.tabulate.tabulate(attr, head))
+        id_ = [attr[i][0] for i in range(len(attr))]
+        return id_
 
     def plotPath(self, id):
         def axisEqual3D(ax):
@@ -430,6 +449,7 @@ class MCTS(object):
                 getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
         plt = self.plt
+        # patches = plt.patches
         # STARTING PLOT WINDOW
         J2000_jd = 2451544.5
         fig = plt.figure()
@@ -437,6 +457,7 @@ class MCTS(object):
         ax.view_init(azim=0, elev=90)
         pk = self.pk
         lineage = self.getLineage(id)[:-1]
+        
         for id in lineage:
             pl = pk.planet.jpl_lp(self.pkP[self.node[id].state[0]])
             pk.orbit_plots.plot_planet(
@@ -446,6 +467,15 @@ class MCTS(object):
                 color=self.col[self.node[id].state[0]],
                 units = 149597870700,
             )
+        
+        uAU = 19.1978
+        jAU = 5.2
+        eAU = 1
+        
+
+    
+        
+
         for id in lineage[:-1]:
             l = self.computeLambert(id = id)
             pk.orbit_plots.plot_lambert(l, axes = ax, color='c', units = 149597870700)
@@ -456,6 +486,36 @@ class MCTS(object):
         states = [('4', 737574186.1856555), ('2', 685636986.1856555), ('4', 668649666.1856555), ('3', 638971266.1856555)]
         states.reverse()
         """
+
+    def export(self, exportFullTree = False):
+        pd = __import__('pandas')
+        spk = self.spk
+        keys = [("id", "Lineage"), ("Planets", "Dates"), "dv"]
+        id_ = self.getResults(printR = False)
+        filename = "{0}_{1}_to_{2}_detail{3}_iters{4}.xlsx".format(self.pkP[self.finalBody], self.launchWindow[0], self.launchWindow[1], self.detail, self.maxIters)
+        writer = pd.ExcelWriter(filename, engine = 'xlsxwriter')
+        out = {'id': [], 'lineage': [], 'planets': [], 'dates': [], 'dv': []}
+        for id in id_:
+            lineage = self.getLineage(id)[:-1]
+            # print(lineage)
+            P = []
+            dates = []
+            for i in lineage:
+                P.append(self.node[i].state[0])
+                dates.append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+
+            # EXPORTING TO DICTIONARY
+            out['id'].append(id)
+            out['lineage'].append(lineage[::-1])
+            out['planets'].append(P[::-1])
+            out['dates'].append(dates[::-1])
+            out['dv'].append(self.node[id].Δv)
+        df = pd.DataFrame(out)
+        df.to_excel(writer, sheet_name = 'Results')
+        if exportFullTree:
+            df.to_excel(writer, sheet_name = 'All Nodes')
+        print(df)
+        writer.save()
 
 
     def treeArt(self):
@@ -591,7 +651,7 @@ class constObj:
 ### ============================================================================== ###
 """
 from MCTS import *
-mcts = MCTS('5', ["Jan 01, 2005", "Jan 02, 2008"], maxIters=5000, detail=16, debug = True, C3max=50)
+mcts = MCTS('7', ["Jan 01, 1997", "Jan 02, 1998"], maxIters=2000, detail=32, debug = True, C3max=70, flybyBodies = ['2', '3', '5'])
 mcts.getResults()
 """
 
