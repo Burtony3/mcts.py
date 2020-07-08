@@ -10,9 +10,9 @@ from matplotlib.widgets import Slider
 # ===================== USER INPUTS ===================== #
 Δ    = 64               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "May 05, 2020"   # Launch Date
+utc1 = "Jan 01, 2020"   # Launch Date
 p2   = '2'              # Flyby Planet NAIF ID
-p3   = '3'              # Arrival Planet NAIF ID
+p3   = '4'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -86,7 +86,11 @@ def updateLam():
     # ax.set_title("LAUNCH C3: {:.2f} $km^2/s^2$\nTIME OF FLIGHT: {:.2f} + {:.2f} DAYS\nCORRECTION Δv: {:.2f} $km/s$".format(C3, tof[0], tof[1], Δv))
     d2 = spk.et2utc(et2_, 'C', 14, 12)
     d3 = spk.et2utc(et3_, 'C', 14, 12)
-    ax.set_title("LAUNCH C3: {:.2f} $km^2/s^2$\nFLYBY DATE: {:s}\nARRIVAL DATE: {:s}\nCORRECTION Δv: {:.2f} $km/s$".format(C3, d2, d3, Δv))
+    strC3 = "LAUNCH C3: {:.2f} $km^2/s^2$\n".format(C3)
+    strFlyby = "FLYBY DATE: {:s}\n".format(d2)
+    strArr = "ARRIVAL DATE: {:s}\n".format(d3)
+    strDV = "REQ. FLYBY Δv: {:.2f} $km/s$".format(Δv)
+    ax.set_title(strC3 + strFlyby + strArr + strDV)
     fig.canvas.draw_idle()
     axisEqual3D(ax)
 
@@ -101,6 +105,12 @@ def getLamProps(l, l2, state1, state2):
     vo = np.array(l2.get_v1()[0])/1000 - state2[3:6]                   # Planet 2 Arc 2 v∞
     Δv = np.linalg.norm(vo - vi)                                       # Norm difference in above 2
     return C3, tof, Δv
+
+def setEpoch(t0, p0, p1):
+    et0 = 0.1*(tau[p0] + tau[p1])*86400 + t0
+    et1 = (tau[p0] + tau[p1] - 1)*86400 + t0
+    et = np.linspace(et0, et1, Δ)
+    return et
 
 # EVALUATES ARC #1 SLIDER CHANGE
 def updateA(val):
@@ -119,17 +129,16 @@ et1 = spk.str2et(utc1)
 s1 = spk.spkezr(p1, et1, frame, abcorr, '0')[0]
 
 # FLYBY BODY STATES (size = [Δ, 1])
-et2 = [et1 + (i+1)*(tau[p2]*86400/Δ) for i in range(Δ)]
+et2 = setEpoch(et1, p1, p2)
 s2 = [spk.spkezr(p2, et2[i], frame, abcorr, '0')[0] for i in range(Δ)]
 
 # ARRIVAL BODY STATES (size = [Δ, Δ])
 et3 = [] # Starting List
 s3 = []  # Starting List
 for i in range(Δ):      # Looping through all flyby states
+    et3.append(setEpoch(et2[i], p2, p3))
     for j in range(Δ):  # Looping through all arrival states
-        et3.append(et2[i] + (j+1)*(tau[p3]*86400/Δ))
-        s3.append(tuple(spk.spkezr(p3, et3[-1], frame, abcorr, '0')[0]))
-et3 = [et3[Δ*i:Δ*i+Δ] for i in range(Δ)] # Converting to 2D List
+        s3.append(tuple(spk.spkezr(p3, et3[i][j], frame, abcorr, '0')[0]))
 s3 = [s3[Δ*i:Δ*i+Δ] for i in range(Δ)]   # Converting to 2D List
 
 # COMPUTING LAMBERTS
