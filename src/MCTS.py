@@ -1,3 +1,5 @@
+
+from scipy.optimize import newton
 class MCTS(object):
     def __init__(
         self,
@@ -52,6 +54,8 @@ class MCTS(object):
         # FURNISHING KERNELS
         self.spk.furnsh("../data/spk/naif0009.tls")
         self.spk.furnsh("../data/spk/de438.bsp")
+        self.spk.furnsh("../data/spk/gm_de431.tpc")
+        self.spk.furnsh("../data/spk/pck00010.tpc")
 
         # PARSING USER INPUTS
         self.P = flybyBodies + [finalBody]          # Planets Venus through Saturn
@@ -245,7 +249,7 @@ class MCTS(object):
 
             # ASSIGNING Δv TO NODE
             self.node[-1].Δv += Δv
-            if self.node[-1].Δv > 2*self.ΔvBudget:
+            if self.node[-1].Δv > self.ΔvBudget:
                 self.node[-1].isTerminal = True
         
         # ASSIGN CREATED CHILDREN TO PARENT
@@ -293,7 +297,7 @@ class MCTS(object):
 
             # RANDOM EXPLORATION UNTIL TERMINATION STATE
             i = 0
-            while Δv < 2*self.ΔvBudget or state[-1][0] != self.finalBody:
+            while Δv < self.ΔvBudget or state[-1][0] != self.finalBody:
                 i += 1
                 if i == 10: print(state)
                 # CALCULATING LAMBERT AND UPDATING Δv
@@ -311,7 +315,7 @@ class MCTS(object):
                 j = self.rnd.randint(0, self.detail-1)
                 state.append((P_[i], self.setEpoch(state[-1][1], state[-1][0], P_[i])[j]))
                 
-            if Δv > 2*self.ΔvBudget:
+            if Δv > self.ΔvBudget:
                 bonus = 0.025
                 X.append(bonus*(len(state)-2))
             else:
@@ -390,7 +394,7 @@ class MCTS(object):
 
         return l
 
-    def computeΔv(self, id = None, l0 = None, l1 = None, pState = None):
+    def computeΔv(self, id = None, l0 = None, l1 = None, pState = None, oldDVMethod = False):
         # l₀ :: Lambert Arc from Parent → ID
         # l₁ ::                  Grandparent → Parent
         if id and not pState:
@@ -419,7 +423,44 @@ class MCTS(object):
         else:
             vi = self.np.array(l1.get_v2()[0])/1000 - vp
             vo = self.np.array(l0.get_v1()[0])/1000 - vp
-            Δv = self.np.linalg.norm(vo - vi)
+            vih = vi + vp
+            voh = vo + vp
+            if oldDVMethod:
+                Δv = self.np.linalg.norm(vo - vi)
+            else:
+                spk = self.spk
+                np = self.np
+                math = self.math
+                mu = spk.bodvrd(p + "99", "GM", 1)[1]
+                aOutI = -mu / np.linalg.norm(vo)**2
+
+                def f(eOut):
+                    aOut = -mu/np.linalg.norm(vo)**2
+                    aIn = -mu/np.linalg.norm(vi)**2
+                    delta =  math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+                    # print(aOut, aIn, eOut, delta)
+                    eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
+                    return eOut
+
+
+                def f_prime(eOut):
+                    aOut = -mu/np.linalg.norm(vo)**2
+                    aIn = -mu/np.linalg.norm(vi)**2
+                    delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+                    tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
+                    eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
+                    return eOut
+
+                try:
+                    rp = aOutI * (1 - newton(f, 1.5, f_prime))
+                    tmp = (2 * mu) / rp
+                    norm = np.linalg.norm
+                    Δv = norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp))
+                    if Δv < 0: 
+                        # print('NEGATIVE DV FOUND')
+                        Δv = -Δv
+                except:
+                    Δv = 999.0
 
         
         if id and self.node[id].state[0] == self.finalBody and not self.freeCapture:
@@ -447,7 +488,7 @@ class MCTS(object):
         head = ["ID", "Flybys", "Lineage", "Δv Used"]
         attr = []
         for id in range(len(node)):
-            if node[id].children == None and node[id].Δv < 2*self.ΔvBudget and node[id].state[0] == self.finalBody:
+            if node[id].children == None and node[id].Δv < self.ΔvBudget and node[id].state[0] == self.finalBody:
                 attr.append(
                     [id,
                     node[id].layer-3,
@@ -532,8 +573,27 @@ class MCTS(object):
         df = pd.DataFrame(out)
         df.to_excel(writer, sheet_name = 'Results')
         if exportFullTree:
+            out = {'id': [], 'visits': [], 'terminal': [], 'planet': [], 'date': [], 'dv': [], 'x': [], 'parent': [], 'children': []}
+            for i in range(len(self.node)):
+                out['id'].append(i)
+                out['visits'].append(self.node[i].n)
+                out['terminal'].append(self.node[i].isTerminal)
+                if self.node[i].state:
+                    out['planet'].append(self.pkP[self.node[i].state[0]])
+                    out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                else:
+                    out['planet'].append("None")
+                    out['date'].append("None")
+                out['dv'].append(self.node[i].Δv)
+                out['x'].append(self.node[i].X)
+                if self.node[i].parent:
+                    out['parent'].append(self.node[i].parent)
+                else:
+                    out['parent'].append("None")
+                out['children'].append(self.node[i].children)
+            df = pd.DataFrame(out)
             df.to_excel(writer, sheet_name = 'All Nodes')
-        print(df)
+        # print(df)
         writer.save()
 
 
@@ -647,7 +707,7 @@ class nodeObj:
 """
 from MCTS import *
 mcts = MCTS('7', ["Jan 01, 1997", "Jan 02, 1998"], maxIters=2000, detail=32, debug = True, C3max=70, flybyBodies = ['2', '3', '5'])
-mcts = MCTS('5', ["May 01, 1989", "Jan 01, 1990"], maxIters=1000, detail=32, debug = True, C3max=30, flybyBodies = ['2', '3'], ΔvBudget=25, freeCapture = True)
-mcts = MCTS('4', ["Jan 01, 2020", "Jan 01, 2022"], maxIters=1000, detail=32, debug=True)
+mcts = MCTS('5', ["May 01, 1989", "Jan 01, 1990"], maxIters=5000, detail=16, debug = True, C3max=30, flybyBodies = ['2', '3'], ΔvBudget=10)
+mcts = MCTS('4', ["Jan 01, 2020", "Jan 01, 2022"], maxIters=3000, detail=16, debug=True)
 mcts.getResults()
 """

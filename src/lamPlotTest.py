@@ -1,7 +1,9 @@
 # MATH TOOLBOXES
 import numpy as np
 import spiceypy as spk   # cSpice Kernels
+from scipy.optimize import newton
 import pykep as pk
+import math
 
 # PLOTTING TOOLBOXES
 import matplotlib.pyplot as plt
@@ -10,14 +12,16 @@ from matplotlib.widgets import Slider
 # ===================== USER INPUTS ===================== #
 Δ    = 64               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Jan 01, 2020"   # Launch Date
+utc1 = "Oct 18, 1989"   # Launch Date
 p2   = '2'              # Flyby Planet NAIF ID
-p3   = '4'              # Arrival Planet NAIF ID
+p3   = '3'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
 spk.furnsh("../data/spk/de438.bsp")
 spk.furnsh("../data/spk/naif0009.tls")
+spk.furnsh("../data/spk/gm_de431.tpc")
+spk.furnsh("../data/spk/pck00010.tpc")
 frame = "ECLIPJ2000"
 abcorr = "NONE"
 J2000_jd = 2451544.5
@@ -101,10 +105,40 @@ def getLamProps(l, l2, state1, state2):
     """
     C3 = np.linalg.norm(state1[3:6] - np.array(l.get_v1()[0])/1000)**2 # Launch C3 (km²/s²)
     tof = [l.get_tof()/86400, l2.get_tof()/86400]                      # Time of Flight (days)
-    vi = np.array(l.get_v2()[0])/1000 - state2[3:6]                    # Planet 2 Arc 1 v∞
-    vo = np.array(l2.get_v1()[0])/1000 - state2[3:6]                   # Planet 2 Arc 2 v∞
-    Δv = np.linalg.norm(vo - vi)                                       # Norm difference in above 2
-    return C3, tof, Δv
+    vih = np.array(l.get_v2()[0])/1000
+    voh = np.array(l2.get_v1()[0])/1000
+    vi = vih - state2[3:6]                    # Planet 2 Arc 1 v∞
+    vo = voh - state2[3:6]                   # Planet 2 Arc 2 v∞
+
+    mu = spk.bodvrd(p2 + "99", "GM", 1)[1]
+    aOutI = -mu / np.linalg.norm(vo)**2
+
+    def f(eOut):
+        aOut = -mu/np.linalg.norm(vo)**2
+        aIn = -mu/np.linalg.norm(vi)**2
+        delta =  math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+        # print(aOut, aIn, eOut, delta)
+        eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
+        return eOut
+
+
+    def f_prime(eOut):
+        aOut = -mu/np.linalg.norm(vo)**2
+        aIn = -mu/np.linalg.norm(vi)**2
+        delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+        tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
+        eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
+        return eOut
+
+    try:
+        rp = aOutI * (1 - newton(f, 1.5, f_prime))
+        tmp = (2 * mu) / rp
+        norm = np.linalg.norm
+        Δv = norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp))
+    except:
+        Δv = 999.0
+    # Δv = np.linalg.norm(vo - vi)                                       # Norm difference in above 2
+    return C3, tof, abs(Δv)
 
 def setEpoch(t0, p0, p1):
     et0 = 0.1*(tau[p0] + tau[p1])*86400 + t0
