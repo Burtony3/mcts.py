@@ -10,7 +10,7 @@ clear; clf; format long g; clc;
 
 % ____________________________________________________________________________________
 % Inputs
-K = 2;          % Earth Orbit Revolutions
+K = 3;          % Earth Orbit Revolutions
 L = 1;          % K:L(M) L: S/C Orbit Revolutions
 p = 1;         % Crossing before perihelion (-1) or after (1)
 tol = 10e-5;    % Itteration Tolerance
@@ -25,12 +25,13 @@ a_e = aukm;
 e_e = 0.0;
 
 % Leveraging Orbit Elements         ***VINF SET SIMULAR TO JUNO MISSION***
-T = T_e.*K + (37.5*86400);
+
+T = T_e.*K + (6.5*86400);
 
 a = ((sqrt(mu_s)/(2*pi))*T)^(2/3);
 
-Vp = sqrt(mu_s*(2/aukm - 1./a));  
-Ve = sqrt(mu_s*(2/aukm - 1./aukm));
+Vp = sqrt(mu_s*(2/aukm - 1./a))  
+Ve = sqrt(mu_s*(2/aukm - 1./aukm))
 Vinflaunch = Vp - Ve
 
 % Vary launch Vinf value to see how trend changes in DSM DV
@@ -42,8 +43,8 @@ e = (ra - rp)/(ra + rp);
 
 Va = Vp*rp/ra;
 
-Pl = 2*pi*sqrt((((ra + rp)/2)^3) / mu_s);  % Eqn. (4) from 1997 Paper is Incorrect
-                                           % Should be identical to T from above
+Pl = 2*pi*sqrt((((ra + rp)/2)^3) / mu_s);
+
 
 %dVap = 0.08827500; %dThetaStar = 1; % 1:1 rev
 %dVap = 0.396; %dTheta = 1;
@@ -66,19 +67,12 @@ for i=1:length(dsmDV)
     Ver = sqrt(mu_s * ((2/aukm) - (1/ar)));
     fpa = acos((ra*Var)/(aukm*Ver));
     fpadeg(i) = fpa*(180/pi);
-    % ----------------------------- Sims 1994 -----------------------------
-    Vminus = Ver;
-    Vinfre = (Vminus^2 + Ve^2 - 2*Vminus*Ve*cos(fpa))^(0.5);
-    beta = asin((Vminus/Vinfre)*sin(fpa));
-    %delta = 60*pi/180;
-    delta = 2*asin(1/(1+(((6378+200)*Vinfre^2)/mu_e)));
-    deltadeg = delta*180/pi;
-    Vplus = (Ve^2 + Vinfre^2 - 2*Ve*Vinfre*cos(delta+beta))^(0.5);
+
     % ---------------------------------------------------------------------
     
     costhetae = ((ar*(1-er^2)/aukm)-1)/er;
     thetae = acos(costhetae);
-    if p < 1
+    if p < 0.9
         thetae = -thetae;
     end
     thetae;
