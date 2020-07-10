@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
 # ===================== USER INPUTS ===================== #
-Δ    = 64               # Angular Resolution (Δθ = 360/Δ)
+Δ    = 8               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Oct 18, 1989"   # Launch Date
-p2   = '2'              # Flyby Planet NAIF ID
-p3   = '3'              # Arrival Planet NAIF ID
+utc1 = "Nov 27, 1989"   # Launch Date
+p2   = '3'              # Flyby Planet NAIF ID
+p3   = '5'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -103,7 +103,7 @@ def getLamProps(l, l2, state1, state2):
     """
     NOTE: All pykep lambert calculations are done in meters & seconds and are converted to km
     """
-    C3 = np.linalg.norm(state1[3:6] - np.array(l.get_v1()[0])/1000)**2 # Launch C3 (km²/s²)
+    C3 = np.linalg.norm(np.array(l.get_v1()[0])/1000 - state1[3:6])**2 # Launch C3 (km²/s²)
     tof = [l.get_tof()/86400, l2.get_tof()/86400]                      # Time of Flight (days)
     vih = np.array(l.get_v2()[0])/1000
     voh = np.array(l2.get_v1()[0])/1000
@@ -132,6 +132,7 @@ def getLamProps(l, l2, state1, state2):
 
     try:
         rp = aOutI * (1 - newton(f, 1.5, f_prime))
+        print(rp - spk.bodvrd(p2 + "99", "RADII", 3)[1][1])
         tmp = (2 * mu) / rp
         norm = np.linalg.norm
         Δv = norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp))
@@ -141,9 +142,21 @@ def getLamProps(l, l2, state1, state2):
     return C3, tof, abs(Δv)
 
 def setEpoch(t0, p0, p1):
-    et0 = 0.1*(tau[p0] + tau[p1])*86400 + t0
-    et1 = (tau[p0] + tau[p1] - 1)*86400 + t0
+    # SETTING PARAMETERS FOR RANGES
+    if p0 == p1: # If returning to same planet
+        n = 1.05 # Return in ~2.1 periods
+        m = 1.5  # Return in 3 periods
+    else:        # All other cases
+        n = 0.1
+        m = 1
+
+    # SETTING EPOCH UPPER AND LOWER LIMITS
+    et0 = n*(tau[p0] + tau[p1])*86400 + t0
+    et1 = m*(tau[p0] + tau[p1] - 1)*86400 + t0
+
+    # CREATING LINEAR RANGE
     et = np.linspace(et0, et1, Δ)
+    
     return et
 
 # EVALUATES ARC #1 SLIDER CHANGE
