@@ -1,20 +1,28 @@
+"""
+from MCTS import *
+mcts = MCTS('7', ["Jan 01, 1997", "Jan 02, 1998"], maxIters=2000, detail=32, debug = True, C3max=70, flybyBodies = ['2', '3', '5'])
+mcts = MCTS('5', ["May 01, 1989", "Jan 01, 1990"], maxIters=500, detail=8, debug = True, C3max=30)
+mcts = MCTS('4', ["Jan 01, 2020", "Jan 01, 2022"], maxIters=3000, detail=16, debug=True)
+mcts.getResults()
+"""
+from scipy.optimize import newton
 class MCTS(object):
     def __init__(
         self,
-        finalBody,  # String of NAIF ID
-        launchWindow,  # Beginning and End Date String
-        maxIters=10000,  # Maximum number of calculation iterations
-        ΔvBudget=10,  # Maximum correction fuel budget
-        maxNumFlyby=float("inf"),  # Maximum number of flyby's in a sequence
-        detail=30,  # Number of indicies in launch & epoch nodes
-        flybyBodies=['2', '3', '4'],  # List of flyby body possibilities
-        debug=False,
-        oldTreeStyle=True,
-        frame = 'ECLIPJ2000',
-        abcorr = 'NONE',
-        cntrBody = '0',
-        C3max = 100
-    ):  # Debug printing
+        finalBody,               # Target arrival body NAIF ID
+        launchWindow,            # Beginning and End Date String (or single date)
+        launchBody = '3',        # Launching body NAIF ID
+        maxIters=10000,          # Maximum number of calculation iterations
+        dvBudget=10,             # Maximum correction fuel budget
+        detail=30,               # Number of indicies in launch & epoch nodes
+        flybyBodies=['2', '3'],  # List of flyby body possibilities
+        debug=False,             # Prints additional information
+        frame = 'ECLIPJ2000',    # Frame of reference for calculations
+        abcorr = 'NONE',         # SPICE input
+        cntrBody = '0',          # Central body for all state information
+        C3max = 100,             # Maximum C3 capability of launch vehicle
+        freeCapture = False      # Ignores Δv to capture final body
+    ): 
 
         # ------------------------- PACKAGE INSTALLATION ------------------------- #
         self.spk      = __import__("spiceypy")
@@ -26,7 +34,16 @@ class MCTS(object):
         self.pk       = __import__("pykep")
         self.plt      = __import__("matplotlib")
         self.plt      = self.plt.pyplot
+        self.sys      = __import__("sys")
+        self.os       = __import__("os")
         # ------------------------------------------------------------------------ #
+
+        # SETTING STOP CONDITION (CTRL+C)
+        import signal
+        signal.signal(signal.SIGINT, self.debug)
+
+        # STARTING LOG FILE
+        self.os.remove("log.txt")
 
         # TAKING START TIME
         self.startTime = self.time.time()
@@ -34,27 +51,37 @@ class MCTS(object):
         # SAVING INPUTS TO OBJECT
         self.finalBody = finalBody
         self.flybyBodies = flybyBodies
-        self.oldTreeStyle = oldTreeStyle
+        self.launchWindow = launchWindow
+        self.maxIters = maxIters
         self.detail = detail
         self.frame = frame
         self.abcorr = abcorr
         self.cntrBody = cntrBody
         self.C3max = C3max
+        self.ΔvBudget = dvBudget
+        self.freeCapture = freeCapture
+
+        # CREATING TRACKING ELEMENTS
+        self.runTime = 0
+        self.numLam = 0
 
         # FURNISHING KERNELS
         self.spk.furnsh("../data/spk/naif0009.tls")
         self.spk.furnsh("../data/spk/de438.bsp")
+        self.spk.furnsh("../data/spk/gm_de431.tpc")
+        self.spk.furnsh("../data/spk/pck00010.tpc")
 
         # PARSING USER INPUTS
-
-        self.P = flybyBodies + [finalBody]  # Planets Venus through Saturn
-        # ============================= DUMMY VALUES ============================= #
-        self.t0 = self.np.linspace(
-            self.spk.utc2et(launchWindow[0]),
-            self.spk.utc2et(launchWindow[1]),
-            detail
-        )
-        # ======================================================================== # 
+        self.P = flybyBodies + [finalBody]          # Planets Venus through Saturn
+        n = int(launchWindow[1][-4:]) - int(launchWindow[0][-4:])
+        if len(launchWindow) == 2:                  # Checks for range or single launch window
+            self.t0 = self.np.linspace(
+                self.spk.utc2et(launchWindow[0]),
+                self.spk.utc2et(launchWindow[1]),
+                n*detail if n > 1 else detail       # Adds additional nodes if multiple years
+            )
+        else:
+            self.t0 = self.spk.utc2et(launchWindow)
 
         # INITIALIZING DICTIONARIES
         self.pkP = {'1': 'mercury', '2': 'venus',   '3': 'earth', '4': 'mars', '5': 'jupiter', '6': 'saturn',  '7': 'uranus',  '8': 'neptune'}
@@ -62,31 +89,22 @@ class MCTS(object):
         self.col = {'1': '#5a6165', '2': '#955c1c', '3': 'b',     '4': 'r',    '5': '#9e7a5b', '6': '#c9c0a9', '7': '#8eb0b8', '8': '#4d80d7'}
 
         # INITIALIZING TREE
-        self.treeArt()
-        self.node = []  # Allocating List
-        if oldTreeStyle:
-            self.node.append(nodeObj("3", parent=None, layer=1, Δv = ΔvBudget))  # Tree Root (id = 0)
-            self.node[0].children = []
-            for i in range(len(self.t0)):  # Looping through launch dates
-                self.node.append(nodeObj(self.t0[i], layer=2, Δv = ΔvBudget))
-                self.node[0].children.append(len(self.node) - 1)
-        else:
-            self.node.append(nodeObj(None, parent=None, layer=1, Δv = ΔvBudget))     # Creating Root Node
-            self.node[0].children = []
-            for i in range(len(self.t0)):
-                self.node.append(nodeObj(('3', self.t0[i]), layer=2, Δv = ΔvBudget))
-                self.node[0].children.append(len(self.node) - 1)
+        self.treeArt()                                                             # ASCII Graphic
+        self.node = []                                                             # Allocating List
+        self.node.append(nodeObj(None, parent = None, layer = 1))   # Creating Root Node
+        self.node[0].children = []
+        for i in range(len(self.t0)):                                              # Creating launch window children
+            self.node.append(nodeObj((launchBody, self.t0[i]), layer = 2))
+            self.node[0].children.append(len(self.node) - 1)
 
-        # Initializing Constraint Class
-        # const = constObj(finalBody, dvBudget, maxNumFlyby)
-
-        # Converts NAIF ID's to row indexes for G0 array
+        # DICTIONARY RELATING NAIF ID & G0 INDEX
+        # FIXME: Still necessary?
         self.bodyDict = {}
         for i in range(len(self.P)):
             self.bodyDict[self.P[i]] = i
 
         # Create TOF array (G)
-        # T = np.array([88.0, 224.7, 365.2, 687.0, 4331, 10747, 30589, 59800]) * 84600
+        # FIXME: Is this still necessary?
         T = [self.tau[self.P[i]] for i in range(len(self.P))]
         Δ = 360/detail
         G0 = []
@@ -95,45 +113,64 @@ class MCTS(object):
                 G0.append(86400*(j+1)*Δ*T[i]/360)
         self.G0 = self.np.reshape(G0, (len(T), detail))
 
+        # =============================================================== #
+        # <><><><> RUNNING MONTE CARLO TREE SEARCH CREATION LOOP <><><><> #
+        # =============================================================== #
 
-        # epochs = [self.sequence[1] + x * (self.l * int(T[int(self.sequence[-1])])) / 360 for x in range(9)]
-
-        # Running to Completion
         for itr in range(maxIters):
-            print("Current Iteration: {0}".format(itr), end="\r")
-            # Select
-            id = self.select()  # Loops until finds leaf node & boolean if expand
-            # print("Chosen node id = ", id, " | number of node visits = ")
+            if any([self.node[id].isTerminal for id in self.node[0].children]):
+                print(itr)
+                break
+            # UPDATE ITERATION HEADER
+            print("Current Iteration: {0}/{1}".format(itr, maxIters), end="\r")
 
-            # Expand?
-            if not self.node[id].children and (self.node[id].n != 0): #or self.node[id].layer == 2):  # Expand if no children
+            # PATH TO MOST VALUABLE LEAF NODE
+            id = self.select() 
+
+            # BREAK LOOP IF ALL NODES EXHAUSTED
+            if id == -1:
+                break
+
+            # EXPANDS CURRENT LEAF IF VISITED PREVIOUSLY AND SELECTS CHILD
+            if not self.node[id].children and (self.node[id].n != 0):
                 id = self.expand(id)
 
-            
-            self.simulate(id)  # <---- TEMP
+            # ESIMATES FUTURE RETURNS FROM NODE
+            X = self.simulate(id) 
 
-        """
-            # Simulate
-            if not string(node[id].state):
-                value = simulate(id, finalBody, maxNumFlyby, dvBudget, fblist)     #update function call's inputs
+            # UPDATES UP BRANCH
+            self.backprop(id, X)
 
-                # Backprop
-                backprop(id, value)
-        """
+        self.runTime = self.time.time() - self.startTime
 
-        ### DEBUGG PRINTING ###
+        # FINISHING PRINT
+        if id != -1:
+            print("Current Iteration: {0}/{0}".format(maxIters))
+        else:
+            print("Simulation Terminated All Possible Results Found")
+
+        # DEBUGG PRINTING
         if debug:
             self.debug()
-
-        # self.spk.kclear()
 
     ## ———————————————————————————————————————————————————————————————————————————— ##
     ## —————————————————————————————— SUB-ROUTINES ———————————————————————————————— ##
     ## ———————————————————————————————————————————————————————————————————————————— ##
 
     def select(self):
+        def getReward(self, func, X, N, n):
+            if func == 'ucb1':
+                cp = 1 / self.math.sqrt(2.0)  # Cost Adjustment Parameter
+                val = X + cp * self.math.sqrt(self.math.log1p(N) / n)
+            elif func == 'epsG':
+                print("FUNCTION NOT IMPLEMENTED")
+                exit()
+            else:
+                print("NO FUNCTION DEFINED")
+                exit()
+            return val
+
         # CONSTANT INITIALIZATION
-        cp = 1 / self.math.sqrt(2.0)  # Cost Adjustment Parameter
         id = 0                        # Starting at top of tree
         node = self.node              # Reassigning node for clarity
 
@@ -146,118 +183,181 @@ class MCTS(object):
             ucb1 = []
             len_ = len(node[id].children)
 
-            id_ = id
-
             # LOOPING THROUGH AVAILABLE CHILDREN
-            for i in range(len_):
-                # print(id)
-                X = node[node[id].children[i]].X
-                N = node[id].n
-                n = node[node[id].children[i]].n
-                isTerminal = node[node[id].children[i]].isTerminal
+            for id_ in node[id].children:
+                # GATHERING PROPERTIES
+                X = node[id_].X                   # Getting child's future value
+                N = node[id].n                    # Getting parent's number of visits
+                n = node[id_].n                   # Getting child's number of visits
+                isTerminal = node[id_].isTerminal # Checking if node is terminal/leaf
 
-                if n == 0 and not isTerminal:  # Selecting first unvisited node
-                    id = node[id].children[i]
-                    break
-                elif isTerminal:           # Calculating Value
-                    # print(ucb1, id, X, N, n, len(self.node))
-                    # self.debug())
+                if isTerminal:                           # Checking is node is terminal
                     ucb1.append(0)
-                else:                          # Skipping Terminal Node
-                    ucb1.append(X + cp * self.math.sqrt(self.math.log1p(N) / n))
+                elif n == 0 and not isTerminal:          # If node is unvisited, immediately visit
+                    id = id_
+                    break
+                else:                                    # Calculating Reward
+                    ucb1.append(
+                        getReward(self, 'ucb1', X, N, n)
+                    )
 
-            # print(id, [round(val, ndigits=3) for val in ucb1]) if len(ucb1) == len_ else print(id_, id)
-
-            # Checking whether UCB1 is empty or not
+            # CHECKING WHETHER UCB1 IS EMPTY
             if len(ucb1) is len_:
-                # Find UCB w/ max value
-                indexChild = ucb1.index(max(ucb1))
-                """
-                if all([val == 0 for val in ucb1]): 
+                # CHECKING IF ALL NODES ARE TERMINAL & RESTARTING SEARCH
+                if all([val == 0 for val in ucb1]):
+                    if id == 0: 
+                        id = -1
+                        self.logFile(id, "!!!All launch nodes considered terminal or fully visited")
+                        return id
                     self.node[id].isTerminal = True
-                    # id = 0
+                    if self.node[id].layer < 5:
+                        self.logFile(id, "!!Node {} in layer {} was considered terminal after creation".format(id, self.node[id].layer))
+                    id = 0
                 else:
-                    # Set the id to this child's index in the Node list
-                """
-                id = node[id].children[indexChild]
+                    indexChild = ucb1.index(max(ucb1)) # Finding index of child with max value
+                    id = node[id].children[indexChild] # Finding its associated node ID
 
         return id
 
     def expand(self, id):
+        # UPDATING VISITS
         self.node[id].n += 1
 
-        # Getting lineage to current node
+        # FIND IDs OF BRANCH
         lineage = self.getLineage(id)
 
-        # Shortenning node variable
+        # NODE SHORT-HAND
         node = self.node
 
-        lineage = self.getLineage(id)
+        # CREATING LIST OF STATES FOR NODE CREATION
         states = []
         P_ = self.flybyBodies + [self.finalBody]
-        P_.remove(self.node[id].state[0])
         for i in range(len(P_)):
             idx = self.bodyDict[P_[i]]
-            # ← Node Pruning
-            for j in range(len(self.t0)):
-                states.append((
-                    P_[i], 
-                    self.node[lineage[0]].state[1] + self.G0[idx, j],
-                ))
+            et = self.setEpoch(self.node[id].state[1], self.node[id].state[0], P_[i])
+            for j in range(len(et)):
+                states.append((P_[i],et[j]))
 
-        # Getting Current Length of Node
+        # FINDING CURRENT LENGTH OF ALL OF TREE
         len_ = len(node)
+
 
         for i in range(len(states)):
             self.node.append(nodeObj(
                 states[i], 
-                parent=lineage[0], 
+                parent=id, 
                 layer=len(lineage) + 1, 
                 isTerminal= states[i][0] == self.finalBody,
-                Δv = node[lineage[0]].Δv))
+                Δv = node[id].Δv))
 
             # INCLUDING Δv CALCULATINGS AND TERMINAL STATES
-            if self.node[-1].layer == 3:
-                # self.debug()
-                l0 = self.computeLambert(len(self.node)-1)
-                Δv = self.computeΔv(len(self.node)-1, l0)
-                self.node[-1].Δv -= Δv
-                self.node[-1].Δv = max(0, self.node[-1].Δv)
-                if self.node[-1].Δv == 0:
-                    self.node[-1].isTerminal = True
-            else:
-                # print
-                # print(self.node[-1].parent, len(self.node)-1)
-                # print(self.spk.et2utc(self.node[lineage[0]].state[1], 'C', 14, 12), "→", self.spk.et2utc(self.node[-1].state[1], 'C', 14, 12))
-                # self.debug()
-                l0 = self.computeLambert(len(self.node)-1)
-                l1 = self.computeLambert(lineage[0])
-                Δv = self.computeΔv(len(self.node)-1, l0, l1)
-                self.node[-1].Δv -= Δv
-                self.node[-1].Δv = max(0, self.node[-1].Δv)
-                if self.node[-1].Δv == 0:
-                    self.node[-1].isTerminal = True
+            if self.node[-1].layer == 3:                        # Launch Condition
+                l0 = self.computeLambert(id = len(self.node)-1)
+                dv = self.computeΔv(
+                    id = len(self.node)-1, 
+                    l0 = l0
+                )
+                vp = self.spk.spkezr(self.node[id].state[0], self.node[id].state[1], 'ECLIPJ2000', 'NONE', '0')[0][3:]
+            else:                                               # Flyby Condition
+                l0 = self.computeLambert(id = len(self.node)-1)
+                l1 = self.computeLambert(id = lineage[0])
+                dv, h = self.computeΔv(
+                    id = len(self.node)-1, 
+                    l0 = l0, 
+                    l1 = l1
+                )
 
-            if i == 0:
-                id = len(node)
+            # ASSIGNING Δv TO NODE
+            self.node[-1].Δv += dv
+            self.node[-1].ΔvLeg = dv
+            if self.node[-1].layer > 3:
+                self.node[-1].h = h
+            if self.node[-1].Δv > self.ΔvBudget or self.node[-1].h and self.node[-1].h < 0:
+                self.node[-1].isTerminal = True
         
-        # Assigning new children ID's to parent node
+        # ASSIGN CREATED CHILDREN TO PARENT
         self.node[lineage[0]].children = [i for i in range(len_, len(node))]
 
-        """
-        if all([self.node[id].isTerminal for id in self.node[lineage[0]].children]):
+        # FINDING HIGHEST VALUE CHILD TO SIMULATE
+        id_ = []
+        for i in self.node[lineage[0]].children:     # Collection all children not terminal
+            if not self.node[i].isTerminal:
+                id_.append(i)
+        if len(id_) != 0:                            # Taking child with minimum Δv
+            dv = [self.node[i].Δv for i in id_]
+            id = id_[dv.index(min(dv))]
+        if id == lineage[0]:                         # If all children terminal take first
+            self.logFile(id, "!All children of node {} were considered terminal upon creation".format(id))
+            id = self.node[lineage[0]].children[0]
+
+        if all([self.node[i].isTerminal for i in self.node[lineage[0]].children]):
             self.node[lineage[0]].isTerminal = True
-        """
+        
         return id
 
     def simulate(self, id):
+        # FIXME: States keep returning epochs in 2650's
+        # FINDING IDs OF BRANCH
         lineage = self.getLineage(id)
-        parent = lineage[1]
+
+        # UPDATING VISITS
         self.node[id].n += 1
-        if self.node[id].Δv != 0:
-            self.node[id].X = self.rnd.uniform(0, 1)
-        else:
-            self.node[id].X = 0    
+
+        # COLLECTING LIST OF POSSIBLE PLANET STATES
+        P_ = self.flybyBodies + [self.finalBody]
+
+        # CREATING 2D LIST OF TEMPORARY STATES
+        fakeStates = [(P, et) for P in P_ for et in self.setEpoch(self.node[id].state[1], self.node[id].state[0], P)]
+
+        # INITIALIZING STATE EVALUATION CRITERIA
+        X = []
+        
+        # RUNNING THROUGH LIST OF ALL PLAYABLE STATES
+        for state in fakeStates:
+            # SETTING INITIAL STATE
+            state = [self.node[id].state, state]
+            Δv = self.node[id].Δv
+            l0 = self.computeLambert(id = id) if self.node[id].layer > 2 else None
+
+            # RANDOM EXPLORATION UNTIL TERMINATION STATE
+            i = 0
+            while Δv < self.ΔvBudget or state[-1][0] != self.finalBody:
+                i += 1
+                if i == 10: print(state)
+                # CALCULATING LAMBERT AND UPDATING Δv
+                l1 = self.computeLambert(state0 = state[-2], state1 = state[-1])
+                if len(state) == 2 and self.node[id].layer == 2:
+                    Δv += self.computeΔv(id = id, l0 = l1, pState = "dum")
+                else:
+                    Δv += self.computeΔv(l0 = l0, l1 = l1, pState = state[-2])
+
+                # APPENDING MATRIX AND RE-ASSIGNING VALUES
+                l0 = l1
+                P_ = self.flybyBodies + [self.finalBody]
+                P_.remove(state[-1][0])
+                i = self.rnd.randint(0, len(P_)-1)
+                j = self.rnd.randint(0, self.detail-1)
+                state.append((P_[i], self.setEpoch(state[-1][1], state[-1][0], P_[i])[j]))
+                
+            if Δv > self.ΔvBudget:
+                bonus = 0.025
+                X.append(bonus*(len(state)-2))
+            else:
+                X.append((self.ΔvBudget - Δv)/self.ΔvBudget)
+                self.logFile(id, "Node {} child correctly simulated to final body with cost {}".format(id, X[-1]))
+
+        X = sum(X)/len(X)
+
+        return X
+
+    def backprop(self, id, X):
+        # FINDING IDs OF BRANCH
+        lineage = self.getLineage(id)
+
+        # AVERAGING IN NEW COST CALCULATED
+        for id in lineage:
+            self.node[id].X = (self.node[id].X*self.node[id].N + X)/(self.node[id].N + 1)
+            self.node[id].N += 1
 
     ## -------------------------------------------------------------------------------- ##
     ## ------------------------------- HELPER FUNCTIONS ------------------------------- ##
@@ -273,17 +373,41 @@ class MCTS(object):
         # Returns most recent node @ idx = 0 & oldest parent @ idx = -1
         return lineage
 
-    def computeLambert(self, id):
+    def setEpoch(self, t0, p0, p1):
+        # SETTING PARAMETERS FOR RANGES
+        if p0 == p1: # If returning to same planet
+            n = 1.05 # Return in ~2.1 periods
+            m = 1.5  # Return in 3 periods
+        else:        # All other cases
+            n = 0.1
+            m = 1
+
+        # SETTING EPOCH UPPER AND LOWER LIMITS
+        et0 = n*(self.tau[p0] + self.tau[p1])*86400 + t0
+        et1 = m*(self.tau[p0] + self.tau[p1] - 1)*86400 + t0
+
+        # CREATING LINEAR RANGE
+        et = self.np.linspace(et0, et1, self.detail)
+        
+        return et
+
+    def computeLambert(self, id = None, state0 = None, state1 = None):
+        self.numLam += 1
         # IMPORTING TOOLBOXES
         spk = self.spk
         pk = self.pk
 
-        # GETTING PARENT
-        parent = self.node[id].parent
+        if id:
+            
+            # GETTING PARENT
+            parent = self.node[id].parent
 
-        # GETTING STATES
-        p0, et0 = self.node[parent].state
-        p1, et1 = self.node[id].state
+            # GETTING STATES
+            p0, et0 = self.node[parent].state
+            p1, et1 = self.node[id].state
+        else:
+            p0, et0 = state0
+            p1, et1 = state1
 
         # GETTING SPICE STATE
         s0 = spk.spkezr(p0, et0, self.frame, self.abcorr, self.cntrBody)[0]
@@ -299,13 +423,22 @@ class MCTS(object):
 
         return l
 
-    def computeΔv(self, id, l0, l1 = None):
+    def computeΔv(self, id = None, l0 = None, l1 = None, pState = None, oldDVMethod = False):
         # l₀ :: Lambert Arc from Parent → ID
         # l₁ ::                  Grandparent → Parent
-        parent = self.node[id].parent
+        if id and not pState:
+            parent = self.node[id].parent
+            p = self.node[parent].state[0]
+            et = self.node[parent].state[1]
+        elif id and not l1 and type(pState) == str:
+            p = self.node[id].state[0]
+            et = self.node[id].state[1]
+        else:
+            p = pState[0]
+            et = pState[1]
         vp = self.spk.spkezr(
-            self.node[parent].state[0],
-            self.node[parent].state[1],
+            p,
+            et,
             self.frame,
             self.abcorr,
             self.cntrBody
@@ -319,9 +452,61 @@ class MCTS(object):
         else:
             vi = self.np.array(l1.get_v2()[0])/1000 - vp
             vo = self.np.array(l0.get_v1()[0])/1000 - vp
-            Δv = self.np.linalg.norm(vo - vi)
+            vih = vi + vp
+            voh = vo + vp
+            if oldDVMethod:
+                Δv = self.np.linalg.norm(vo - vi)
+            else:
+                spk = self.spk
+                np = self.np
+                math = self.math
+                mu = spk.bodvrd(p + "99", "GM", 1)[1]
+                aOutI = -mu / np.linalg.norm(vo)**2
+
+                def f(eOut):
+                    aOut = -mu/np.linalg.norm(vo)**2
+                    aIn = -mu/np.linalg.norm(vi)**2
+                    delta =  math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+                    # print(aOut, aIn, eOut, delta)
+                    eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
+                    return eOut
+
+
+                def f_prime(eOut):
+                    aOut = -mu/np.linalg.norm(vo)**2
+                    aIn = -mu/np.linalg.norm(vi)**2
+                    delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+                    tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
+                    eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
+                    return eOut
+
+                try:
+                    rp = aOutI * (1 - newton(f, 1.5, f_prime))
+                    h = rp - spk.bodvrd(p + "99", "RADII", 3)[1][1]
+                    tmp = (2 * mu) / rp
+                    norm = np.linalg.norm
+                    Δv = abs(norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp)))
+                except:
+                    Δv = 999.0
+                    h = -1
+
+        
+        if id and self.node[id].state[0] == self.finalBody and not self.freeCapture:
+            vp = self.spk.spkezr(
+                self.finalBody,
+                self.node[id].state[1],
+                self.frame,
+                self.abcorr,
+                self.cntrBody
+            )[0][3:]
+            vi = self.np.array(l0.get_v2()[0])/1000
+            Δv += self.np.linalg.norm(vi - vp)
+
         # print(Δv)
-        return Δv
+        if id and l1:
+            return Δv, h
+        else:
+            return Δv
 
     def getStatesPath(self, id):
         states = []
@@ -329,12 +514,12 @@ class MCTS(object):
             states.append(self.node[id].state)
         return states.reverse()
 
-    def getResults(self, minFlyby = 0):
+    def getResults(self, minFlyby = 0, printR = True):
         node = self.node
+        head = ["ID", "Flybys", "Lineage", "Δv Used"]
         attr = []
-        head = ["ID", "Flybys", "Lineage", "Δv Left"]
         for id in range(len(node)):
-            if node[id].children == None and node[id].Δv != 0 and node[id].state[0] == self.finalBody:
+            if node[id].children == None and node[id].Δv < self.ΔvBudget and node[id].state[0] == self.finalBody:
                 attr.append(
                     [id,
                     node[id].layer-3,
@@ -342,9 +527,12 @@ class MCTS(object):
                     round(node[id].Δv, ndigits=5)
                     ]
                 )
-        print(self.tabulate.tabulate(sorted(attr, key = lambda x: (x[1], x[3]), reverse = True), head))
+        attr = sorted(attr, key = lambda x: (x[1], 1/x[3]), reverse=True)
+        if printR: print(self.tabulate.tabulate(attr, head))
+        id_ = [attr[i][0] for i in range(len(attr))]
+        return id_
 
-    def plotPath(self, id):
+    def plotPath(self, id, showPlanets = True):
         def axisEqual3D(ax):
             np = self.np
             extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
@@ -356,6 +544,7 @@ class MCTS(object):
                 getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
         plt = self.plt
+        # patches = plt.patches
         # STARTING PLOT WINDOW
         J2000_jd = 2451544.5
         fig = plt.figure()
@@ -363,17 +552,23 @@ class MCTS(object):
         ax.view_init(azim=0, elev=90)
         pk = self.pk
         lineage = self.getLineage(id)[:-1]
-        for id in lineage:
-            pl = pk.planet.jpl_lp(self.pkP[self.node[id].state[0]])
-            pk.orbit_plots.plot_planet(
-                pl, 
-                t0 = pk.epoch(float(self.spk.et2utc(self.node[id].state[1], 'J', 10)[3:]) - J2000_jd), 
-                axes = ax, 
-                color=self.col[self.node[id].state[0]],
-                units = 149597870700,
-            )
+        if showPlanets:
+            for id in lineage:
+                pl = pk.planet.jpl_lp(self.pkP[self.node[id].state[0]])
+                pk.orbit_plots.plot_planet(
+                    pl, 
+                    t0 = pk.epoch(float(self.spk.et2utc(self.node[id].state[1], 'J', 10)[3:]) - J2000_jd), 
+                    axes = ax, 
+                    color=self.col[self.node[id].state[0]],
+                    units = 149597870700,
+                )
+        
+        uAU = 19.1978
+        jAU = 5.2
+        eAU = 1
+
         for id in lineage[:-1]:
-            l = self.computeLambert(id)
+            l = self.computeLambert(id = id)
             pk.orbit_plots.plot_lambert(l, axes = ax, color='c', units = 149597870700)
         axisEqual3D(ax)
         plt.show()
@@ -382,6 +577,109 @@ class MCTS(object):
         states = [('4', 737574186.1856555), ('2', 685636986.1856555), ('4', 668649666.1856555), ('3', 638971266.1856555)]
         states.reverse()
         """
+
+    def export(self, exportFullTree = False):
+        # IMPORTINT PACKAGES
+        pd = __import__('pandas')
+        spk = self.spk
+
+        # FINDING RESUTLS
+        id_ = self.getResults(printR = False)
+
+        # STARTING XLSX
+        filename = "{0}_{1}_to_{2}_detail{3}_iters{4}.xlsx".format(
+            self.pkP[self.finalBody], 
+            self.launchWindow[0], 
+            self.launchWindow[1], 
+            self.detail, 
+            self.maxIters
+        )
+        writer = pd.ExcelWriter(filename, engine = 'xlsxwriter')
+
+        # MCTS OUTPUT RESULTS
+        out = {'id': [], 'Δv Total': [], 'C3': [], 'Lineage': [], 'Planets': [], 'Dates': [], 'Δv per Leg': [], 'Flyby Alt': []}
+        for id in id_:
+            lineage = self.getLineage(id)[:-1] # Getting lineage minus root
+
+            # STARTING ARRAYS
+            P = []
+            dates = []
+            Δv = []
+            h = []
+
+            # GETTING NODE INFORMATION
+            for i in lineage:
+                P.append(self.node[i].state[0])
+                dates.append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+
+            # GETTING LEG INFORMATION
+            Δv = [round(self.node[i].ΔvLeg, 2) for i in lineage[:-1]]
+            vp = self.spk.spkezr(P[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+            l = self.computeLambert(id)
+            vih = self.np.array(l.get_v2()[0])/1000
+            vi = vih - vp
+            Δv[0] -= self.np.linalg.norm(vi)
+            Δv.insert(0, round(self.np.linalg.norm(vi), 2))
+            Δv[1] = round(Δv[1], 2)
+
+            h = [round(float(self.node[i].h), 2) for i in lineage[:-2]]
+                
+            # CALCULATING C3
+            vinf = self.node[lineage[-2]].Δv
+            C3 = (self.math.sqrt(self.C3max) + vinf)**2
+
+            # APPENDING TO DICTIONARY
+            out['id'].append(id)
+            out['Δv Total'].append(self.node[id].Δv)
+            out['C3'].append(round(C3, 2))
+            out['Lineage'].append(lineage[::-1])
+            out['Planets'].append(P[::-1])
+            out['Dates'].append(dates[::-1])
+            out['Δv per Leg'].append(Δv[::-1])
+            out['Flyby Alt'].append(h[::-1])
+
+        # CONVERTING TO PANDAS & SAVING
+        df = pd.DataFrame(out)
+        df.to_excel(writer, sheet_name = 'Results')
+
+        # EXPORTING FULL TREE
+        if exportFullTree:
+            out = {'id': [], 'visits': [], 'terminal': [], 'planet': [], 'date': [], 'dv': [], 'x': [], 'parent': [], 'children': []}
+            for i in range(len(self.node)):
+                out['id'].append(i)
+                out['visits'].append(self.node[i].n)
+                out['terminal'].append(self.node[i].isTerminal)
+                if self.node[i].state:
+                    out['planet'].append(self.pkP[self.node[i].state[0]])
+                    out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                else:
+                    out['planet'].append("None")
+                    out['date'].append("None")
+                out['dv'].append(round(self.node[i].Δv, 2))
+                out['x'].append(round(self.node[i].X, 4))
+                if self.node[i].parent:
+                    out['parent'].append(self.node[i].parent)
+                else:
+                    out['parent'].append("None")
+                out['children'].append(self.node[i].children)
+            df = pd.DataFrame(out)
+            df.to_excel(writer, sheet_name = 'All Nodes')
+
+        # GETTING RUN INFORMATION
+        out = {'nan': [
+            "RUN TIME: {} SECONDS".format(self.runTime),
+            "TOTAL NUMBER OF LAMBERT RUNS: {}".format(self.numLam),
+            "TOTAL NUMBER OF NODES: {}".format(len(self.node)),
+            "ANGULAR DISPERSION: {} DEGREES".format(360/self.detail)
+        ]}
+        df = pd.DataFrame(out)
+        df.to_excel(writer, sheet_name = 'Run Information')
+
+        writer.save()
+
+    def logFile(self, id, statement):
+        with open("log.txt", 'a') as f:
+            f.write("{}\n".format(statement))
 
 
     def treeArt(self):
@@ -407,7 +705,7 @@ class MCTS(object):
         print("                .:@:'.")
         print("______________.::(@:.______________________ \n\n")
 
-    def debug(self):
+    def debug(self, *args):
         print(" ")
         print("### =================================================== ###")
         print("### ==================== DEBUGGING ==================== ###")
@@ -423,7 +721,8 @@ class MCTS(object):
             r = True
         if r:
             print("↓TREE PRODUCED↓")
-            for i in range(len(tree)):
+            length = 1001 if len(tree) > 1000 else len(tree)
+            for i in range(length):
                 if i != 0:
                     state = (tree[i].state[0], self.spk.et2utc(tree[i].state[1], 'C', 14, 12))
                 else:
@@ -447,14 +746,15 @@ class MCTS(object):
                         children,
                     ]
                 )
+            
             print(
                 self.tabulate.tabulate(
-                    cells,
+                    cells,z
                     ["id", "L", "Leaf", "State", "n", "X", "Δv", "Par", "Children"]
                 )
             )
         print(" ")
-        print("EPOCH DEFINITION ARRAY (G0):\n", self.np.round(self.G0/84600, 3), "\n")
+        # print("EPOCH DEFINITION ARRAY (G0):\n", self.np.round(self.G0/84600, 3), "\n")
         print("RUN TIME:", round(time_, ndigits=5), " SECONDS")
         nLayer = []
         for i in range(len(tree)):
@@ -463,9 +763,12 @@ class MCTS(object):
             else:
                 nLayer[tree[i].layer - 1] += tree[i].n
         print("LAYER VISITS:", nLayer)
+        numNodesInLayer = [0 for _ in range(len(nLayer))]
+        for id in range(len(tree)): numNodesInLayer[tree[id].layer - 1] += 1
+        print("NODES IN LAYERS:", numNodesInLayer)
         print("EQUIVALENT RESOLUTION PARAMETER:", 360/self.detail, "\bᵒ")
+        print("NUMBER OF LAMBERT ARCS CALCULATED:", self.numLam)
         print(" ")
-
 
 ### ========================================================================== ###
 ### =============================== NODE CLASS =============================== ###
@@ -475,46 +778,15 @@ class MCTS(object):
 class nodeObj:
     def __init__(self, state, parent=0, Δv=0, vInfIn=float("NaN"), layer=None, isTerminal=False):
         self.n = 0  # Visits in UCB1 Function
+        self.N = 0
         # Estimated Reward in UCB1 Function (if -1 = dead node?)
-        self.X = []
+        self.X = 0
         self.Δv = Δv  # Δv used up to that point
+        self.ΔvLeg = 0
+        self.h = None
         # Establishes Parent above (Single Scalar of IDs)
         self.parent = parent
         self.children = None  # Children Below (Array of IDs)
         self.state = state  # Either NAIF ID String or Epoch
         self.layer = layer
         self.isTerminal = isTerminal
-
-    def update(self):
-        print("dif")
-
-
-### ================================================================================ ###
-### ============================== CONSTRAINTS CLASS =============================== ###
-### ================================================================================ ###
-
-"""
-class constObj:
-    def __init__(self, finalBody, ΔvBudget, maxNumFlyby):
-        self.dv = dvBudget
-        self.flyby = maxNumFlyby
-        self.finalBody = finalBody
-
-    def check(self, finalBody, dv, numFlyby):
-        constList = [finalBody != self.finalBody, dv < self.dv, numFlyby < self.flyby]
-        return all(constList)
-for x in range(10):
-    print("{0}\r".format(x))
-"""
-
-### ============================================================================== ###
-### =============================== INITIALIZATION =============================== ###
-### ============================================================================== ###
-"""
-from MCTS import *
-mcts = MCTS('5', ["Apr 01, 2022", "Jun 01, 2022"], maxIters=5000, detail=32, debug = True, oldTreeStyle=False)
-mcts.getResults()
-"""
-
-if __name__ == "__main__":
-    print("run")
