@@ -4,7 +4,7 @@ function dTheta = dvreq(dsmDV,vinf)
 
     K = 3;          % Earth Orbit Revolutions
     %L = 1;          % K:L(M) L: S/C Orbit Revolutions
-    p = 1;         % Crossing before perihelion (-1) or after (1)
+    p = -1;         % Crossing before perihelion (-1) or after (1)
 
     mu_s = 132712401800;
     mu_e = 000000398600;

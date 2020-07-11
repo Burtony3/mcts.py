@@ -12,7 +12,7 @@ clear; clf; format long g; clc;
 % Inputs
 K = 3;          % Earth Orbit Revolutions
 L = 1;          % K:L(M) L: S/C Orbit Revolutions
-p = 1;         % Crossing before perihelion (-1) or after (1)
+p = -1;         % Crossing before perihelion (-1) or after (1)
 tol = 10e-5;    % Itteration Tolerance
 
 % ____________________________________________________________________________________
@@ -49,7 +49,8 @@ Pl = 2*pi*sqrt((((ra + rp)/2)^3) / mu_s);
 %dVap = 0.08827500; %dThetaStar = 1; % 1:1 rev
 %dVap = 0.396; %dTheta = 1;
 
-dsmDV = 0.0001:0.005:1.00;
+%dsmDV = 0.0001:0.005:1.00;
+dsmDV = 0.395
 itt = 1;
 %while abs(dTheta) > tol
 for i=1:length(dsmDV)
