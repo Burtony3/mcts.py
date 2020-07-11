@@ -1,20 +1,21 @@
-function [r_diff] = dvreq2(ddti,thetadeg)
-%DVREQ2 Summary of this function goes here
-%   Detailed explanation goes here
-    global dvDsm
-    global r_diff
+function pltDSMorbits(Kval,thetaIndeg,ddti_val)
 
-    K = 3;          % Earth Orbit Revolutions
-    p = -1;         % Crossing before perihelion (-1) or after (1)
-
-
+    if Kval<0
+        K = abs(Kval);
+        p = -1;
+    else
+        K = abs(Kval);
+        p = 1;
+    end
+    % ____________________________________________________________________________________
+    % Constants
     mu_s = 132712401800;
-    %mu_e = 000000398600;
+    mu_e = 000000398600;
     aukm = 149600000;
     T_e = ((2*pi)/sqrt(mu_s))*(aukm^(3/2));
     a_e = aukm;
-    %e_e = 0.0;
-
+    e_e = 0.0;
+    % ____________________________________________________________________________________
 
     % Leveraging Orbit Elements
 
@@ -25,11 +26,11 @@ function [r_diff] = dvreq2(ddti,thetadeg)
 
     Vp = getVel(mu_s, aukm, a);
     Ve = getVel(mu_s, aukm, a_e);
-    %Vinflaunch = Vp - Ve;
+    Vinflaunch = Vp - Ve;
 
 
     xi = [0; -aukm; 0; Ve; 0; 0];
-    %ki = conv_carKep(mu_s, xi, 0);
+    ki = conv_carKep(mu_s, xi, 0);
 
     xL = [0; -aukm; 0; Vp; 0; 0];
     kL = conv_carKep(mu_s, xL, 0);
@@ -38,8 +39,6 @@ function [r_diff] = dvreq2(ddti,thetadeg)
     xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
 
 
-
-    thetaIndeg = thetadeg;
     if p>0
         thetaIn = (thetaIndeg-90)*p*(pi/180);
     else
@@ -50,11 +49,10 @@ function [r_diff] = dvreq2(ddti,thetadeg)
 
     dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
     if p<0
-        dti = (dti + ddti*86400);
+        dti = (dti + ddti_val*86400);
     else
-        dti = (dti - ddti*86400);
+        dti = (dti - ddti_val*86400);
     end
-    
 
     lambcall = l0(2,xD1,xIn,dti,mu_s);
 
@@ -65,17 +63,26 @@ function [r_diff] = dvreq2(ddti,thetadeg)
     % Integration of new trajectory
     options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
     postManeuverState = tbp(xD2,dti,mu_s,0,options);
-    %preManeuverState = tbp(xL,(K*T_e/2));
+    preManeuverState = tbp(xL,(K*T_e/2),mu_s,0,options);
 
-    r_postMS = norm(postManeuverState(end,1:3));
-    r_xIn = norm(xIn(1:3));
+    r_postMS = postManeuverState(end,1:3)';
+    r_xIn = xIn(1:3);
+    r_diff = abs(norm(r_postMS - r_xIn));
 
-    r_diff = abs(r_postMS - r_xIn);
-    
-    function v = getVel(mu, r, sma)
-        v = sqrt(mu*(2/r - 1/sma));  
+    if true
+        hold on
+        scatter(0,0,'MarkerEdgeColor','r')
+        scatter(xi(1),xi(2),'MarkerEdgeColor','b')
+        scatter(xD1(1), xD1(2),'MarkerEdgeColor', 'k')
+        scatter(xIn(1), xIn(2),'MarkerEdgeColor', [0.5 0.5 0.5])
+        plot(postManeuverState(:,1),postManeuverState(:,2),'color',[0.4 0.4 0.4])
+        plot(preManeuverState(:,1),preManeuverState(:,2),'color',[0.7 0.7 0.7])
+        hold off
     end
 
+    function v = getVel(mu, r, a)
+        v = sqrt(mu*(2/r - 1/a));  
+    end
     function out = conv_carKep(mu,x,p)
     % KEPELEM: Given a mu and state vector x (6x1), calculates orbital elements
     %          output: Structure with fields: a; e; i; raan; aop; ta; t; rp; ra]
@@ -127,7 +134,7 @@ function [r_diff] = dvreq2(ddti,thetadeg)
            theta = 2*pi - theta; 
         end
         if isnan(theta)
-            disp('Theta NaN, changed to 0');
+            %disp('Theta NaN, changed to 0');
             theta = 0;
         end
 
@@ -150,37 +157,6 @@ function [r_diff] = dvreq2(ddti,thetadeg)
         out.rp = rp;
         out.ra = ra;
 
-        if p == 1
-
-
-            disp('-------------------------------------------')
-            disp('Input State Vector: [x;y;z;vx;vy;vz]')
-            disp(' ')
-            disp(x)
-            disp('-------------------------------------------')
-            disp(['Angular Momentum:    ',num2str(h_), ' km^2/s'])
-            disp(' ')
-            disp(['Inclination:         ',num2str(i*(180/pi)), ' deg'])
-            disp(['Orbit Type:          ',i_])
-            disp(' ')
-            disp(['Eccentricity:        ',num2str(e_)])
-            disp(['RAAN:                ',num2str(omega*(180/pi)), ' deg'])
-            disp(['Argument of Perigee: ',num2str(w*(180/pi)), ' deg'])
-            disp(['True Anomaly:        ',num2str(theta*(180/pi)), ' deg'])
-            disp(' ')
-            if e<1
-                T_hrs = T/3600;
-                disp(['Orbit Period:        ',num2str(T_hrs), ' hours'])
-            else
-                disp(['Orbit Period:        ','HYPERBOLIC'])
-            end
-            disp(['Periapsis Radius:    ',num2str(rp), ' km'])
-            disp(['Apoapsis Radius:     ',num2str(ra), ' km'])
-            disp(['Semimajor Axis:      ',num2str(a), ' km'])
-            disp('-------------------------------------------')
-        end
-
     end
-
 end
 

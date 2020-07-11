@@ -35,12 +35,14 @@ clear firstPC firstMac PC Mac
 %% new sec dsm
 % Inputs
 K = 2;          % Earth Orbit Revolutions
-p = -1;          % Crossing before perihelion (-1) or after (1)
+p = 1;          % Crossing before perihelion (-1) or after (1)
 
 % ____________________________________________________________________________________
 % Constants
 mu_s = 132712401800;
 mu_e = 000000398600;
+r_e = 6378;
+alt_min = 200;
 aukm = 149600000;
 T_e = ((2*pi)/sqrt(mu_s))*(aukm^(3/2));
 a_e = aukm;
@@ -71,25 +73,19 @@ xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
 
 
 
-
+% DSM DeltaV and DTime Calculations
 % -------------------------------------------------------------------------
-thetaIndeg = 40.7750352347922;
-ddti_val =  108.974224090576;
+thetaIndeg = 28;
+ddti_val =  79.4963388442993;
 % -------------------------------------------------------------------------
-% Sensitivity to IC values:
-%  IC40&50: 0.0926715978351018; 57.8875516909175
-%  IC60   : 0.109546271901386;  55.7956398774404
-
 
 if p>0
     thetaIn = (thetaIndeg-90)*p*(pi/180);
+    xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; Ve*cos(thetaIn); -Ve*sin(thetaIn); 0];
 else
     thetaIn = (thetaIndeg+90)*p*(pi/180);
+    xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; -Ve*cos(thetaIn); Ve*sin(thetaIn); 0];
 end
-xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; Ve*cos(thetaIn); -Ve*sin(thetaIn); 0];
-
-
-
 
 dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
 if p<0
@@ -99,24 +95,71 @@ else
 end
 
 lambcall = l0(2,xD1,xIn,dti,mu_s);
+dvDsm = norm(lambcall(1,1:3));
 
-dvDsm = norm(lambcall(1,1:3))
+
+% Body Intercept State and PLANAR Flyby Calculations
 xD2 = [0; kL.ra; 0; -Vd1+dvDsm; 0; 0];
+xIn2 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0;lambcall(end,1);lambcall(end,2);lambcall(end,3)];
+vinf1 = xIn2(4:5) - xIn(4:5);
+vinf1mag = norm(vinf1);
+vinf1hat = vinf1/norm(vinf1);
+vphat = xIn2(4:5)/norm(xIn2(4:5));
+vehat = xIn(4:5)/norm(xIn(4:5));
+bending = acos(dot(vehat,vinf1hat));
+bendingdeg = bending*180/pi;
+r_car = (mu_e/(vinf1mag^2))*(-1 + (1/sin(bending/2)));
+% Actual Bending Achieved due to Min. FB Constraint
+if r_car < r_e+alt_min
+    r_car = r_e+alt_min;
+    bending = 2*asin(1/(1+(r_car*vinf1mag^2/mu_e)));
+    bendingdeg = bending*180/pi
+end
+vinf1ang = -acos(dot(vinf1hat,[1;0]));
+vinf1angdeg = vinf1ang*180/pi;
+if p<0
+    vinf2ang = vinf1ang - bending;
+else
+    vinf2ang = vinf1ang + bending;
+end
+vinf2 = vinf1mag.*[cos(vinf2ang); sin(vinf2ang)];
+vinf2hat = vinf2/norm(vinf2);
+vp2 = xIn(4:5)+vinf2;
+xOut1 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; vp2(1); vp2(2); 0];
+kOut1 = conv_carKep(mu_s,xOut1,1);
+
+% Debugging Flyby Vectors
+if true
+   figure
+   hold on
+   quiver(0,0,xIn(4),xIn(5),'autoscale','off')
+   quiver(0,0,xIn2(4),xIn2(5),'autoscale','off')
+   quiver(xIn(4),xIn(5),vinf1(1),vinf1(2),'autoscale','off')
+   quiver(xIn(4),xIn(5),vinf2(1),vinf2(2),'autoscale','off')
+   quiver(0,0,vp2(1),vp2(2),'autoscale','off')
+   hold off
+   legend('Ve','Vsc','Vinf1','Vinf1','Vsc2')
+   axis equal; grid on;
+end
+
 
 
 % Integration of new trajectory
+addtlproptime = 0;
 options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
-postManeuverState = tbp(xD2,dti);
-preManeuverState = tbp(xL,(K*T_e/2));
+postManeuverState = tbp(xD2,dti+addtlproptime,mu_s,0,options);
+postFBState = tbp(xOut1,3.5*365*86400, mu_s,0,options);
+preManeuverState = tbp(xL,(K*T_e/2),mu_s,0,options);
 
 r_postMS = postManeuverState(end,1:3)';
 r_xIn = xIn(1:3);
+r_diff = norm(r_postMS - r_xIn);
 
-r_diff = abs(norm(r_postMS - r_xIn))
 
 
 
 if true
+    figure
     hold on
     scatter(0,0,'MarkerEdgeColor','r')
     scatter(xi(1),xi(2),'MarkerEdgeColor','b')
@@ -124,7 +167,10 @@ if true
     scatter(xIn(1), xIn(2),'MarkerEdgeColor', [0.5 0.5 0.5])
     plot(postManeuverState(:,1),postManeuverState(:,2))
     plot(preManeuverState(:,1),preManeuverState(:,2))
+    plot(postFBState(:,1),postFBState(:,2))
     pltCirc(0,0,aukm)  
+    pltCirc(0,0,778.6e6)
+    %pltCirc(0,0,1.433e9)
     hold off
     axis equal; grid on; 
 end

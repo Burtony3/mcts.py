@@ -1,10 +1,15 @@
-function [r_diff] = dvreq2(ddti,thetadeg)
+function [r_diff] = dvreq2(ddti,thetadeg,Kval)
 %DVREQ2 Summary of this function goes here
 %   Detailed explanation goes here
-    global dvDsm
-
-    K = 2;          % Earth Orbit Revolutions
-    p = -1;         % Crossing before perihelion (-1) or after (1)
+    global dvDsm;
+    
+    if Kval<0
+        K = abs(Kval);
+        p = -1;
+    else
+        K = abs(Kval);
+        p = 1;
+    end
 
 
     mu_s = 132712401800;
@@ -27,7 +32,7 @@ function [r_diff] = dvreq2(ddti,thetadeg)
     %Vinflaunch = Vp - Ve;
 
 
-    xi = [0; -aukm; 0; Ve; 0; 0];
+    %xi = [0; -aukm; 0; Ve; 0; 0];
     %ki = conv_carKep(mu_s, xi, 0);
 
     xL = [0; -aukm; 0; Vp; 0; 0];
@@ -37,26 +42,31 @@ function [r_diff] = dvreq2(ddti,thetadeg)
     xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
 
 
-
+    
+    
+    
+    ddti_val = ddti;
     thetaIndeg = thetadeg;
     if p>0
         thetaIn = (thetaIndeg-90)*p*(pi/180);
+        xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; -Ve*cos(thetaIn); -Ve*sin(thetaIn); 0];
     else
         thetaIn = (thetaIndeg+90)*p*(pi/180);
-    end
-    xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; Ve*cos(thetaIn); -Ve*sin(thetaIn); 0];
-
-
-    dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
-    if p<0
-        dti = (dti + ddti*86400);
-    else
-        dti = (dti - ddti*86400);
+        xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; -Ve*cos(thetaIn); Ve*sin(thetaIn); 0];
     end
     
-
+    dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
+    if p<0
+        dti = (dti + ddti_val*86400);
+    else
+        dti = (dti - ddti_val*86400);
+    end
     lambcall = l0(2,xD1,xIn,dti,mu_s);
 
+    
+    
+    
+    
     dvDsm = norm(lambcall(1,1:3));
     xD2 = [0; kL.ra; 0; -Vd1+dvDsm; 0; 0];
 
@@ -127,7 +137,7 @@ function [r_diff] = dvreq2(ddti,thetadeg)
            theta = 2*pi - theta; 
         end
         if isnan(theta)
-            disp('Theta NaN, changed to 0');
+            %disp('Theta NaN, changed to 0');
             theta = 0;
         end
 
@@ -151,8 +161,6 @@ function [r_diff] = dvreq2(ddti,thetadeg)
         out.ra = ra;
 
         if p == 1
-
-
             disp('-------------------------------------------')
             disp('Input State Vector: [x;y;z;vx;vy;vz]')
             disp(' ')
