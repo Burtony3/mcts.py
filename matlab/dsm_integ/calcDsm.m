@@ -260,7 +260,7 @@ function out = conv_carKep(mu,x,debug)
        theta = 2*pi - theta; 
     end
     if isnan(theta)
-        disp('Theta NaN, changed to 0');
+        %disp('Theta NaN, changed to 0');
         theta = 0;
     end
     
