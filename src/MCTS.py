@@ -296,7 +296,6 @@ class MCTS(object):
         return id
 
     def simulate(self, id):
-        # FIXME: States keep returning epochs in 2650's
         # FINDING IDs OF BRANCH
         lineage = self.getLineage(id)
 
@@ -426,6 +425,11 @@ class MCTS(object):
     def computeΔv(self, id = None, l0 = None, l1 = None, pState = None, oldDVMethod = False):
         # l₀ :: Lambert Arc from Parent → ID
         # l₁ ::                  Grandparent → Parent
+        # IMPORTING REQUIRED PACKAGES
+        spk = self.spk
+        np = self.np
+        math = self.math
+
         if id and not pState:
             parent = self.node[id].parent
             p = self.node[parent].state[0]
@@ -436,7 +440,7 @@ class MCTS(object):
         else:
             p = pState[0]
             et = pState[1]
-        vp = self.spk.spkezr(
+        vp = spk.spkezr(
             p,
             et,
             self.frame,
@@ -446,51 +450,52 @@ class MCTS(object):
 
         # CALCULATING Δv
         if not l1: # Returns Launch C3
-            v0 = self.np.array(l0.get_v1()[0])/1000
+            v0 = np.array(l0.get_v1()[0])/1000
             vinf = v0 - vp
-            Δv = max(0, self.np.linalg.norm(vinf) - self.math.sqrt(self.C3max))
+            Δv = max(0, np.linalg.norm(vinf) - math.sqrt(self.C3max))
         else:
-            vi = self.np.array(l1.get_v2()[0])/1000 - vp
-            vo = self.np.array(l0.get_v1()[0])/1000 - vp
+            # RETRIEVING TRAJECTORY VELOCITIES
+            vi = np.array(l1.get_v2()[0])/1000 - vp
+            vo = np.array(l0.get_v1()[0])/1000 - vp
             vih = vi + vp
             voh = vo + vp
-            if oldDVMethod:
-                Δv = self.np.linalg.norm(vo - vi)
-            else:
-                spk = self.spk
-                np = self.np
-                math = self.math
-                mu = spk.bodvrd(p + "99", "GM", 1)[1]
-                aOutI = -mu / np.linalg.norm(vo)**2
 
-                def f(eOut):
-                    aOut = -mu/np.linalg.norm(vo)**2
-                    aIn = -mu/np.linalg.norm(vi)**2
-                    delta =  math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
-                    # print(aOut, aIn, eOut, delta)
-                    eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
-                    return eOut
+            # GATHERING BODY DATA
+            mu = spk.bodvrd(p + "99", "GM", 1)[1]
+            R = spk.bodvrd(p + "99", "RADII", 3)[1][1]
 
+            # SETTING NEWTON-RAPHSON INITIAL CONDITIONS
+            aOutI = -mu / np.linalg.norm(vo)**2
+            aOut = aOutI
+            aIn = -mu/np.linalg.norm(vi)**2
+            delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
 
-                def f_prime(eOut):
-                    aOut = -mu/np.linalg.norm(vo)**2
-                    aIn = -mu/np.linalg.norm(vi)**2
-                    delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
-                    tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
-                    eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
-                    return eOut
+            # 0TH DERIVATIVE
+            def f(eOut, aOut, aIn, delta):
+                eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
+                return eOut
 
-                try:
-                    rp = aOutI * (1 - newton(f, 1.5, f_prime))
-                    h = rp - spk.bodvrd(p + "99", "RADII", 3)[1][1]
-                    tmp = (2 * mu) / rp
-                    norm = np.linalg.norm
-                    Δv = abs(norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp)))
-                except:
-                    Δv = 999.0
-                    h = -1
+            # 1ST DERIVATIVE
+            def f_prime(eOut, aOut, aIn, delta):
+                tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
+                eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
+                return eOut
 
-        
+            # CHECKING FOR FAIL CASE
+            try:
+                # ITERATING TO FIND OPTIMAL PERIAPSIS HEIGHT
+                rp = aOutI * (1 - newton(f, 1.5, f_prime, (aOut, aIn, delta)))
+                h = rp - R
+
+                # FINDING Δv
+                tmp = (2 * mu) / rp
+                norm = np.linalg.norm
+                Δv = abs(norm(math.sqrt(norm(vo)**2 + tmp)) - norm(math.sqrt(norm(vi)**2 + tmp)))
+            except:
+                Δv = 999.0
+                h = -1
+
+        # CHECKING IF ENTERING self.finalBody FOR CAPTURE Δv
         if id and self.node[id].state[0] == self.finalBody and not self.freeCapture:
             vp = self.spk.spkezr(
                 self.finalBody,
@@ -498,14 +503,14 @@ class MCTS(object):
                 self.frame,
                 self.abcorr,
                 self.cntrBody
-            )[0][3:]
+            )[0][3:] 
             vi = self.np.array(l0.get_v2()[0])/1000
             Δv += self.np.linalg.norm(vi - vp)
 
-        # print(Δv)
-        if id and l1:
+        # RETURN CASE
+        if id and l1:       # Flyby
             return Δv, h
-        else:
+        else:               # Launch
             return Δv
 
     def getStatesPath(self, id):
@@ -544,7 +549,7 @@ class MCTS(object):
                 getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
         plt = self.plt
-        # patches = plt.patches
+
         # STARTING PLOT WINDOW
         J2000_jd = 2451544.5
         fig = plt.figure()
@@ -572,11 +577,6 @@ class MCTS(object):
             pk.orbit_plots.plot_lambert(l, axes = ax, color='c', units = 149597870700)
         axisEqual3D(ax)
         plt.show()
-
-        """
-        states = [('4', 737574186.1856555), ('2', 685636986.1856555), ('4', 668649666.1856555), ('3', 638971266.1856555)]
-        states.reverse()
-        """
 
     def export(self, exportFullTree = False):
         # IMPORTINT PACKAGES
@@ -749,7 +749,7 @@ class MCTS(object):
             
             print(
                 self.tabulate.tabulate(
-                    cells,z
+                    cells,
                     ["id", "L", "Leaf", "State", "n", "X", "Δv", "Par", "Children"]
                 )
             )
