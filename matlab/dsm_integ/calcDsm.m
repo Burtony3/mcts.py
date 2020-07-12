@@ -34,35 +34,31 @@ Vd1 = getVel(mu_s, kL.ra, a);
 xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
 % _________________________________________________________________________
 % Find DSM Dt Value for Returning Leg
-j=1;
-for i=1%:length(thetadeglist)
-    ddti = 40;
-    thetadeg = thetaInt(i);
-    aF = @(ddti)getDtVal(ddti,thetadeg,K,p,mu_s,aukm,1);
-    [ddti_val, fVal] = fminsearch(aF,ddti);
+ddti = 40;
+thetaIndeg = thetaInt;
+aF = @(ddti)getDtVal(ddti,thetaIndeg,K,p,mu_s,aukm,1);
+[ddti_val, fVal] = fminsearch(aF,ddti);
 
-    if fVal < 100000
-        ddti_store(j) = ddti_val;
-        fVal_store(j) = fVal;
-        thetaFound(j) = thetadeg;
-        j=j+1;
-    else
-        ddti_store(j) = NaN;
-        fVal_store(j) = NaN;
-        thetaFound(j) = NaN;
-        j=j+1;           
-    end
+if fVal < 100000
+    ddti_store = ddti_val;
+    fVal_store = fVal;
+    thetaFound = thetaIndeg;
+else
+    ddti_store = NaN;
+    fVal_store = NaN;
+    thetaFound = NaN;
+    disp('Solution Not Found'); disp(K); disp(p); disp(thetaIndeg);
+    out.solfound = false;
+    return
 end
 % _________________________________________________________________________
 % Given a Dt Value, Compute Return Leg of Leveraging Maneuver and State
-thetaIndeg = thetaInt(i);
 ddti_val =  ddti_store;
 outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu_s,aukm,2);
 thetaIn = outputDiff.thetaIn;
 
 lambcall = outputDiff.lambert;
 dvDsm = outputDiff.dvDsm;
-
 % _________________________________________________________________________
 % Body Intercept State
 xIn = outputDiff.xIn;
@@ -120,11 +116,11 @@ end
 addtlproptime = 0;
 postManeuverState = tbp(xD2,dti+addtlproptime,mu_s,0,options);
 postFBState = tbp(xOut1,10*365*86400, mu_s,0,options);
-preManeuverState = tbp(xL,(K*T_e/2),mu_s,0,options);
+preManeuverState = tbp(xL,T/2,mu_s,0,options);
 
 % DSM Trajectory Visual
 if pltLevOrb
-    figure
+    %figure
     hold on
     scatter(0,0,'MarkerEdgeColor','r')
     scatter(xi(1),xi(2),'MarkerEdgeColor','b')
@@ -144,10 +140,21 @@ end
 % _________________________________________________________________________
 % Function Results
 out = struct;
+out.solfound = true;
 out.K = K;
-out.p = p;
-out.thetaInt = thetaInt;
+if p<0
+    out.thetaInt = -thetaInt;
+else
+    out.thetaInt = thetaInt;
+end
 out.dsmDV = dvDsm;
+out.departOrbitTime = (T/2)/(86400);
+if p<0
+    out.returnOrbitTime = (T/2)/(86400) - ddti_val;
+else
+    out.returnOrbitTime = (T/2)/(86400) + ddti_val;
+end
+out.levOrbitTime = out.returnOrbitTime + out.departOrbitTime;
 out.vinflaunch = Vinflaunch;
 out.vinf1 = vinf1;
 out.vinf2 = vinf2;

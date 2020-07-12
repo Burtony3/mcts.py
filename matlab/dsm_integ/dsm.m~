@@ -35,8 +35,8 @@ end
 clear firstPC firstMac PC Mac
 
 %% DSM Inputs
-Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
-thetaList = [15:1:75];      % List of intercept thetas
+Klist = [-2 2];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
+thetaList = [10:1:15];      % List of intercept thetas
 pltFBvecs = false;        % Debug Flyby Velocity Vectors
 pltLevOrb = false;        % Debug Trajectory Visual
 
@@ -71,33 +71,39 @@ for i=1:length(Klist)
 end
 
 %% Processing Results
+%writetable(struct2table(allTrajTex.jupTraj),'jupTraj_tex.csv')
+
 allDsmfld = fieldnames(allDsm);
+
 u=0;
-for i=1:length(allDsmfld)    
+for i=1:length(allDsmfld)
+    
     outK = allDsm.(allDsmfld{i});
     fld = fieldnames(outK);
+
     
-    for j=1:length(fld)     
-        csvArray(u+j,1) = outK.(fld{j}).K;
-        csvArray(u+j,2) = outK.(fld{j}).thetaInt;
-        csvArray(u+j,3) = outK.(fld{j}).dsmDV;
-        csvArray(u+j,4) = outK.(fld{j}).levOrbitTime;
-        csvArray(u+j,5) = outK.(fld{j}).vinflaunch;
-        csvArray(u+j,6) = outK.(fld{j}).vinf1(1);
-        csvArray(u+j,7) = outK.(fld{j}).vinf1(2);
-        csvArray(u+j,8) = outK.(fld{j}).vinf2(1);
-        csvArray(u+j,9) = outK.(fld{j}).vinf2(2);
-        csvArray(u+j,10) = outK.(fld{j}).bendingdeg;
-        csvArray(u+j,11) = outK.(fld{j}).r_car;
-        csvArray(u+j,12) = outK.(fld{j}).dvegaRA;
+    for j=1:length(fld)
+        %sfld = fieldnames(outK.(fld{j}));
+        o = outK.(fld{j});
+        
+        csvTable(u+j,1) = o.K;
+        csvTable(u+j,2) = o.thetaInt;
+        csvTable(u,3) = o.dsmDV;
+        csvTable(u,4) = o.levOrbitTime;
+        csvTable(u,5) = o.vinflaunch;
+        csvTable(u,6) = o.vinf1(1);
+        csvTable(u,7) = o.vinf1(2);
+        csvTable(u,8) = o.vinf2(1);
+        csvTable(u,9) = o.vinf2(2);
+        csvTable(u,10) = o.bendingdeg;
+        csvTable(u,11) = o.r_car;
+        csvTable(u,12) = o.dvegaRA;
+
+        u = u+j
     end
-    u = u+j;
 end   
-% Writing Table and Exporting to .csv
-csvTable = array2table(csvArray,'VariableNames', ...
-    {'K','Theta','DSMDV','dt','vinfLaunch','vinf1x','vinf1y', ...
-    'vinf2x','vinf2y','bendang','fb_radius','dvegaRA'});
-writetable(csvTable,'dsm_ega.csv');
+    
+    
     
     
     
