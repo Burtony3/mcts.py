@@ -1,44 +1,12 @@
+function out = calcDsm(K,thetaInt,pltFBvecs,pltLevOrb)
+%CALCDSM Summary of this function goes here
+%   Detailed explanation goes here
 
+if K<0; p=-1; else; p=1; end; K = abs(K);
+options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
 
-clear; clc; clf; format long g; firstPC = 0; PC = 0; firstMac = 1; Mac = 1; 
-
-%% Initialize Local Orbital Mechanics Source Files
-if firstPC == 1
-    cd2 = 'C:\Users\Aurora\dev\dev_orbitalmechanics\orbitalmechanics_rp';
-    addpath(genpath(cd2))
-    cd3 = 'C:\Users\Aurora\dev\dev_orbitalmechanics\research';
-    addpath(genpath(cd3))   
-end
-if firstMac == 1
-    cd2 = '/Users/rohanpatel/dev/dev_orbitalmechanics/orbitalmechanics_rp';
-    addpath(genpath(cd2))
-    cd3 = '/Users/rohanpatel/dev/dev_orbitalmechanics/research';
-    addpath(genpath(cd3))
-end
-if PC == 1
-    cspice_kclear;
-    nf009 = 'C:\Users\Aurora\dev\dev_orbitalmechanics\orbitalmechanics_rp\src\SPKs\naif0009.tls';
-    de438 = 'C:\Users\Aurora\dev\dev_orbitalmechanics\orbitalmechanics_rp\src\SPKs\de438.bsp';
-    pck = 'C:\Users\Aurora\dev\dev_orbitalmechanics\orbitalmechanics_rp\src\SPKs\pck00010.tpc';
-    cspice_furnsh({de438,nf009,pck})
-end
-if Mac == 1
-    cspice_kclear;
-    nf009 = '/Users/rohanpatel/dev/dev_orbitalmechanics/orbitalmechanics_rp/src/SPKs/naif0009.tls';
-    de438 = '/Users/rohanpatel/dev/dev_orbitalmechanics/orbitalmechanics_rp/src/SPKs/de438.bsp';
-    pck = '/Users/rohanpatel/dev/dev_orbitalmechanics/orbitalmechanics_rp/src/SPKs/pck00010.tpc';
-    cspice_furnsh({de438,nf009,pck})   
-end
-
-clear firstPC firstMac PC Mac
-
-%% new sec dsm
-% Inputs
-K = 2;          % Earth Orbit Revolutions
-p = 1;          % Crossing before perihelion (-1) or after (1)
-
-% ____________________________________________________________________________________
-% Constants
+% _________________________________________________________________________
+% Defining Constants
 mu_s = 132712401800;
 mu_e = 000000398600;
 r_e = 6378;
@@ -47,18 +15,14 @@ aukm = 149600000;
 T_e = ((2*pi)/sqrt(mu_s))*(aukm^(3/2));
 a_e = aukm;
 e_e = 0.0;
-
-% Leveraging Orbit Elements
-
+% _________________________________________________________________________
+% Pre-DSM Leveraging Orbit Elements
 T = T_e.*K + (10*86400);
-
 a = ((sqrt(mu_s)/(2*pi))*T)^(2/3);
-
 
 Vp = getVel(mu_s, aukm, a);
 Ve = getVel(mu_s, aukm, a_e);
 Vinflaunch = Vp - Ve;
-
 
 xi = [0; -aukm; 0; Ve; 0; 0];
 ki = conv_carKep(mu_s, xi, 0);
@@ -68,39 +32,45 @@ kL = conv_carKep(mu_s, xL, 0);
 
 Vd1 = getVel(mu_s, kL.ra, a);
 xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
+% _________________________________________________________________________
+% Find DSM Dt Value for Returning Leg
+j=1;
+for i=1%:length(thetadeglist)
+    ddti = 40;
+    thetadeg = thetaInt(i);
+    aF = @(ddti)getDtVal(ddti,thetadeg,K,p,mu_s,aukm,1);
+    [ddti_val, fVal] = fminsearch(aF,ddti);
 
-
-
-
-
-% DSM DeltaV and DTime Calculations
-% -------------------------------------------------------------------------
-thetaIndeg = 28;
-ddti_val =  79.4963388442993;
-% -------------------------------------------------------------------------
-
-if p>0
-    thetaIn = (thetaIndeg-90)*p*(pi/180);
-    xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; Ve*cos(thetaIn); -Ve*sin(thetaIn); 0];
-else
-    thetaIn = (thetaIndeg+90)*p*(pi/180);
-    xIn = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; -Ve*cos(thetaIn); Ve*sin(thetaIn); 0];
+    if fVal < 100000
+        ddti_store(j) = ddti_val;
+        fVal_store(j) = fVal;
+        thetaFound(j) = thetadeg;
+        j=j+1;
+    else
+        ddti_store(j) = NaN;
+        fVal_store(j) = NaN;
+        thetaFound(j) = NaN;
+        j=j+1;           
+    end
 end
+% _________________________________________________________________________
+% Given a Dt Value, Compute Return Leg of Leveraging Maneuver and State
+thetaIndeg = thetaInt(i);
+ddti_val =  ddti_store;
+outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu_s,aukm,2);
+thetaIn = outputDiff.thetaIn;
 
-dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
-if p<0
-    dti = (dti + ddti_val*86400);
-else
-    dti = (dti - ddti_val*86400);
-end
+lambcall = outputDiff.lambert;
+dvDsm = outputDiff.dvDsm;
 
-lambcall = l0(2,xD1,xIn,dti,mu_s);
-dvDsm = norm(lambcall(1,1:3));
-
-
-% Body Intercept State and PLANAR Flyby Calculations
-xD2 = [0; kL.ra; 0; -Vd1+dvDsm; 0; 0];
+% _________________________________________________________________________
+% Body Intercept State
+xIn = outputDiff.xIn;
+xD2 = outputDiff.xD2;
 xIn2 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0;lambcall(end,1);lambcall(end,2);lambcall(end,3)];
+
+% _________________________________________________________________________
+% PLANAR Flyby Calculations
 vinf1 = xIn2(4:5) - xIn(4:5);
 vinf1mag = norm(vinf1);
 vinf1hat = vinf1/norm(vinf1);
@@ -113,23 +83,26 @@ r_car = (mu_e/(vinf1mag^2))*(-1 + (1/sin(bending/2)));
 if r_car < r_e+alt_min
     r_car = r_e+alt_min;
     bending = 2*asin(1/(1+(r_car*vinf1mag^2/mu_e)));
-    bendingdeg = bending*180/pi
+    bendingdeg = bending*180/pi;
 end
-vinf1ang = -acos(dot(vinf1hat,[1;0]));
-vinf1angdeg = vinf1ang*180/pi;
+%bendingdeg
+%r_car
+vinf1ang = acos(dot(vinf1hat,[1;0]));
+%vinf1angdeg = vinf1ang*180/pi
 if p<0
     vinf2ang = vinf1ang - bending;
 else
-    vinf2ang = vinf1ang + bending;
+    vinf2ang = -vinf1ang + bending;
 end
+%vinf2ang*180/pi
 vinf2 = vinf1mag.*[cos(vinf2ang); sin(vinf2ang)];
 vinf2hat = vinf2/norm(vinf2);
 vp2 = xIn(4:5)+vinf2;
 xOut1 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; vp2(1); vp2(2); 0];
-kOut1 = conv_carKep(mu_s,xOut1,1);
+kOut1 = conv_carKep(mu_s,xOut1,0);
 
-% Debugging Flyby Vectors
-if true
+% Debugging Flyby Vectors Plot
+if pltFBvecs
    figure
    hold on
    quiver(0,0,xIn(4),xIn(5),'autoscale','off')
@@ -142,23 +115,15 @@ if true
    axis equal; grid on;
 end
 
-
-
-% Integration of new trajectory
+% _________________________________________________________________________
+% Integration of new trajectory and Plotting
 addtlproptime = 0;
-options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
 postManeuverState = tbp(xD2,dti+addtlproptime,mu_s,0,options);
-postFBState = tbp(xOut1,3.5*365*86400, mu_s,0,options);
+postFBState = tbp(xOut1,10*365*86400, mu_s,0,options);
 preManeuverState = tbp(xL,(K*T_e/2),mu_s,0,options);
 
-r_postMS = postManeuverState(end,1:3)';
-r_xIn = xIn(1:3);
-r_diff = norm(r_postMS - r_xIn);
-
-
-
-
-if true
+% DSM Trajectory Visual
+if pltLevOrb
     figure
     hold on
     scatter(0,0,'MarkerEdgeColor','r')
@@ -170,17 +135,74 @@ if true
     plot(postFBState(:,1),postFBState(:,2))
     pltCirc(0,0,aukm)  
     pltCirc(0,0,778.6e6)
-    %pltCirc(0,0,1.433e9)
+    pltCirc(0,0,1.433e9)
+    pltCirc(0,0,2.872e9)
     hold off
     axis equal; grid on; 
 end
 
+% _________________________________________________________________________
+% Function Results
+out = struct;
+out.K = K;
+out.p = p;
+out.thetaInt = thetaInt;
+out.dsmDV = dvDsm;
+out.vinflaunch = Vinflaunch;
+out.vinf1 = vinf1;
+out.vinf2 = vinf2;
+out.bendingdeg = bendingdeg;
+out.r_car = r_car;
+out.dvegaRA = kOut1.ra;
 
-function v = getVel(mu, r, a)
-    v = sqrt(mu*(2/r - 1/a));  
+
+% Itterating Function for Dti and DV_DSM
+function outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu,aukm,resultType)
+    if p>0
+        thetaIn_f = (thetaIndeg-90)*p*(pi/180);
+        xIn_f = [aukm*cos(thetaIn_f); aukm*sin(thetaIn_f); 0; -Ve*sin(thetaIn_f); Ve*cos(thetaIn_f); 0];
+    else
+        thetaIn_f = (thetaIndeg+90)*p*(pi/180);
+        xIn_f = [aukm*cos(thetaIn_f); aukm*sin(thetaIn_f); 0; -Ve*sin(thetaIn_f); Ve*cos(thetaIn_f); 0];
+    end
+
+    dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
+    if p<0
+        dti = (dti + ddti_val*86400);
+    else
+        dti = (dti - ddti_val*86400);
+    end
+    lambcallf = l0(2,xD1,xIn_f,dti,mu_s);
+    dvDsmf = norm(lambcallf(1,1:3));
+
+    xD2f = [0; kL.ra; 0; -Vd1+dvDsmf; 0; 0];
+    options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
+    postManeuverState_f = tbp(xD2f,dti,mu,0,options);
+
+    r_postMS = postManeuverState_f(end,1:3)';
+    r_xIn = xIn_f(1:3);
+    
+    if resultType == 1
+        outputDiff = norm(r_postMS - r_xIn);
+    else
+        outputDiff = struct;
+        outputDiff.xIn = xIn_f;
+        outputDiff.thetaIn = thetaIn_f;
+        outputDiff.dti = dti;
+        outputDiff.lambert = lambcallf;
+        outputDiff.dvDsm = dvDsmf;
+        outputDiff.xD2 = xD2f;       
+    end
 end
 
-function out = conv_carKep(mu,x,p)
+end
+
+% Aux Req. Functions
+function v = getVel(mu_bdy, r_dist, sma)
+    v = sqrt(mu_bdy*(2/r_dist - 1/sma));  
+end
+
+function out = conv_carKep(mu,x,debug)
 % KEPELEM: Given a mu and state vector x (6x1), calculates orbital elements
 %          output: Structure with fields: a; e; i; raan; aop; ta; t; rp; ra]
 %               h    = Angular Momentum [norm]
@@ -197,7 +219,7 @@ function out = conv_carKep(mu,x,p)
 %           Source: Curtis 4.4 - alg4.2 p197bk
 
     if nargin < 3
-        p = 0;
+        debug = 0;
     end
 
 
@@ -254,9 +276,7 @@ function out = conv_carKep(mu,x,p)
     out.rp = rp;
     out.ra = ra;
     
-    if p == 1
-
-        
+    if debug == 1 
         disp('-------------------------------------------')
         disp('Input State Vector: [x;y;z;vx;vy;vz]')
         disp(' ')
@@ -294,10 +314,3 @@ function pltCirc(x,y,r)
     h = plot(xunit, yunit,'b');
     hold off
 end
-
-
-
-
-
-
-

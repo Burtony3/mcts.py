@@ -102,7 +102,7 @@ if false
 end
 
 % Figure of Trajectories
-if false
+if true
     figure
     for k=1:length(Klist)
         for i=1:length(thetaFound)
