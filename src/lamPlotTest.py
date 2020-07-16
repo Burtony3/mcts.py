@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
 # ===================== USER INPUTS ===================== #
-Δ    = 8               # Angular Resolution (Δθ = 360/Δ)
+Δ    = 16               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Nov 27, 1989"   # Launch Date
-p2   = '3'              # Flyby Planet NAIF ID
-p3   = '5'              # Arrival Planet NAIF ID
+utc1 = "Jun 19, 2037"   # Launch Date
+p2   = '2'              # Flyby Planet NAIF ID
+p3   = '6'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -62,22 +62,24 @@ def updateLam():
     )
 
     # PLOTTING FLYBY BODY
-    pl = pk.planet.jpl_lp(pkP[p2])
-    pk.orbit_plots.plot_planet(
-        pl, 
-        t0 = pk.epoch(float(spk.et2utc(et2_, 'J', 10)[3:]) - J2000_jd), 
-        axes = ax, 
-        color=col[p2]
-    )
+    if int(p2) < 5:
+        pl = pk.planet.jpl_lp(pkP[p2])
+        pk.orbit_plots.plot_planet(
+            pl, 
+            t0 = pk.epoch(float(spk.et2utc(et2_, 'J', 10)[3:]) - J2000_jd), 
+            axes = ax, 
+            color=col[p2]
+        )
 
     # PLOTTING ARRIVAL BODY
-    pl = pk.planet.jpl_lp(pkP[p3])
-    pk.orbit_plots.plot_planet(
-        pl, 
-        t0 = pk.epoch(float(spk.et2utc(et3_, 'J', 10)[3:]) - J2000_jd), 
-        axes = ax, 
-        color=col[p3]
-    )
+    if int(p3) < 5:
+        pl = pk.planet.jpl_lp(pkP[p3])
+        pk.orbit_plots.plot_planet(
+            pl, 
+            t0 = pk.epoch(float(spk.et2utc(et3_, 'J', 10)[3:]) - J2000_jd), 
+            axes = ax, 
+            color=col[p3]
+        )
 
     # PLOTTING LAMBERT ARC
     pk.orbit_plots.plot_lambert(l_, axes = ax, color='c')
