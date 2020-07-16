@@ -35,10 +35,13 @@ end
 clear firstPC firstMac PC Mac
 
 %% DSM Inputs
-Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
-thetaList = [5:0.5:75];      % List of intercept thetas
+%Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
+%thetaList = [7:0.5:75];      % List of intercept thetas
+Klist = 3;
+thetaList = 67;
 pltFBvecs = false;        % Debug Flyby Velocity Vectors
-pltLevOrb = false;        % Debug Trajectory Visual
+pltLevOrb = true;        % Debug Trajectory Visual
+offsetDays = 120;
 
 %% DSM Calculation
 allDsm = struct;
@@ -58,7 +61,7 @@ for i=1:length(Klist)
 
 
         % Calculate DSM and Leveraging Orbit Properties
-        out = calcDsm3(K,theta,pltFBvecs,pltLevOrb);
+        out = calcDsm2(K,theta,pltFBvecs,pltLevOrb,offsetDays);
         
         if out.solfound
             allDsm.(strucName).(['t',thetaName]) = out;
@@ -73,35 +76,35 @@ end
 
 
 %% Processing Results
-if true
-    allDsmfld = fieldnames(allDsm);
-    u=0;
-    for i=1:length(allDsmfld)    
-        outK = allDsm.(allDsmfld{i});
-        fld = fieldnames(outK);
-
-        for j=1:length(fld)     
-            csvArray(u+j,1) = outK.(fld{j}).K;
-            csvArray(u+j,2) = outK.(fld{j}).thetaInt;
-            csvArray(u+j,3) = outK.(fld{j}).totalDV;
-            csvArray(u+j,4) = outK.(fld{j}).dsmDV;
-            csvArray(u+j,5) = outK.(fld{j}).levOrbitTime;
-            csvArray(u+j,6) = outK.(fld{j}).vinflaunch;
-            csvArray(u+j,7) = outK.(fld{j}).vinf1(1);
-            csvArray(u+j,8) = outK.(fld{j}).vinf1(2);
-            csvArray(u+j,9) = outK.(fld{j}).vinf2(1);
-            csvArray(u+j,10) = outK.(fld{j}).vinf2(2);
-            csvArray(u+j,11) = outK.(fld{j}).bendingdeg;
-            csvArray(u+j,12) = outK.(fld{j}).r_car;
-            csvArray(u+j,13) = outK.(fld{j}).dvegaRA;
-        end
-        u = u+j;
-    end   
-    % Writing Table and Exporting to .csv
-    csvTable = array2table(csvArray,'VariableNames', ...
-        {'K','Theta','TotalDV','DSMDV','dt','vinfLaunch','vinf1x','vinf1y', ...
-        'vinf2x','vinf2y','bendang','fb_radius','dvegaRA'});
-    writetable(csvTable,'dsm_ega.csv');
+if false
+allDsmfld = fieldnames(allDsm);
+u=0;
+for i=1:length(allDsmfld)    
+    outK = allDsm.(allDsmfld{i});
+    fld = fieldnames(outK);
+    
+    for j=1:length(fld)     
+        csvArray(u+j,1) = outK.(fld{j}).K;
+        csvArray(u+j,2) = outK.(fld{j}).thetaInt;
+        csvArray(u+j,3) = outK.(fld{j}).dsmDV;
+        csvArray(u+j,4) = outK.(fld{j}).levOrbitTime;
+        csvArray(u+j,5) = outK.(fld{j}).vinflaunch;
+        csvArray(u+j,6) = outK.(fld{j}).vinf1(1);
+        csvArray(u+j,7) = outK.(fld{j}).vinf1(2);
+        csvArray(u+j,8) = outK.(fld{j}).vinf2(1);
+        csvArray(u+j,9) = outK.(fld{j}).vinf2(2);
+        csvArray(u+j,10) = outK.(fld{j}).bendingdeg;
+        csvArray(u+j,11) = outK.(fld{j}).r_car;
+        csvArray(u+j,12) = outK.(fld{j}).dvegaRA;
+    end
+    u = u+j;
+end   
+% Writing Table and Exporting to .csv
+csvTable = array2table(csvArray,'VariableNames', ...
+    {'K','Theta','DSMDV','dt','vinfLaunch','vinf1x','vinf1y', ...
+    'vinf2x','vinf2y','bendang','fb_radius','dvegaRA'});
+writetable(csvTable,'dsm_ega.csv');
+    
     
 end
     

@@ -1,4 +1,4 @@
-function out = calcDsm(K,thetaInt,pltFBvecs,pltLevOrb)
+function out = calcDsm(K,thetaInt,pltFBvecs,pltLevOrb,offsetDays)
 %CALCDSM Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -17,7 +17,7 @@ a_e = aukm;
 e_e = 0.0;
 % _________________________________________________________________________
 % Pre-DSM Leveraging Orbit Elements
-T = T_e.*K + (0*86400);
+T = T_e.*K + (offsetDays*86400);
 a = ((sqrt(mu_s)/(2*pi))*T)^(2/3);
 
 Vp = getVel(mu_s, aukm, a);
@@ -34,37 +34,23 @@ Vd1 = getVel(mu_s, kL.ra, a);
 xD1 = [0; kL.ra; 0; -Vd1; 0; 0];
 % _________________________________________________________________________
 % Find DSM Dt Value for Returning Leg
-ddti = 40;
+fixedintercepttime = (K*T_e/2 + p*(thetaInt/360)*T_e);
 thetaIndeg = thetaInt;
-aF = @(ddti)getDtVal(ddti,thetaIndeg,K,p,mu_s,aukm,1);
-[ddti_val, fVal] = fminsearch(aF,ddti);
 
-if fVal < 100000
-    ddti_store = ddti_val;
-    fVal_store = fVal;
-    thetaFound = thetaIndeg;
-else
-    ddti_store = NaN;
-    fVal_store = NaN;
-    thetaFound = NaN;
-    disp('Solution Not Found'); disp(K); disp(p); disp(thetaIndeg);
-    out.solfound = false;
-    return
-end
 % _________________________________________________________________________
 % Given a Dt Value, Compute Return Leg of Leveraging Maneuver and State
-ddti_val =  ddti_store;
-outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu_s,aukm,2);
+ddti_val =  fixedintercepttime;
+outputDiff = getLambert(ddti_val,thetaIndeg,K,p,mu_s,aukm);
 thetaIn = outputDiff.thetaIn;
 tof_toEGA = outputDiff.dti/86400;   % from DSM to EGA
+dvDsmvec = outputDiff.xD2(4:6) - xD1(4:6)
+dvDsm = norm(dvDsmvec);
 
-lambcall = outputDiff.lambert;
-dvDsm = outputDiff.dvDsm;
 % _________________________________________________________________________
 % Body Intercept State
-xIn = outputDiff.xIn;
-xD2 = outputDiff.xD2;
-xIn2 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0;lambcall(end,1);lambcall(end,2);lambcall(end,3)];
+xIn = outputDiff.xIn;       % Earth's State at Intercept
+xD2 = outputDiff.xD2;       % SC State right after DSM DV maneuver
+xIn2 = outputDiff.xInSC;    % SC State at Earth Intercept
 
 % _________________________________________________________________________
 % PLANAR Flyby Calculations
@@ -98,6 +84,17 @@ vp2 = xIn(4:5)+vinf2;
 xOut1 = [aukm*cos(thetaIn); aukm*sin(thetaIn); 0; vp2(1); vp2(2); 0];
 kOut1 = conv_carKep(mu_s,xOut1,0);
 
+disp(' ')
+disp('DV DSM')
+disp(dvDsm)
+disp('Vinf launch')
+disp(Vinflaunch)
+disp('Total DV')
+disp(Vinflaunch + dvDsm)
+disp('vinf mag')
+disp(norm(vinf2))
+
+
 % Debugging Flyby Vectors Plot
 if pltFBvecs
    figure
@@ -115,12 +112,12 @@ end
 % _________________________________________________________________________
 % Integration of new trajectory and Plotting
 preManeuverState = tbp(xL,T/2,mu_s,0,options);
-postManeuverState = tbp(xD2,dti,mu_s,0,options);
-%postFBState = tbp(xOut1,10*365*86400, mu_s,0,options);
+postManeuverState = tbp(xD2,fixedintercepttime,mu_s,0,options);
+postFBState = tbp(xOut1,12*365*86400, mu_s,0,options);
 
 % DSM Trajectory Visual
 if pltLevOrb
-    %figure
+    clf
     hold on
     scatter(0,0,'MarkerEdgeColor','r')
     scatter(xi(1),xi(2),'MarkerEdgeColor','b')
@@ -128,7 +125,7 @@ if pltLevOrb
     scatter(xIn(1), xIn(2),'MarkerEdgeColor', [0.5 0.5 0.5])
     plot(postManeuverState(:,1),postManeuverState(:,2))
     plot(preManeuverState(:,1),preManeuverState(:,2))
-    %plot(postFBState(:,1),postFBState(:,2))
+    plot(postFBState(:,1),postFBState(:,2))
     pltCirc(0,0,aukm)  
     pltCirc(0,0,778.6e6)
     pltCirc(0,0,1.433e9)
@@ -148,12 +145,8 @@ else
     out.thetaInt = thetaInt;
 end
 out.dsmDV = dvDsm;
+out.dsmDVvec = dvDsmvec;
 out.departOrbitTime = (T/2)/(86400);
-%if p<0
-%    out.returnOrbitTime = (T/2)/(86400) - ddti_val;
-%else
-%    out.returnOrbitTime = (T/2)/(86400) + ddti_val;
-%end
 out.levOrbitTime = tof_toEGA + out.departOrbitTime;
 out.vinflaunch = Vinflaunch;
 out.vinf1 = vinf1;
@@ -164,7 +157,7 @@ out.dvegaRA = kOut1.ra;
 
 
 % Itterating Function for Dti and DV_DSM
-function outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu,aukm,resultType)
+function outputDiff = getLambert(ddti_val,thetaIndeg,K,p,mu,aukm)
     if p>0
         thetaIn_f = (thetaIndeg-90)*p*(pi/180);
         xIn_f = [aukm*cos(thetaIn_f); aukm*sin(thetaIn_f); 0; -Ve*sin(thetaIn_f); Ve*cos(thetaIn_f); 0];
@@ -173,33 +166,17 @@ function outputDiff = getDtVal(ddti_val,thetaIndeg,K,p,mu,aukm,resultType)
         xIn_f = [aukm*cos(thetaIn_f); aukm*sin(thetaIn_f); 0; -Ve*sin(thetaIn_f); Ve*cos(thetaIn_f); 0];
     end
 
-    dti = K*T_e/2 + p*T_e*(thetaIndeg/100);
-    if p<0
-        dti = (dti + ddti_val*86400);
-    else
-        dti = (dti - ddti_val*86400);
-    end
-    lambcallf = l0(2,xD1,xIn_f,dti,mu_s);
-    dvDsmf = norm(lambcallf(1,1:3));
+    lambcallf = l0(2,xD1,xIn_f,ddti_val,mu);
+    xD2f = [0; kL.ra; 0; lambcallf(5,1); lambcallf(5,2); lambcallf(5,3)];
 
-    xD2f = [0; kL.ra; 0; -Vd1+dvDsmf; 0; 0];
-    options = odeset('RelTol', 1e-8, 'AbsTol', 1e-8);
-    postManeuverState_f = tbp(xD2f,dti,mu,0,options);
+    outputDiff = struct;
+    outputDiff.xIn = xIn_f;
+    outputDiff.thetaIn = thetaIn_f;
+    outputDiff.dti = ddti_val;
+    outputDiff.lambert = lambcallf;
+    outputDiff.xD2 = xD2f;
+    outputDiff.xInSC = [xIn_f(1); xIn_f(2); xIn_f(3); lambcallf(6,1); lambcallf(6,2); lambcallf(6,3)];
 
-    r_postMS = postManeuverState_f(end,1:3)';
-    r_xIn = xIn_f(1:3);
-    
-    if resultType == 1
-        outputDiff = norm(r_postMS - r_xIn);
-    else
-        outputDiff = struct;
-        outputDiff.xIn = xIn_f;
-        outputDiff.thetaIn = thetaIn_f;
-        outputDiff.dti = dti;
-        outputDiff.lambert = lambcallf;
-        outputDiff.dvDsm = dvDsmf;
-        outputDiff.xD2 = xD2f;       
-    end
 end
 
 end
