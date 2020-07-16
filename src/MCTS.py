@@ -10,6 +10,7 @@ class MCTS(object):
     def __init__(self): 
 
         # ------------------------- PACKAGE INSTALLATION ------------------------- #
+        self.click    = __import__("click")
         self.math     = __import__("math")
         self.np       = __import__("numpy")
         self.os       = __import__("os")
@@ -44,6 +45,10 @@ class MCTS(object):
         # IMPORTING DSM .CSV
         self.dsmDvCsv = self.pd.read_csv("../matlab/dsm_integ/dsm_ega.csv", header=0)
 
+        # DEFINING CONSTANTS
+        self.AU2m = 149597870700
+        self.AU2km = self.AU2m/1000
+
         # SAVING SYSTEM CONSTRAINTS
         self.ΔvBudget     = dvBudget
         self.C3max        = C3max
@@ -64,7 +69,6 @@ class MCTS(object):
         # SAVING CODE PARAMETERS
         self.debugBool = debug
 
-
         # FURNISHING KERNELS
         self.spk.furnsh("../data/spk/naif0009.tls")
         self.spk.furnsh("../data/spk/de438.bsp")
@@ -75,6 +79,7 @@ class MCTS(object):
         self.pkP = {'1': 'mercury', '2': 'venus',   '3': 'earth', '4': 'mars', '5': 'jupiter', '6': 'saturn',  '7': 'uranus',  '8': 'neptune'}
         self.tau = {'1': 87.97,     '2': 224.7,     '3': 365.25,  '4': 687,    '5': 4331,      '6': 10747,     '7': 30589,     '8': 59800}
         self.col = {'1': '#5a6165', '2': '#955c1c', '3': 'b',     '4': 'r',    '5': '#9e7a5b', '6': '#c9c0a9', '7': '#8eb0b8', '8': '#4d80d7'}
+        self.letterDict = {"2": "V", "3": "E", "4": "M", "5": "J", "6": "S", "7": "U", "8": "N"}
 
         # PARSING USER INPUTS
         self.P = flybyBodies + [finalBody]          # List of available planets for node states
@@ -118,47 +123,44 @@ class MCTS(object):
         # <><><><> RUNNING MONTE CARLO TREE SEARCH CREATION LOOP <><><><> #
         # =============================================================== #
 
-        for itr in range(self.maxIters):
-            if any([self.node[id].isTerminal for id in self.node[0].children]):
-                print(itr)
-                break
-            # UPDATE ITERATION HEADER
-            print("Current Iteration: {0}/{1}".format(itr, self.maxIters), end="\r")
+        with self.click.progressbar(range(self.maxIters), fill_char = '█', empty_char = ' ', label='Building Trajectories') as bar:
+            for itr in bar:
 
-            # PATH TO MOST VALUABLE LEAF NODE
-            id = self.select() 
+                # CHECKING FOR BREAK CONDITION
+                if all([self.node[id].isTerminal for id in self.node[0].children]):
+                    print(itr)
+                    break
 
-            # BREAK LOOP IF ALL NODES EXHAUSTED
-            if id == -1:
-                break
+                # PATH TO MOST VALUABLE LEAF NODE
+                id = self.select() 
 
-            # EXPANDS CURRENT LEAF IF VISITED PREVIOUSLY AND SELECTS CHILD
-            if not self.node[id].children and (self.node[id].n != 0):
-                id = self.expand(id)
+                # BREAK LOOP IF ALL NODES EXHAUSTED
+                if id == -1:
+                    break
 
-            # ESIMATES FUTURE RETURNS FROM NODE
-            X = self.simulate(id) 
+                # EXPANDS CURRENT LEAF IF VISITED PREVIOUSLY AND SELECTS CHILD
+                if not self.node[id].children and self.node[id].n != 0:
+                    id = self.expand(id)
 
-            # UPDATES UP BRANCH
-            self.backprop(id, X)
+                # ESIMATES FUTURE RETURNS FROM NODE
+                X = self.simulate(id) 
 
-        self.runTime = self.time.time() - self.startTime
+                # UPDATES UP BRANCH
+                self.backprop(id, X)
 
-        # FINISHING PRINT
-        if id != -1:
-            print("Current Iteration: {0}/{0}".format(self.maxIters))
-        else:
-            print("Simulation Terminated All Possible Results Found")
+            # RECORDING RUN TIME
+            self.runTime = self.time.time() - self.startTime
 
-        # DEBUGG PRINTING
-        if self.debugBool:
-            self.debug()
+            # DEBUGG PRINTING
+            if self.debugBool:
+                self.debug()
 
     ## ———————————————————————————————————————————————————————————————————————————— ##
     ## —————————————————————————————— SUB-ROUTINES ———————————————————————————————— ##
     ## ———————————————————————————————————————————————————————————————————————————— ##
 
     def select(self):
+        # REWARD FUNCTION
         def getReward(self, func, X, N, n):
             if func == 'ucb1':
                 cp = 1 / self.math.sqrt(2.0)  # Cost Adjustment Parameter
@@ -231,12 +233,40 @@ class MCTS(object):
         node = self.node
 
         # CREATING LIST OF STATES FOR NODE CREATION
+        kDict = {
+            '2-': [ -7,   -75  ],
+            '2+': [  7,    63  ],
+            '3-': [ -7,   -75  ],
+            '3+': [ 13,    42.5], #← Holes in CSV
+            '4-': [-31.5, -75  ],
+            '4+': [ 26,    42.5  ]
+        }
+
         states = []
         P_ = self.flybyBodies + [self.finalBody]
-        for i in range(len(P_)):
-            et = self.setEpoch(self.node[id].state[1], self.node[id].state[0], P_[i])
-            for j in range(len(et)):
-                states.append((P_[i],et[j]))
+        if len(self.node[id].state[0]) != 3: P_.remove(self.node[id].state[0])
+        if self.node[id].layer == 2:
+            P_.append('32-')
+            P_.append('32+')
+            P_.append('33-')
+            P_.append('33+')
+            P_.append('34-')
+            P_.append('34+')
+        for P__ in P_:
+            if len(P__) > 2:
+                et = [0 for _ in range(int(self.detail*0.5))]
+                θ = []
+                lim = kDict[P__[1:]]
+                for idx in range(int(self.detail*0.5)):
+                    tmp = lim[0] + (lim[1] - lim[0])*((idx)/(int(self.detail*0.5)))
+                    θ.append(round(tmp*2)/2)
+            else:
+                et = self.setEpoch(self.node[id].state[1], self.node[id].state[0], P__)
+            for i in range(len(et)):
+                if len(P__) > 2:
+                    states.append((P__, et[i], θ[i]))
+                else:
+                    states.append((P__, et[i]))
 
         # FINDING CURRENT LENGTH OF ALL OF TREE
         len_ = len(node)
@@ -252,16 +282,22 @@ class MCTS(object):
 
             # INCLUDING Δv CALCULATINGS AND TERMINAL STATES
             if self.node[-1].layer == 3:                        # Launch Condition
-                l0 = self.computeLambert(id = len(self.node)-1)
-                dv = self.computeΔv(
-                    id = len(self.node)-1, 
-                    l0 = l0
-                )
-                vp = self.spk.spkezr(self.node[id].state[0], self.node[id].state[1], 'ECLIPJ2000', 'NONE', '0')[0][3:]
+                delta = None
+                if len(self.node[-1].state[0]) < 3:
+                    l0 = self.computeLambert(id = len(self.node)-1)
+                    dv = self.computeΔv(
+                        id = len(self.node)-1, 
+                        l0 = l0
+                    )
+                else:                                           # DSM Condition
+                    dv, _, dt, vinfL = self.queryDSM(self.node[-1].state[0][1], self.node[-1].state[2])
+                    # print(dt)
+                    self.node[-1].state = (self.node[-1].state[0], self.node[id].state[1] + dt*86400, self.node[-1].state[2])
+                    dv += max(0, vinfL - self.math.sqrt(self.C3max))
             else:                                               # Flyby Condition
                 l0 = self.computeLambert(id = len(self.node)-1)
                 l1 = self.computeLambert(id = lineage[0])
-                dv, h = self.computeΔv(
+                dv, h, delta = self.computeΔv(
                     id = len(self.node)-1, 
                     l0 = l0, 
                     l1 = l1
@@ -270,6 +306,8 @@ class MCTS(object):
             # ASSIGNING Δv TO NODE
             self.node[-1].Δv += dv
             self.node[-1].ΔvLeg = dv
+            if delta:
+                self.node[-1].delta = self.np.degrees(delta)
             if self.node[-1].layer > 3:
                 self.node[-1].h = h
             if self.node[-1].Δv > self.ΔvBudget or self.node[-1].h and self.node[-1].h < 0:
@@ -316,6 +354,7 @@ class MCTS(object):
             # SETTING INITIAL STATE
             state = [self.node[id].state, state]
             Δv = self.node[id].Δv
+            # print(self.node[id].state)
             l0 = self.computeLambert(id = id) if self.node[id].layer > 2 else None
 
             # RANDOM EXPLORATION UNTIL TERMINATION STATE
@@ -345,7 +384,7 @@ class MCTS(object):
                 X.append((self.ΔvBudget - Δv)/self.ΔvBudget)
                 self.logFile(id, "Node {} child correctly simulated to final body with cost {}".format(id, X[-1]))
 
-        X = sum(X)/len(X)
+        X = sum(X)/len(X) * 10
 
         return X
 
@@ -388,34 +427,38 @@ class MCTS(object):
             m = 1
 
         # SETTING EPOCH UPPER AND LOWER LIMITS
-        et0 = n*(self.tau[p0] + self.tau[p1])*86400 + t0
-        et1 = m*(self.tau[p0] + self.tau[p1] - 1)*86400 + t0
+        et0 = n*(self.tau[p0[0]] + self.tau[p1[0]])*86400 + t0
+        et1 = m*(self.tau[p0[0]] + self.tau[p1[0]] - 1)*86400 + t0
 
         # CREATING LINEAR RANGE
         et = self.np.linspace(et0, et1, self.detail)
         
         return et
 
-    def queryDSM(self, dataframe, K, dTheta):
+    def queryDSM(self, K, dThetaLookup):
+        # print(K, dThetaLookup)
         pd = self.pd
         np = self.np
         # Current CSV is in 1 deg steps. Uncomment line below
         # when using this for final csv file (rounds to 0.5 deg)
         # dThetaLookup = round(dTheta*2)/2 
 
-        # Placeholder Rounding dThetaLookup
-        dThetaLookup = round(dTheta,0)
+        dataframe = self.dsmDvCsv
 
-        rslt_df = dataframe[(dataframe['K'] == K) & (dataframe['Theta'] == dThetaLookup)]
+        rslt_df = dataframe[(dataframe['K'] == int(K)) & (dataframe['Theta'] == dThetaLookup)]
 
 
-        dsmdv  = np.float64(pd.to_numeric(rslt_df['DSMDV'])[0]).item()
-        vinf1x = np.float64(pd.to_numeric(rslt_df['vinf1x'])[0]).item()
-        vinf1y = np.float64(pd.to_numeric(rslt_df['vinf1y'])[0]).item()
-        vinf   = np.array([vinf1x,vinf1y, 0.0])
-        dt     = np.float64(pd.to_numeric(rslt_df['dt'])[0]).item()
+        # print(rslt_df)
+        # print("DV",pd.to_numeric(rslt_df['DSMDV']).item())
+        dsmdv  = pd.to_numeric(rslt_df['DSMDV']).item()
+        vinfL  = pd.to_numeric(rslt_df['vinfLaunch']).item()
+        vinf1x = pd.to_numeric(rslt_df['vinf1x']).item()
+        vinf1y = pd.to_numeric(rslt_df['vinf1y']).item()
+        vinf   = np.array([vinf1x, vinf1y])
+        # dt     = 365.2*int(K) + (dThetaLookup/360)*365.2
+        dt     = pd.to_numeric(rslt_df['dt']).item()
 
-        return dsmdv, vinf, dt
+        return dsmdv, vinf, dt, vinfL
 
     def computeLambert(self, id = None, state0 = None, state1 = None):
         self.numLam += 1
@@ -429,11 +472,17 @@ class MCTS(object):
             parent = self.node[id].parent
 
             # GETTING STATES
-            p0, et0 = self.node[parent].state
-            p1, et1 = self.node[id].state
+            p0  = self.node[parent].state[0][0]
+            et0 = self.node[parent].state[1]
+            p1  = self.node[id].state[0][0]
+            et1 = self.node[id].state[1]
         else:
-            p0, et0 = state0
-            p1, et1 = state1
+            p0  = state0[0][0]
+            et0 = state0[1]
+            p1  = state1[0][0]
+            et1 = state1[1]
+
+        # if any([len(p0) == 3, len(p1) == 3]): return None
 
         # GETTING SPICE STATE
         s0 = spk.spkezr(p0, et0, self.frame, self.abcorr, self.cntrBody)[0]
@@ -457,15 +506,16 @@ class MCTS(object):
         np = self.np
         math = self.math
 
-        if id and not pState:
+        if id and not pState:                       # Flyby Condition
             parent = self.node[id].parent
-            p = self.node[parent].state[0]
+            p = self.node[parent].state[0][0]
             et = self.node[parent].state[1]
-        elif id and not l1 and type(pState) == str:
-            p = self.node[id].state[0]
+            # if len(p) > 
+        elif id and not l1 and type(pState) == str: # Launch C3 Condition
+            p = self.node[id].state[0][0]
             et = self.node[id].state[1]
         else:
-            p = pState[0]
+            p = pState[0][0]
             et = pState[1]
         vp = spk.spkezr(
             p,
@@ -481,8 +531,22 @@ class MCTS(object):
             vinf = v0 - vp
             Δv = max(0, np.linalg.norm(vinf) - math.sqrt(self.C3max))
         else:
+            # print(l1)
             # RETRIEVING TRAJECTORY VELOCITIES
-            vi = np.array(l1.get_v2()[0])/1000 - vp
+            if id and not pState and len(self.node[parent].state) == 3:
+                gparent = self.node[parent].parent
+                _, vi, _, _ = self.queryDSM(self.node[parent].state[0][1], self.node[parent].state[2])
+                pE = self.spk.spkezr(self.node[gparent].state[0], self.node[gparent].state[1], self.frame, self.abcorr, self.cntrBody)[0][:3]
+                theta = self.getJ2000Ang(pE)
+                # print("EARTH POSITION: {}\nTHETA: {} + {} = {}".format(pE/self.AU2km, self.np.degrees(theta), 90, self.np.degrees(theta) + 90))
+                theta = 2*np.pi - (theta + self.np.radians(90))
+                c, s = (self.np.cos(theta), self.np.sin(theta))
+                R = np.array([[c, -s], [s, c]])
+                # print("PRE-ROTATED VECTOR: {}\n    ROTATED VECTOR: {}\n\n".format(vi, self.np.dot(vi, R)))
+                vi = self.np.dot(vi, R)
+                vi = self.np.append(vi, 0)
+            else:
+                vi = np.array(l1.get_v2()[0])/1000 - vp
             vo = np.array(l0.get_v1()[0])/1000 - vp
             vih = vi + vp
             voh = vo + vp
@@ -495,7 +559,8 @@ class MCTS(object):
             aOutI = -mu / np.linalg.norm(vo)**2
             aOut = aOutI
             aIn = -mu/np.linalg.norm(vi)**2
-            delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+            delta = self.math.acos(self.np.dot(vi, vo)/(self.np.linalg.norm(vi)*self.np.linalg.norm(vo)))
+            # delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
 
             # 0TH DERIVATIVE
             def f(eOut, aOut, aIn, delta):
@@ -521,6 +586,8 @@ class MCTS(object):
             except:
                 Δv = 999.0
                 h = -1
+            # print("HELIO δ: {}\nRELAT δ: {}\n".format(delta, self.math.acos(self.np.dot(vi, vo)/(self.np.linalg.norm(vi)*self.np.linalg.norm(vo)))))
+            delta = self.math.acos(self.np.dot(vi, vo)/(self.np.linalg.norm(vi)*self.np.linalg.norm(vo)))
 
         # CHECKING IF ENTERING self.finalBody FOR CAPTURE Δv
         if id and self.node[id].state[0] == self.finalBody and not self.freeCapture:
@@ -536,7 +603,7 @@ class MCTS(object):
 
         # RETURN CASE
         if id and l1:       # Flyby
-            return Δv, h
+            return Δv, h, delta
         else:               # Launch
             return Δv
 
@@ -583,20 +650,6 @@ class MCTS(object):
                         round(vinf, 3)]
                     )
 
-        # for id in [attr[i][0] for i in range(len(attr))]:
-        #     # GETTING FINAL SPACECRAFT STATE
-        #     l = self.computeLambert(id)
-        #     r = self.spk.spkezr(self.node[id].state[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][:3]
-        #     v = self.np.array(l.get_v2()[0])/1000
-        #     vr = (self.np.dot(r, v)/self.np.linalg.norm(r))
-
-        #     # CHECKING CONDITION
-        #     if not cond(vr):
-        #         rm.append(id)
-
-        # if rm:
-        #     idL = [attr[i][0] for i in range(len(attr))]
-
         # SORTING BASED ON V∞ CONSTRAINT
         if self.minVinfF:
             attr = sorted(attr, key = lambda x: (1/x[3] if x[3] != 0 else float("inf"), x[1]), reverse=True)
@@ -610,20 +663,23 @@ class MCTS(object):
         id_ = [attr[i][0] for i in range(len(attr))]
         return id_
 
-    def plotPath(self, id, showPlanets = True, axes = None, lamC = "tab:blue", alpha = 1):
-        """
-        TODO: Add ability to create scrollable list
-        """
-        def axisEqual3D(ax):
-            np = self.np
-            extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
-            sz = extents[:,1] - extents[:,0]
-            centers = np.mean(extents, axis=1)
-            maxsize = max(abs(sz))
-            r = maxsize/2
-            for ctr, dim in zip(centers, 'xyz'):
-                getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
+    def axisEqual3D(self, ax):
+        np = self.np
+        extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+        sz = extents[:,1] - extents[:,0]
+        centers = np.mean(extents, axis=1)
+        maxsize = max(abs(sz))
+        r = maxsize/2
+        for ctr, dim in zip(centers, 'xyz'):
+            getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
+    def getJ2000Ang(self, r):
+        theta = self.math.acos(r[0]/self.np.linalg.norm(r))
+        if r[1] < 0:
+            theta = -theta
+        return theta
+
+    def plotPath(self, id, showPlanets = True, axes = None, lamC = "tab:blue", alpha = 1):
         plt = self.plt.pyplot
 
         pR = {'2': 0.7, '3': 1, '4':1.5, '5': 5.2, '6': 9.5, '7': 19.2, '8': 30}
@@ -639,38 +695,67 @@ class MCTS(object):
         pk = self.pk
         lineage = self.getLineage(id)[:-1]
         if showPlanets:
-            for id in lineage:
-                try:
-                    pl = pk.planet.jpl_lp(self.pkP[self.node[id].state[0]])
-                    ep = pk.epoch(float(self.spk.et2utc(self.node[id].state[1], 'J', 10)[3:]) - J2000_jd)
-                    pk.orbit_plots.plot_planet(
-                        pl, 
-                        t0 = ep, 
-                        axes = ax, 
-                        color=self.col[self.node[id].state[0]],
-                        units = 149597870700,
-                        s = 0
-                    )
-                except:
-                    theta = self.np.linspace(0, 2*self.np.pi, 100)
-                    r = pR[self.node[id].state[0]]
-                    z = self.np.linspace(0, 0, 100)
-                    x = r*self.np.cos(theta)
-                    y = r*self.np.sin(theta)
-                    ax.plot3D(x, y, z, 'gray')
+            et0 = self.node[id].state[1]
+            for P in self.P:
+                tau = self.tau[P]*86400
+                et1 = et0 + tau
+                et = self.np.linspace(et0, et1, 250)
+                x = []
+                y = []
+                z = []
+                for et_ in et:
+                    r = self.spk.spkezr(P, et_, self.frame, self.abcorr, self.cntrBody)[0][:3]/self.AU2km
+                    x.append(r[0])
+                    y.append(r[1])
+                    z.append(r[2])
+                ax.plot3D(x, y, z, 'black', linewidth=0.5)
 
         for id in lineage[:-1]:
-            l = self.computeLambert(id = id)
-            pk.orbit_plots.plot_lambert(l, axes = ax, color=lamC, units = 149597870700, alpha = alpha)
-        axisEqual3D(ax)
+            if len(self.node[id].state) == 3:
+                parent = self.node[id].parent
+                K = self.node[id].state[0][1]
+                _, _, dt, vinfL = self.queryDSM(K, self.node[id].state[2])
+                X = self.spk.spkezr(self.node[parent].state[0][0], self.node[parent].state[1], self.frame, self.abcorr, self.cntrBody)[0]
+                rp1 = X[:3]
+                theta = self.getJ2000Ang(rp1)
+                vp = X[3:]
+                r = self.np.linalg.norm(rp1)
+                v = self.np.linalg.norm(vp) + vinfL
+                mu = 1.3271e11
+                a = -mu/(v**2 - (2*mu)/r)
+                tof = self.math.pi*self.math.sqrt(a**3 / mu)
+                ra = 2*a - r
+                phi = theta + self.math.pi + 1 * (self.math.pi/180)
+                ra = [ra*self.math.cos(phi), ra*self.math.sin(phi), 0]
+                ax.scatter(ra[0]/self.AU2km, ra[1]/self.AU2km, ra[2]/self.AU2km, color = lamC, marker='x')
+                ra = self.np.array(ra)
+                rp2 = self.spk.spkezr(self.node[id].state[0][0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][:3]
+                l1 = self.pk.lambert_problem(
+                    r1 = rp1*1000,
+                    r2 = ra*1000,
+                    tof = tof,
+                    mu = self.pk.MU_SUN
+                )
+                pk.orbit_plots.plot_lambert(l1, axes = ax, color=lamC, units = self.AU2m, alpha = alpha)
+                l2 = self.pk.lambert_problem(
+                    r1 = ra*1000,
+                    r2 = rp2*1000,
+                    tof = (dt*86400 - tof),
+                    mu = self.pk.MU_SUN
+                )
+                pk.orbit_plots.plot_lambert(l2, axes = ax, color=lamC, units = self.AU2m, alpha = alpha)
+            else:
+                l = self.computeLambert(id = id)
+                pk.orbit_plots.plot_lambert(l, axes = ax, color=lamC, units = self.AU2m, alpha = alpha)
+
         if not axes:
+            self.axisEqual3D(ax)
             plt.show()
 
     def plotFamilies(self, idList, hideAxes = False, showTop = None):
         plt = self.plt.pyplot
         mpatches = self.plt.patches
 
-        letterDict = {"2": "V", "3": "E", "4": "M", "5": "J", "6": "S", "7": "U", "8": "N"}
 
         # CREATING FIGURE WINDOW
         fig = plt.figure()
@@ -681,6 +766,7 @@ class MCTS(object):
         cList2 = ["b", "g", "r", "c", "m", "y", "k"]
         cList = ["tab:"+color for color in cList] + cList2
         cDict = {}
+        tmpDict = {"2": "a", "3": "b", "4": "c"}
 
         # LOOPING THROUGH
         itr = 0
@@ -688,7 +774,15 @@ class MCTS(object):
         for id in idList:
             # GETTING NODE LINEAGE
             lineage = self.getLineage(id)[:-1]
-            key = ''.join([self.node[i].state[0] for i in lineage[::-1]])
+            key = []
+            for i in lineage[::-1]:
+                if len(self.node[i].state) == 3:
+                    K = self.node[i].state[0][1]
+                    p = self.node[i].state[0][2]
+                    key.append("({}:1{}Δv)E".format(tmpDict[K], p))
+                else:
+                    key.append(self.node[i].state[0])
+            key = ''.join(key)
 
             # CHECKING FOR COLOR MATCHES KEY
             if key in cDict.keys():
@@ -709,20 +803,36 @@ class MCTS(object):
         # ADDING FAMILIES TO LEGENDS
         patchList = []
         for key in cDict:
-            dataKey = mpatches.Patch(color = cDict[key], label=''.join([letterDict[key[i]] for i in range(len(key))]))
+            lab = []
+            for i in range(len(key)):
+                    if key[i] in tmpDict.values():
+                        # print(key, key[i])
+                        lab.append([key_ for key_ in tmpDict.items() if key_[1] == key[i]][0][0])
+                    else:
+                        lab.append(self.letterDict[key[i]] if key[i] in self.letterDict else key[i])
+            lab = ''.join(lab)
+            dataKey = mpatches.Patch(color = cDict[key], label=lab)
             patchList.append(dataKey)
 
         plt.legend(handles = patchList)
-
-        # TIGHTENING PLOT BOUNDARIES
-        for spine in ax.spines.values():
-            spine.set_visible(False)
-        plt.tight_layout()
 
         # REMOVING AXES
         if hideAxes:
             plt.axis('off')
             plt.grid(b = None)
+        else:
+            ax.set_xlabel("X Position (AU)")
+            ax.set_ylabel("Y Position (AU)")
+            ax.set_zlabel("Z Position (AU)")
+
+        # TIGHTENING PLOT BOUNDARIES
+        # for spine in ax.spines.values():
+            # spine.set_visible(False)
+        # plt.tight_layout()
+
+        ax.set_title("Trajectories to {}\n{} to {}\nΔv Max: {} km/s".format(self.pkP[self.finalBody].capitalize(), self.launchWindow[0], self.launchWindow[1], self.ΔvBudget))
+
+        self.axisEqual3D(ax)
 
         plt.show()
 
@@ -749,58 +859,77 @@ class MCTS(object):
         writer = pd.ExcelWriter(filename, engine = 'xlsxwriter')
 
         # MCTS OUTPUT RESULTS
-        out = {'id': [], 'Δv Total': [], 'C3': [], 'Lineage': [], 'Planets': [], 'Dates': [], 'Δv per Leg': [], 'Flyby Alt': [], 'Vinf': []}
-        for id in id_:
-            lineage = self.getLineage(id)[:-1] # Getting lineage minus root
+        out = {'id': [], 'C3': [], 'Vinf': [], 'ToF': [], 'Sequence': [], 'Dates': [], 'Δv Total': [], 'Δv per Leg': [], 'Flyby Alt': [], 'Bend Angle': [], 'Lineage': [], 'DSM Info': []}
+        with self.click.progressbar(id_, fill_char = '█', empty_char = ' ', label='Exporting Results    ') as bar:
+            for id in bar:
+                lineage = self.getLineage(id)[:-1] # Getting lineage minus root
 
-            # STARTING ARRAYS
-            P = []
-            dates = []
-            Δv = []
-            h = []
-            vinf = []
+                # STARTING ARRAYS
+                P = []
+                dates = []
+                Δv = []
+                h = []
+                delta = []
+                vinf = []
 
-            # GETTING NODE STATES
-            for i in lineage:
-                P.append(self.node[i].state[0])
-                dates.append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                # GETTING NODE STATES
+                for i in lineage:
+                    P.append(self.node[i].state[0])
+                    dates.append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
 
-            # GETTING LEG INFORMATION
-            Δv = [round(self.node[i].ΔvLeg, 2) for i in lineage[:-1]]
-            if not self.freeCapture:
-                vp = self.spk.spkezr(P[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                # GETTING LEG INFORMATION
+                Δv = [round(self.node[i].ΔvLeg, 2) for i in lineage[:-1]]
+                if not self.freeCapture:
+                    vp = self.spk.spkezr(P[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                    l = self.computeLambert(id)
+                    vih = self.np.array(l.get_v2()[0])/1000
+                    vi = vih - vp
+                else:
+                    vi = 0.0
+                Δv[0] -= self.np.linalg.norm(vi)
+                Δv.insert(0, round(self.np.linalg.norm(vi), 2))
+                Δv[1] = round(Δv[1], 2)
+
+                h = [round(float(self.node[i].h)) for i in lineage[:-2]]
+                delta = [round(float(self.node[i].delta), 1) if self.node[i].delta else "None" for i in lineage[:-2]]
+                    
+                # CALCULATING C3
+                if len(self.node[lineage[-2]].state) == 3:
+                    _, _, _, vinfL = self.queryDSM(self.node[lineage[-2]].state[0][1], self.node[lineage[-2]].state[2])
+                    C3 = vinfL**2
+                    theta = self.node[lineage[-2]].state[2]
+                    K = self.node[lineage[-2]].state[0][1:]
+                else:
+                    K = None
+                    l = self.computeLambert(lineage[-2])
+                    v0 = self.np.array(l.get_v1()[0])/1000
+                    vp = self.spk.spkezr(self.node[lineage[-1]].state[0], self.node[lineage[-1]].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                    C3 = self.np.linalg.norm(v0 - vp)**2
+
+                # CALCULATING TOF
+                et0 = self.node[lineage[-1]].state[1]
+                et1 = self.node[lineage[0]].state[1]
+                tof = round((et1 - et0)/86400, 1)
+
                 l = self.computeLambert(id)
-                vih = self.np.array(l.get_v2()[0])/1000
-                vi = vih - vp
-            else:
-                vi = 0.0
-            Δv[0] -= self.np.linalg.norm(vi)
-            Δv.insert(0, round(self.np.linalg.norm(vi), 2))
-            Δv[1] = round(Δv[1], 2)
+                v = self.np.array(l.get_v2()[0])/1000
+                vp = self.spk.spkezr(self.node[id].state[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                # print(self.np.array(l.get_v2()[0]), vp)
+                vinf = self.np.linalg.norm(v - vp)
 
-            h = [round(float(self.node[i].h), 2) for i in lineage[:-2]]
-                
-            # CALCULATING C3
-            vinf = self.node[lineage[-2]].Δv
-            C3 = (self.math.sqrt(self.C3max) + vinf)**2
-
-
-            l = self.computeLambert(id)
-            v = self.np.array(l.get_v2()[0])/1000
-            vp = self.spk.spkezr(self.node[id].state[0], self.node[id].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
-            # print(self.np.array(l.get_v2()[0]), vp)
-            vinf = self.np.linalg.norm(v - vp)
-
-            # APPENDING TO DICTIONARY
-            out['id'].append(id)
-            out['Δv Total'].append(round(self.node[id].Δv, 2))
-            out['C3'].append(round(C3, 2))
-            out['Lineage'].append(lineage[::-1])
-            out['Planets'].append(P[::-1])
-            out['Dates'].append(dates[::-1])
-            out['Δv per Leg'].append(Δv[::-1])
-            out['Flyby Alt'].append(h[::-1])
-            out['Vinf'].append(vinf)
+                # APPENDING TO DICTIONARY
+                out['id'].append(id)
+                out['Δv Total'].append(round(self.node[id].Δv, 2))
+                out['C3'].append(round(C3, 2))
+                out['ToF'].append(tof)
+                out['Lineage'].append(lineage[::-1])
+                out['Sequence'].append(''.join([self.letterDict[naifID] if len(naifID) < 3 else "ΔvE" for naifID in P[::-1]]))
+                out['Dates'].append(dates[::-1])
+                out['Δv per Leg'].append(Δv[::-1])
+                out['Flyby Alt'].append(h[::-1])
+                out['Bend Angle'].append(delta[::-1])
+                out['Vinf'].append(round(vinf,2))
+                out['DSM Info'].append("{}:1{} @ θ = {}".format(K[0], K[1], theta) if K else "None")
 
         # CONVERTING TO PANDAS & SAVING
         df = pd.DataFrame(out)
@@ -808,40 +937,49 @@ class MCTS(object):
 
         # EXPORTING FULL TREE
         if exportFullTree:
-            out = {'id': [], 'visits': [], 'terminal': [], 'planet': [], 'date': [], 'dv': [], 'x': [], 'parent': [], 'children': [], 'vinf': []}
-            for i in range(len(self.node)):
-                # NODE INFORMATION
-                out['id'].append(i)
-                out['visits'].append(self.node[i].n)
-                out['terminal'].append("True" if self.node[i].isTerminal else "False")
+            out = {'id': [], 'visits': [], 'terminal': [], 'planet': [], 'date': [], 'theta': [], 'dv': [], 'x': [], 'parent': [], 'children': [], 'vinf': []}
+            with self.click.progressbar(range(len(self.node)), fill_char = '█', empty_char = ' ', label='Exporting All Nodes  ') as bar:
+                for i in bar:
+                    # NODE INFORMATION
+                    out['id'].append(i)
+                    out['visits'].append(self.node[i].n)
+                    out['terminal'].append("True" if self.node[i].isTerminal else "False")
 
-                # NODE STATE
-                if self.node[i].state:
-                    out['planet'].append(self.pkP[self.node[i].state[0]])
-                    out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
-                else:
-                    out['planet'].append("None")
-                    out['date'].append("None")
+                    # NODE STATE
+                    if self.node[i].state and len(self.node[i].state) == 2:
+                        out['planet'].append(self.pkP[self.node[i].state[0]])
+                        out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                        out['theta'].append("None")
+                    elif self.node[i].state:
+                        K = self.node[i].state[0][1]
+                        p = self.pkP[self.node[i].state[0][0]]
+                        out['planet'].append("{} {} DSM".format(p, K))
+                        out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                        out['theta'].append(self.node[i].state[2])
+                    else:
+                        out['planet'].append("None")
+                        out['date'].append("None")
+                        out['theta'].append("None")
 
-                # NODE COST/REWARDS
-                out['dv'].append(round(self.node[i].Δv, 2))
-                out['x'].append(round(self.node[i].X, 4))
+                    # NODE COST/REWARDS
+                    out['dv'].append(round(self.node[i].Δv, 2))
+                    out['x'].append(round(self.node[i].X, 4))
 
-                # NODE "FAMILY"
-                if self.node[i].parent:
-                    out['parent'].append(self.node[i].parent)
-                else:
-                    out['parent'].append("None")
-                out['children'].append(self.node[i].children)
+                    # NODE "FAMILY"
+                    if self.node[i].parent:
+                        out['parent'].append(self.node[i].parent)
+                    else:
+                        out['parent'].append("None")
+                    out['children'].append(self.node[i].children)
 
-                # NODE INBOUND V∞
-                if self.node[i].parent and self.node[i].parent > self.detail:
-                    l = self.computeLambert(i)
-                    vp = self.spk.spkezr(self.node[i].state[0], self.node[i].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
-                    vinf = self.np.linalg.norm(self.np.array(l.get_v2()[0])/1000 - vp)
-                    out['vinf'].append(vinf)
-                else:
-                    out['vinf'].append([])
+                    # NODE INBOUND V∞
+                    if self.node[i].parent and self.node[i].parent > self.detail:
+                        l = self.computeLambert(i)
+                        vp = self.spk.spkezr(self.node[i].state[0][0], self.node[i].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                        vinf = self.np.linalg.norm(self.np.array(l.get_v2()[0])/1000 - vp)
+                        out['vinf'].append(vinf)
+                    else:
+                        out['vinf'].append([])
 
             # EXPORTING TO SPREADSHEET
             df = pd.DataFrame(out)
@@ -966,6 +1104,7 @@ class nodeObj:
         self.Δv = Δv  # Δv used up to that point
         self.ΔvLeg = 0
         self.h = []
+        self.delta = []
         # Establishes Parent above (Single Scalar of IDs)
         self.parent = parent
         self.children = None  # Children Below (Array of IDs)
