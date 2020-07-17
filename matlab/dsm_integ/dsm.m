@@ -35,10 +35,12 @@ end
 clear firstPC firstMac PC Mac
 
 %% DSM Inputs
-Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
-thetaList = [5:0.5:75];      % List of intercept thetas
-pltFBvecs = false;        % Debug Flyby Velocity Vectors
-pltLevOrb = false;        % Debug Trajectory Visual
+%Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
+%thetaList = [5:0.5:75];      % List of intercept thetas
+Klist = 2;
+thetaList = 44;
+pltFBvecs = true;        % Debug Flyby Velocity Vectors
+pltLevOrb = true;        % Debug Trajectory Visual
 
 %% DSM Calculation
 allDsm = struct;
