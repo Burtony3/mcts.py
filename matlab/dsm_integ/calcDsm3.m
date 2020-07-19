@@ -122,7 +122,7 @@ if pltFBvecs
    quiver(xIn(4),xIn(5),vinf2(1),vinf2(2),'autoscale','off')
    quiver(0,0,vp2(1),vp2(2),'autoscale','off')
    hold off
-   legend('Ve','Vsc','Vinf1','Vinf1','Vsc2')
+   legend('Ve','Vsc','Vinf1','Vinf2','Vsc2')
    axis equal; grid on;
 end
 
@@ -134,7 +134,7 @@ postFBState = tbp(xOut1,5*365*86400, mu_s,0,options);
 
 % DSM Trajectory Visual
 if pltLevOrb
-    %figure
+    figure
     hold on
     scatter(0,0,'MarkerEdgeColor','r')
     scatter(xi(1),xi(2),'MarkerEdgeColor','b')
