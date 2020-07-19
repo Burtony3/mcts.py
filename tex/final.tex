@@ -1,0 +1,77 @@
+% use paper, or submit
+% use 11 pt (preferred), 12 pt, or 10 pt only
+
+\documentclass[letterpaper, preprint, paper,11pt]{AAS}	% for preprint proceedings
+%\documentclass[letterpaper, paper,11pt]{AAS}		% for final proceedings (20-page limit)
+%\documentclass[letterpaper, paper,12pt]{AAS}		% for final proceedings (20-page limit)
+%\documentclass[letterpaper, paper,10pt]{AAS}		% for final proceedings (20-page limit)
+%\documentclass[letterpaper, submit]{AAS}			% to submit to JAS
+
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{subfigure}
+%\usepackage[notref,notcite]{showkeys}  % use this to temporarily show labels
+\usepackage[colorlinks=true, pdfstartview=FitV, linkcolor=black, citecolor= black, urlcolor= black]{hyperref}
+\usepackage{overcite}
+\usepackage{footnpag}			      	% make footnote symbols restart on each page
+
+
+
+
+\PaperNumber{20-686}
+
+
+
+\begin{document}
+
+\title{IMPLEMENTATION OF DEEP SPACE MANEUVERS IN BROAD SEARCH TRAJECTORIES USING MONTE CARLO TREE SEARCH}
+
+\author{Burton A. Yale\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: bayale@cpp.edu},  
+Jehosafat J. Cabrera\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: jehosafatc@cpp.edu},
+\ Rohan D. Patel\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: rohanpatel@cpp.edu},
+\ and Navid Nakhjiri\thanks{Assistant Professor, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: nnakhjiri@cpp.edu}
+}
+
+
+\maketitle{} 		
+
+
+\begin{abstract}
+Multiple flybys of the inner planets and the application of V$\infty$ leveraging are essential trajectory design techniques to reduce the required launch energy for interplanetary missions. These trajectories are often difficult to formulate and require extensive computational resources. However, this problem can be classified as a sequential planning task which can be solved by a Monte Carlo Tree Search (MCTS) method. In this paper, a MCTS algorithm is developed and tested with a focus on reducing required $\Delta$V from the spacecraft. This method balances exploration and exploitation of the search space, and the algorithm’s performance is assessed by tweaking the selection policy parameter. Optimizations of several cases are studied to prove the feasibility of the tree search results. The algorithm will allow for inner-planetary flyby search planning for outer planetary missions.
+\end{abstract}
+
+\section{Introduction}
+
+\section{Motivation}
+
+Broad trajectory searches are one of the first steps in mission planning, allowing for a quick reduction to possible mission flyby configurations. Due to the nature of the combinatorial problem, every new flyby considered, adds one more dimension to the search space. Brute force searching leads to a Big O notation of O(nc), so work must be done to reduce the search space. There have been multiple approaches to tackling this problem, evolutionary/genetic algorithms, particle swarm optimization, enumerated searches, and composite algorithms, all with their benefits and drawbacks. Among these recent work in enumerated searches, specifically a subset, grid searches, has the likelihood of providing new results for searching multi-flyby interplanetary trajectories [1]. 
+
+Monte Carlo Tree Search (MCTS), a subset of grid search, has proven to be a useful tool in broad search of interplanetary trajectories [2]. The ability to explore and exploit the solution space is one of the key advantages of the algorithm, allowing it to either search wide or deep, depending on the mission constraints. As the search space expands, the number of calculations required will scale at a factor smaller than O(nc), which makes this method desirable.
+
+This paper aims to expand the previous work done on the MCTS algorithm with the inclusion of deep space maneuvers. This method will allow for the inclusion of previously unfound trajectories like that of the Juno space probe. 
+
+\section{Previous Work}
+
+Interplanetary mission design is an iterative process. First, a sequence of encounter bodies is selected and is followed by evaluating all possible trajectories for that specified sequence. In literature, this is often referred to as pathfinding and path solving respectively [3]. In preliminary design, due to the increasing complexity of gravity assists and combinatorial solutions, a low-fidelity tool is generally utilized first to find regions of interest. This is then followed by a high-fidelity tool which searches through prospective and highly valued regions. These low-fidelity tools make use of algorithms to decrease computation time while increasing the number of possible solutions. 
+
+Grid-search, for instance has been previously used as a search algorithm to find possible trajectories to KBOs [4]. Grid search is a type of search algorithm with the ability to map the entire search space so that there are no regions of interest missed. This method has been used to properly parametrize the time of flight between encounter bodies. In this manner, Earth having a period of 365 days will have the same number of possible encounters as Jupiter with a period of approximately 12 years [2]. Thus, the output grid will be that of an angular grid as opposed to a cartesian grid. This type of search algorithm, however, can be expensive in terms of computing power and time. To alleviate both of these constraints, heuristics can be implemented into the program. 
+
+Beam Search (BS), a heuristic tree search algorithm, can be used as a searching criterion to find a sequence of planets from which gravity-assist from [4]. BS uses the method of Breadth-First Search (BFS) to search the tree of possibilities. BS builds each layer of the tree and orders the nodes in accordance to their heuristic cost. However, it only chooses those nodes with a maximum value to build from. Depth-First Search (DPS), alternatively, is used as a searching criterion to traverse down the tree [5]. Opposite to BFS, DPS does not search the tree at every level but rather explores a branch until the termination criteria is met. After which, moving in reverse updates the branch and moves towards the root node to start the process again. Both the BFS and DPS, search and prune the search-space consecutively. Using the Lazy Race Tree Search, the search space is pruned, and nodes ranked through the time of flight [5]. The use of heuristics avoids finding redundant solutions and increases the efficiency of the method used. Izzo et. al. [2] proposed the use of the Monte Carlo Tree Search to find fast solutions to interplanetary trajectories. 
+
+The search sensitivity criteria of DPS, BS, and BFS are explored in conjunction with that of the MCTS and compared. These searches, however, did not take into account Deep Space Maneuvers (DSMs) and led to trivial solutions when trying to validate the Rosetta Trajectory. The validation and correct recreation of this mission will be the basis of the algorithm taking into account DSMs to fully model Leveraging Orbits.
+
+\section{Methods}
+
+\subsection{Monte Carlo Tree Search}
+
+\subsection{Powered Flybys}
+
+\subsection{Deep Space Maneuvers}
+
+\section{Results}
+
+\subsection{Leveraging Maneuver to Saturn}
+
+\subsection{Europa Clipper Trajectory Recreation}
+
+\end{document}

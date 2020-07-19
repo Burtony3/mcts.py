@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
 # ===================== USER INPUTS ===================== #
-Δ    = 16               # Angular Resolution (Δθ = 360/Δ)
+Δ    = 24               # Angular Resolution (Δθ = 360/Δ)
 p1   = '3'              # Origin Planet NAIF ID
-utc1 = "Jun 19, 2037"   # Launch Date
-p2   = '2'              # Flyby Planet NAIF ID
-p3   = '6'              # Arrival Planet NAIF ID
+utc1 = "Oct 21, 2024"   # Launch Date
+p2   = '3'              # Flyby Planet NAIF ID
+p3   = '5'              # Arrival Planet NAIF ID
 # ======================================================= #
 
 # SPICE SETUP
@@ -118,7 +118,7 @@ def getLamProps(l, l2, state1, state2):
     def f(eOut):
         aOut = -mu/np.linalg.norm(vo)**2
         aIn = -mu/np.linalg.norm(vi)**2
-        delta =  math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+        delta =  math.acos(np.dot(vo, vi) / (np.linalg.norm(vo)*np.linalg.norm(vi)))
         # print(aOut, aIn, eOut, delta)
         eOut = (aOut / aIn) * (eOut - 1) * math.sin(delta - math.asin(1 / eOut)) - 1
         return eOut
@@ -127,7 +127,7 @@ def getLamProps(l, l2, state1, state2):
     def f_prime(eOut):
         aOut = -mu/np.linalg.norm(vo)**2
         aIn = -mu/np.linalg.norm(vi)**2
-        delta = math.acos(np.dot(voh, vih) / (np.linalg.norm(voh)*np.linalg.norm(vih)))
+        delta = math.acos(np.dot(voh, vi) / (np.linalg.norm(voh)*np.linalg.norm(vi)))
         tmp = [aOut / aIn, delta - math.asin(1 / eOut)]
         eOut = (tmp[0] * (eOut - 1) + 1) * (math.cos(tmp[1]) / (eOut**2 * math.sqrt(1 - eOut**-2))) + tmp[0] * math.sin(tmp[1])
         return eOut
@@ -144,9 +144,38 @@ def getLamProps(l, l2, state1, state2):
     return C3, tof, abs(Δv)
 
 def setEpoch(t0, p0, p1):
+
+    if p0 == p1:      # If returning to same planet
+        det = Δ // 3
+        mod = 3 - Δ % 3
+        et = np.array([])
+        i = 1
+        for K in range(1, 4):
+            det_ = det + 1 if i > mod else det
+            i += 1
+            et0 = 0.9  * K * tau[p0[0]]*86400 + t0
+            et1 = (K * tau[p0[0]] - 3)*86400 + t0
+            et_ = np.linspace(et0, et1, det_)
+            for val in et_: et = np.append(et, val)
+    
+    else:
+        if int(p1) > 4:   # Outer Planets Case
+            n = 0.05
+            m = 0.33
+        else:             # All other cases
+            n = 0.1
+            m = 1
+
+        # SETTING EPOCH UPPER AND LOWER LIMITS
+        et0 = n*(tau[p0[0]] + tau[p1[0]])*86400 + t0
+        et1 = m*(tau[p0[0]] + tau[p1[0]] - 1)*86400 + t0
+
+        # CREATING LINEAR RANGE
+        et = np.linspace(et0, et1, Δ)
+        """
     # SETTING PARAMETERS FOR RANGES
     if p0 == p1: # If returning to same planet
-        n = 1.05 # Return in ~2.1 periods
+        n = 0.495 # Return in ~2.1 periods
         m = 1.5  # Return in 3 periods
     else:        # All other cases
         n = 0.1
@@ -158,7 +187,7 @@ def setEpoch(t0, p0, p1):
 
     # CREATING LINEAR RANGE
     et = np.linspace(et0, et1, Δ)
-    
+        """
     return et
 
 # EVALUATES ARC #1 SLIDER CHANGE
