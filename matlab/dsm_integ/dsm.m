@@ -75,7 +75,7 @@ end
 
 
 %% Processing Results
-if true
+if false
     allDsmfld = fieldnames(allDsm);
     u=0;
     for i=1:length(allDsmfld)    
@@ -106,10 +106,51 @@ if true
     writetable(csvTable,'dsm_ega.csv');
     
 end
+
+
+%% Figure of Leveraging Orbit
+plottitle = '$\Delta$VEGA Performance';
+
+SMA_J = 778.6e6*1000;   % m         v_esc = 18.4635 km/s
+SMA_S = 1.433e9*1000;   % m         v_esc = 13.6097 km/s
+SMA_U = 2.872e9*1000;   % m         v_esc = 9.61344 km/s
+SMA_N = 4.495e9*1000;   % m
+
+levTypes = fieldnames(allDsm);
+for i=1:length(levTypes)
     
-    
-    
-    
-    
-    
+    thetaValues = fieldnames(allDsm.(levTypes{i}));
+
+    for j=1:length(thetaValues)
+        dv(j,i) = allDsm.(levTypes{i}).(thetaValues{j}).totalDV;
+        ra(j,i) = (allDsm.(levTypes{i}).(thetaValues{j}).dvegaRA)/149600000;
+    end
+end
+
+hold on
+for i=1:6
+    plot(dv(:,i),ra(:,i))
+end
+set(gca, 'YScale', 'log')
+xlim([4.5 10])
+
+SMA = [778.6e6;1.433e9;2.872e9;4.495e9]./149600000;
+for i=1:length(SMA)
+   plot([0 10],[SMA(i) SMA(i)])  
+end
+
+
+hold off
+
+ax = gca; ax.FontSize = 14;
+set(gca, 'TickLabelInterpreter','Latex');
+xlabel('Total $\Delta$V ($km/s$)','fontsize',12,'Interpreter','Latex');
+ylabel('Final Aphelion Radius (AU)','fontsize',14,'Interpreter','Latex');
+title(plottitle,'fontsize',14,'Interpreter','Latex');
+InSet = get(ax, 'TightInset');
+set(ax, 'Position', [InSet(1:2), 1-InSet(1)-InSet(3), 1-InSet(2)-InSet(4)])
+grid on; box on; set(gcf,'color','w');
+% print(gcf,'-dpng','-r150',name);
+
+
     
