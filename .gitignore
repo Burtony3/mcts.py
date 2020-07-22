@@ -6,3 +6,6 @@
 *.code-workspace
 data/spk/de438.bsp
 src/log.txt
+data/trees/clipper/clipper60k.pckl
+data/trees/galileo/galileo.pckl
+*~*

@@ -1,10 +1,12 @@
-\BOOKMARK [1][-]{section*.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section*.2}{Motivation}{}% 2
-\BOOKMARK [1][-]{section*.3}{Previous Work}{}% 3
-\BOOKMARK [1][-]{section*.4}{Methods}{}% 4
-\BOOKMARK [2][-]{section*.5}{Monte Carlo Tree Search}{section*.4}% 5
-\BOOKMARK [2][-]{section*.6}{Powered Flybys}{section*.4}% 6
-\BOOKMARK [2][-]{section*.7}{Deep Space Maneuvers}{section*.4}% 7
-\BOOKMARK [1][-]{section*.8}{Results}{}% 8
-\BOOKMARK [2][-]{section*.9}{Leveraging Maneuver to Saturn}{section*.8}% 9
-\BOOKMARK [2][-]{section*.10}{Europa Clipper Trajectory Recreation}{section*.8}% 10
+\BOOKMARK [1][-]{Doc-Start}{Introduction}{}% 1
+\BOOKMARK [1][-]{Doc-Start}{Background}{}% 2
+\BOOKMARK [1][-]{Doc-Start}{Monte Carlo Tree Search Implementation}{}% 3
+\BOOKMARK [2][-]{figure.1}{Selection}{Doc-Start}% 4
+\BOOKMARK [2][-]{figure.1}{Expansion}{Doc-Start}% 5
+\BOOKMARK [2][-]{figure.1}{Simulation}{Doc-Start}% 6
+\BOOKMARK [2][-]{figure.1}{Backpropagation}{Doc-Start}% 7
+\BOOKMARK [1][-]{figure.1}{Deep Space Maneuvers Implementation}{}% 8
+\BOOKMARK [1][-]{figure.1}{Performance Evaluation}{}% 9
+\BOOKMARK [2][-]{section*.1}{Leveraging Maneuver to Saturn}{figure.1}% 10
+\BOOKMARK [2][-]{section*.1}{Europa Clipper Trajectory Recreation}{figure.1}% 11
+\BOOKMARK [2][-]{section*.1}{Triton Trajectory Recreation}{figure.1}% 12
