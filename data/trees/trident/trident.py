@@ -8,10 +8,10 @@ mcts = MCTS()
 mcts.setup(
     '8',
     ["Jan 01, 2029", "Jul 01, 2029"],
-    maxIters = 4500,
-    dvBudget = 10,
+    maxIters = 10000,
+    dvBudget = 4.5,
     detail = 16,
-    flybyBodies = ['5'],
+    flybyBodies = ['2', '5'],
     C3max = 35,
     enableDSM = True,
     freeCapture = True,
@@ -26,7 +26,7 @@ idList = mcts.getResults()
 # print(mcts.queryBranchAttributes(idList[0]))
 
 # SAVING RESULTS
-mcts.export(filename = 'trident.xlsx')
+mcts.export(filename = 'trident.xlsx', exportFullTree = True)
 
 # PLOTTING BEST
 mcts.plotFamilies(idList, hideAxes = False, showTop = 20)

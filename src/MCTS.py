@@ -18,10 +18,10 @@ class MCTS(object):
         # ------------------------------------------------------------------------ #
 
     def loadKernels(self):
-        self.spk.furnsh("../data/spk/naif0009.tls")
-        self.spk.furnsh("../data/spk/de438.bsp")
-        self.spk.furnsh("../data/spk/gm_de431.tpc")
-        self.spk.furnsh("../data/spk/pck00010.tpc")
+        self.spk.furnsh(self.filepath + "/../data/spk/naif0009.tls")
+        self.spk.furnsh(self.filepath + "/../data/spk/de438.bsp")
+        self.spk.furnsh(self.filepath + "/../data/spk/gm_de431.tpc")
+        self.spk.furnsh(self.filepath + "/../data/spk/pck00010.tpc")
 
     def setup(
         self,
@@ -42,9 +42,6 @@ class MCTS(object):
         debug=False,             # Prints additional information
     ):
 
-        # IMPORTING DSM .CSV
-        self.dsmDvCsv = self.pd.read_csv("../matlab/dsm_integ/dsm_ega.csv", header=0)
-
         # DEFINING CONSTANTS
         self.AU2m = 149597870700
         self.AU2km = self.AU2m/1000
@@ -61,6 +58,10 @@ class MCTS(object):
         self.launchBody   = launchBody
         self.launchWindow = launchWindow
         self.maxIters     = maxIters
+        self.filepath     = self.os.getcwd()
+        
+        # IMPORTING DSM .CSV
+        self.dsmDvCsv = self.pd.read_csv(self.filepath + "/../matlab/dsm_integ/dsm_ega.csv", header=0)
 
         # SAVING ENVIRONMENT PARAMENTERS
         self.frame = frame
@@ -91,42 +92,52 @@ class MCTS(object):
         else:
             self.t0 = self.spk.utc2et(launchWindow)
 
-    def run(self):
+    def run(self, iters = None, startNode = 0):
         self.treeArt() # ASCII Graphic
 
         # SETTING STOP CONDITION (CTRL+C)
+        self.breakLoop = False
         import signal
         signal.signal(signal.SIGINT, self.debug)
+        signal.signal(signal.SIGTSTP, self.exit)
 
         # STARTING LOG FILE
-        if self.os.path.exists("log.txt"):
-            self.os.remove("log.txt")
+        if not iters:
+            self.startNode = 0
+            maxIters = self.maxIters
+            if self.os.path.exists("log.txt"):
+                self.os.remove("log.txt")
 
-        # TAKING START TIME
-        self.startTime = self.time.time()
+            # TAKING START TIME
+            self.startTime = self.time.time()
 
-        # CREATING TRACKING ELEMENTS
-        self.runTime = 0
-        self.numLam = 0
+            # CREATING TRACKING ELEMENTS
+            self.runTime = 0
+            self.numLam = 0
 
-        # INITIALIZING TREE
-        self.node = []                                                     # Allocating List
-        self.node.append(nodeObj(None, parent = None, layer = 1))          # Creating Root Node
-        self.node[0].children = []
-        for i in range(len(self.t0)):                                      # Creating launch window children
-            self.node.append(nodeObj((self.launchBody, self.t0[i]), layer = 2))
-            self.node[0].children.append(len(self.node) - 1)
+            # INITIALIZING TREE
+            self.node = []                                                     # Allocating List
+            self.node.append(nodeObj(None, parent = None, layer = 1))          # Creating Root Node
+            self.node[0].children = []
+            for i in range(len(self.t0)):                                      # Creating launch window children
+                self.node.append(nodeObj((self.launchBody, self.t0[i]), layer = 2))
+                self.node[0].children.append(len(self.node) - 1)
+        else:
+            self.startNode = startNode
+            self.maxIters += iters
+            maxIters = iters
 
         # =============================================================== #
         # <><><><> RUNNING MONTE CARLO TREE SEARCH CREATION LOOP <><><><> #
         # =============================================================== #
 
-        with self.click.progressbar(range(self.maxIters), fill_char = '█', empty_char = ' ', label='Building Trajectories') as bar:
+        with self.click.progressbar(range(maxIters), fill_char = '█', empty_char = ' ', label='Building Trajectories') as bar:
             for itr in bar:
 
                 # CHECKING FOR BREAK CONDITION
-                if all([self.node[id].isTerminal for id in self.node[0].children]):
+                if all([self.node[id].isTerminal for id in self.node[self.startNode].children]):
                     print(itr)
+                    id = -1
                     break
 
                 # PATH TO MOST VALUABLE LEAF NODE
@@ -146,12 +157,11 @@ class MCTS(object):
                 # UPDATES UP BRANCH
                 self.backprop(id, X)
 
+                if self.breakLoop:
+                    break
+
             # RECORDING RUN TIME
             self.runTime = self.time.time() - self.startTime
-
-            # DEBUGG PRINTING
-            if self.debugBool:
-                self.debug()
 
     ## ———————————————————————————————————————————————————————————————————————————— ##
     ## —————————————————————————————— SUB-ROUTINES ———————————————————————————————— ##
@@ -172,7 +182,7 @@ class MCTS(object):
             return val
 
         # CONSTANT INITIALIZATION
-        id = 0                        # Starting at top of tree
+        id = self.startNode           # Starting at top of tree
         node = self.node              # Reassigning node for clarity
 
         # PATHING TO HIGHEST VALUE LEAF
@@ -204,7 +214,7 @@ class MCTS(object):
 
             # CHECKING WHETHER UCB1 IS EMPTY
             if len(ucb1) is len_:
-                # CHECKING IF ALL NODES ARE TERMINAL & RESTARTING SEARCH
+                # CHECKING IF ALL NODES ARE TERMINAL & RESTARTING SEARCHΔ
                 if all([val == 0 for val in ucb1]):
                     if id == 0: 
                         id = -1
@@ -691,7 +701,7 @@ class MCTS(object):
             theta = -theta
         return theta
 
-    def plotPath(self, id, showPlanets = True, axes = None, lamC = "tab:blue", alpha = 1):
+    def plotPath(self, id, showPlanets = True, axes = None, lamC = "tab:blue", alpha = 1, cntrS = 50):
         # IMPORTING PACKAGES
         pk = self.pk
         plt = self.plt.pyplot
@@ -706,23 +716,6 @@ class MCTS(object):
 
         # RETRIEVING LINEAGE
         lineage = self.getLineage(id)[:-1]
-
-        # PLOTTING PLANETS AVAILABLE FOR FLYBY AND ARRIVAL
-        if showPlanets:
-            et0 = self.node[id].state[1]
-            for P in self.P:
-                tau = self.tau[P]*86400
-                et1 = et0 + tau
-                et = self.np.linspace(et0, et1, 250)
-                x = []
-                y = []
-                z = []
-                for et_ in et:
-                    r = self.spk.spkezr(P, et_, self.frame, self.abcorr, self.cntrBody)[0][:3]/self.AU2km
-                    x.append(r[0])
-                    y.append(r[1])
-                    z.append(r[2])
-                ax.plot3D(x, y, z, 'black', linewidth=0.5)
 
         # PLOTTING LAMBERT ARCS
         for id in lineage[:-1]:
@@ -779,11 +772,38 @@ class MCTS(object):
                 l = self.computeLambert(id = id)
                 pk.orbit_plots.plot_lambert(l, axes = ax, color=lamC, units = self.AU2m, alpha = alpha)
 
+        # PLOTTING PLANETS AVAILABLE FOR FLYBY AND ARRIVAL
+        if showPlanets:            
+            # FINDING INITIAL EPOCH
+            et0 = self.node[id].state[1]
+            if self.enableDSM: self.P.append("3") # Adding Earth for DSM Case
+            for P in self.P:
+                # FINDING SECONDS IN 1 ORBIT PERIOD
+                tau = self.tau[P]*86400
+                et1 = et0 + tau
+                et = self.np.linspace(et0, et1, 250)
+
+                # COLLECTING DATA POINTS
+                x = []
+                y = []
+                z = []
+                for et_ in et:
+                    r = self.spk.spkezr(P, et_, self.frame, self.abcorr, self.cntrBody)[0][:3]/self.AU2km
+                    x.append(r[0])
+                    y.append(r[1])
+                    z.append(r[2])
+                ax.plot3D(x, y, z, 'black', linewidth=0.5)
+
+            # PLOTTING CENTER BODY SURFACE
+            ax.scatter3D(0, 0, 0, s = cntrS, c = "#FFCC33")
+
         if not axes:
             self.axisEqual3D(ax)
+            ax.set_box_aspect((1, 1, 1))
             plt.show()
 
     def plotFamilies(self, idList, hideAxes = False, showTop = None):
+        print("CHANGED")
         # IMPORTING PACKAGES
         plt = self.plt.pyplot
         mpatches = self.plt.patches
@@ -869,6 +889,7 @@ class MCTS(object):
         ax.set_title("Trajectories to {}\n{} to {}\nΔv Max: {} km/s".format(self.pkP[self.finalBody].capitalize(), self.launchWindow[0], self.launchWindow[1], self.ΔvBudget))
 
         self.axisEqual3D(ax)
+        ax.set_box_aspect((1, 1, 1))
 
         plt.show()
 
@@ -972,7 +993,7 @@ class MCTS(object):
         return attr
 
 
-    def plotAttributes(self, idList, xAttr, yAttr, cAttr):
+    def plotAttributes(self, idList, xAttr, yAttr, cAttr, cmap = 'turbo'):
         # IMPORTING TOOLBOXES
         plt = self.plt.pyplot
 
@@ -1003,7 +1024,7 @@ class MCTS(object):
 
         # PLOTTING
         ax.grid('on', zorder = 3)
-        sc = ax.scatter(x, y, c = c, s=7.5, zorder = 5)
+        sc = ax.scatter(x, y, c = c, s=7.5, zorder = 3, cmap=cmap)
 
         # ADDING COLORBAR
         cbar = fig.colorbar(sc)
@@ -1064,6 +1085,15 @@ class MCTS(object):
         # FINDING RESUTLS
         id_ = self.getResults(printR = False)
 
+        rowCID = []
+        for id in id_:
+            lineage = self.getLineage(id)[:-1]
+            for i in lineage:
+                if i not in rowCID:
+                    rowCID.append(i)
+
+        # print(rowCID)
+
         # STARTING XLSX
         if filename == 'auto':
             filename = "{0}_{1}_to_{2}_detail{3}_iters{4}.xlsx".format(
@@ -1098,62 +1128,90 @@ class MCTS(object):
         except Exception as inst:
             print(inst)
             return out
+
         df.to_excel(writer, sheet_name = 'Results')
 
         # EXPORTING FULL TREE
         if exportFullTree:
+            thresh = 1000000
             out = {'id': [], 'layer': [], 'visits': [], 'terminal': [], 'planet': [], 'date': [], 'theta': [], 'delta': [], 'h': [], 'dvTot': [], 'dvLeg': [], 'x': [], 'parent': [], 'children': [], 'vinf': []}
-            length = len(self.node) if len(self.node) < 1000000 else 1000000
-            with self.click.progressbar(range(length), fill_char = '█', empty_char = ' ', label='Exporting All Nodes  ') as bar:
+            with self.click.progressbar(range(len(self.node)), fill_char = '█', empty_char = ' ', label='Exporting All Nodes  ') as bar:
                 for i in bar:
-                    # NODE INFORMATION
-                    out['id'].append(i)
-                    out['layer'].append(self.node[i].layer)
-                    out['visits'].append(self.node[i].n)
-                    out['terminal'].append("True" if self.node[i].isTerminal else "False")
+                    if i == thresh-1:
+                        # EXPORTING TO SPREADSHEET
+                        df = pd.DataFrame(out)
 
-                    # NODE STATE
-                    if self.node[i].state and len(self.node[i].state) == 2:
-                        out['planet'].append(self.pkP[self.node[i].state[0]])
-                        out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
-                        out['theta'].append("None")
-                    elif self.node[i].state:
-                        K = self.node[i].state[0][1]
-                        p = self.pkP[self.node[i].state[0][0]]
-                        out['planet'].append("{} {} DSM".format(p, K))
-                        out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
-                        out['theta'].append(self.node[i].state[2])
+                        sheetName = "All Nodes (1)"
+                        df.to_excel(writer, sheet_name = sheetName)
+
+                        for key in out.keys():
+                            out[key] = []
+
                     else:
-                        out['planet'].append("None")
-                        out['date'].append("None")
-                        out['theta'].append("None")
+                        # NODE INFORMATION
+                        out['id'].append(i)
+                        out['layer'].append(self.node[i].layer)
+                        out['visits'].append(self.node[i].n)
+                        out['terminal'].append("True" if self.node[i].isTerminal else "False")
 
-                    # NODE COST/REWARDS
-                    out['dvTot'].append(round(self.node[i].Δv, 2))
-                    out['dvLeg'].append(round(self.node[i].ΔvLeg, 2))
-                    out['delta'].append(round(self.node[i].delta, 2) if self.node[i].delta else [])
-                    out['h'].append(round(self.node[i].h.item(), 2) if self.node[i].h and self.node[i].h != -1 else [])
-                    out['x'].append(round(self.node[i].X, 4))
+                        # NODE STATE
+                        if self.node[i].state and len(self.node[i].state) == 2:
+                            out['planet'].append(self.pkP[self.node[i].state[0]])
+                            out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                            out['theta'].append("None")
+                        elif self.node[i].state:
+                            K = self.node[i].state[0][1]
+                            p = self.pkP[self.node[i].state[0][0]]
+                            out['planet'].append("{} {} DSM".format(p, K))
+                            out['date'].append(spk.et2utc(self.node[i].state[1], 'C', 14, 12))
+                            out['theta'].append(self.node[i].state[2])
+                        else:
+                            out['planet'].append("None")
+                            out['date'].append("None")
+                            out['theta'].append("None")
 
-                    # NODE "FAMILY"
-                    if self.node[i].parent:
-                        out['parent'].append(self.node[i].parent)
-                    else:
-                        out['parent'].append("None")
-                    out['children'].append(self.node[i].children)
+                        # NODE COST/REWARDS
+                        out['dvTot'].append(round(self.node[i].Δv, 2))
+                        out['dvLeg'].append(round(self.node[i].ΔvLeg, 2))
+                        out['delta'].append(round(self.node[i].delta, 2) if self.node[i].delta else [])
+                        out['h'].append(round(self.node[i].h.item(), 2) if self.node[i].h and self.node[i].h != -1 else [])
+                        out['x'].append(round(self.node[i].X, 4))
 
-                    # NODE INBOUND V∞
-                    if self.node[i].parent and self.node[i].parent > self.detail:
-                        l = self.computeLambert(i)
-                        vp = self.spk.spkezr(self.node[i].state[0][0], self.node[i].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
-                        vinf = self.np.linalg.norm(self.np.array(l.get_v2()[0])/1000 - vp)
-                        out['vinf'].append(vinf)
-                    else:
-                        out['vinf'].append([])
+                        # NODE "FAMILY"
+                        if self.node[i].parent:
+                            out['parent'].append(self.node[i].parent)
+                        else:
+                            out['parent'].append("None")
+                        out['children'].append(self.node[i].children)
 
-            # EXPORTING TO SPREADSHEET
-            df = pd.DataFrame(out)
-            df.to_excel(writer, sheet_name = 'All Nodes')
+                        # NODE INBOUND V∞
+                        if self.node[i].parent and self.node[i].parent > self.detail:
+                            l = self.computeLambert(i)
+                            vp = self.spk.spkezr(self.node[i].state[0][0], self.node[i].state[1], self.frame, self.abcorr, self.cntrBody)[0][3:]
+                            vinf = self.np.linalg.norm(self.np.array(l.get_v2()[0])/1000 - vp)
+                            out['vinf'].append(vinf)
+                        else:
+                            out['vinf'].append([])
+
+
+                # EXPORTING TO SPREADSHEET
+                df = pd.DataFrame(out)
+                """
+                def colorRow(x):
+                    print("T")
+                    df2 = x.copy()
+                    for i in rowCID:
+                        df2.loc[df2['id'] == rowCID[i], :] = 'background-color: yellow'
+                    return df2
+
+                # try:
+                print("APLYING STYLE")
+                df.style.apply(colorRow, axis = None)
+                # except:
+                    # print("jinja2 Package Not Found -- No styling will be applied")
+                """
+                sheetName = "All Nodes" if len(self.node) < thresh-1 else "All Nodes (2)"
+                df.to_excel(writer, sheet_name = sheetName)
 
         # GETTING RUN INFORMATION
         out = {
@@ -1196,12 +1254,26 @@ class MCTS(object):
         print("                .:@:'.")
         print("______________.::(@:.______________________ \n\n")
 
+    def exit(self, *args):
+        import signal
+        import sys
+        sysExit = lambda *args: sys.exit(1)
+        signal.signal(signal.SIGTSTP, sysExit)
+        try:
+            r = input("\n\nAre you sure you want to exit, all unsaved information will be lost? [Yes/No] ")
+            if r == "Yes":
+                sys.exit(1)
+        except KeyboardInterrupt:
+            print("\nForce Quitting")
+            sys.exit(1)
+
     def debug(self, *args):
         print(" ")
         print("### =================================================== ###")
         print("### ==================== DEBUGGING ==================== ###")
         print("### =================================================== ###")
         print(" ")
+        self.breakLoop = True
         time_ = self.time.time() - self.startTime
         cells = []
         tree = self.node

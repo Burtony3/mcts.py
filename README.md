@@ -1,5 +1,6 @@
 # Broad Trajectory Search w/ MCTS
 
+![](data/trees/trident/trajFamilies.png)
 ## Usage
 
 ### Required Additional Files/Packages
