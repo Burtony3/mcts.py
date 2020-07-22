@@ -18,6 +18,7 @@ class MCTS(object):
         # ------------------------------------------------------------------------ #
 
     def loadKernels(self):
+        self.filepath     = self.os.getcwd()
         self.spk.furnsh(self.filepath + "/../data/spk/naif0009.tls")
         self.spk.furnsh(self.filepath + "/../data/spk/de438.bsp")
         self.spk.furnsh(self.filepath + "/../data/spk/gm_de431.tpc")
