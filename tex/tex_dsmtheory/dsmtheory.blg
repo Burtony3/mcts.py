@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: dsmtheory.aux
+The style file: ./AAS_publication.bst
+Database file #1: ./referencesDSMSsection.bib
+Warning--empty chapter and pages in sims1994
+Warning--empty publisher in sims1994
+Warning--empty year in sims1994
+You've used 2 entries,
+            1928 wiz_defined-function locations,
+            498 strings with 3905 characters,
+and the built_in function-call counts, 512 in all, are:
+= -- 48
+> -- 12
+< -- 0
++ -- 5
+- -- 3
+* -- 40
+:= -- 73
+add.period$ -- 2
+call.type$ -- 2
+change.case$ -- 0
+chr.to.int$ -- 0
+cite$ -- 5
+duplicate$ -- 27
+empty$ -- 55
+format.name$ -- 3
+if$ -- 122
+int.to.chr$ -- 0
+int.to.str$ -- 2
+missing$ -- 3
+newline$ -- 9
+num.names$ -- 2
+pop$ -- 10
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 16
+stack$ -- 0
+substring$ -- 32
+swap$ -- 10
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 3
+while$ -- 5
+width$ -- 3
+write$ -- 19
+(There were 3 warnings)

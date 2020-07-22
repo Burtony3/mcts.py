@@ -130,25 +130,46 @@ end
 % Integration of new trajectory and Plotting
 preManeuverState = tbp(xL,T/2,mu_s,0,options);
 postManeuverState = tbp(xD2,dti,mu_s,0,options);
-postFBState = tbp(xOut1,5*365*86400, mu_s,0,options);
+postFBState = tbp(xOut1,5.2*365*86400, mu_s,0,options);
 
 % DSM Trajectory Visual
 if pltLevOrb
     figure
-    hold on
-    scatter(0,0,'MarkerEdgeColor','r')
-    scatter(xi(1),xi(2),'MarkerEdgeColor','b')
-    scatter(xD1(1), xD1(2),'MarkerEdgeColor', 'k')
-    scatter(xIn(1), xIn(2),'MarkerEdgeColor', [0.5 0.5 0.5])
-    plot(postManeuverState(:,1),postManeuverState(:,2))
-    plot(preManeuverState(:,1),preManeuverState(:,2))
-    plot(postFBState(:,1),postFBState(:,2))
+    hh=[];
+    hold on;
     pltCirc(0,0,aukm)  
     pltCirc(0,0,778.6e6)
     pltCirc(0,0,1.433e9)
-    %pltCirc(0,0,2.872e9)
     hold off
-    axis equal; grid on; 
+    hold on
+    %scatter(0,0,'MarkerFaceColor',[0.4940    0.1840    0.5560],'MarkerEdgeColor',[0.4940    0.1840    0.5560])
+    hh(1) = plot(preManeuverState(:,1),preManeuverState(:,2),'linewidth',2);
+    hh(2) = plot(postManeuverState(:,1),postManeuverState(:,2),'linewidth',2);
+    hh(3) = plot(postFBState(:,1),postFBState(:,2),'linewidth',2,'color',[0.3010    0.7450    0.9330]);
+    hh(4) = scatter(xi(1),xi(2),'MarkerFaceColor',[0 0.4470 0.7410],'MarkerEdgeColor',[0 0.4470 0.7410]);
+    hh(5) = scatter(xD1(1), xD1(2),'MarkerFaceColor',[0.8500    0.3250    0.0980],'MarkerEdgeColor',[0.8500    0.3250    0.0980]);
+    hh(6) = scatter(xIn(1), xIn(2),'MarkerFaceColor',[0.3010    0.7450    0.9330],'MarkerEdgeColor',[0.3010    0.7450    0.9330]);
+    hold off;
+    hold on
+    scatter(0,0,'MarkerFaceColor',[0.9290    0.6940    0.1250],'MarkerEdgeColor',[0.9290    0.6940    0.1250]);    
+    hold off
+    legendEntries = {'Pre-DSM','Post-DSM','Post-Flyby',...
+        'Earth at Launch','DSM Location','Earth Intercept'};
+    
+    %pltCirc(0,0,2.872e9)
+
+    ax = gca; ax.FontSize = 14;
+    set(gca, 'TickLabelInterpreter','Latex');
+    xlabel('X (km)','fontsize',12,'Interpreter','Latex');
+    ylabel('Y (km)','fontsize',12,'Interpreter','Latex');
+    title('3:$1^-$ $\Delta$VEGA Example','fontsize',14,'Interpreter','Latex');
+    legend(hh,legendEntries,'Autoupdate','off','fontsize',16,'location','northwest', ...
+     'Interpreter','latex')   
+    InSet = get(ax, 'TightInset');
+    set(ax, 'Position', [InSet(1:2), 1-InSet(1)-InSet(3), 1-InSet(2)-InSet(4)])
+    grid on; box on; axis equal; set(gcf,'color','w');
+    %print(gcf,'-dpng','-r150','dsmexamplename')
+    
 end
 
 % _________________________________________________________________________
@@ -375,6 +396,6 @@ function pltCirc(x,y,r)
     th = 0:pi/50:2*pi;
     xunit = r * cos(th) + x;
     yunit = r * sin(th) + y;
-    h = plot(xunit, yunit,'b');
+    h = plot(xunit, yunit,'k');
     hold off
 end

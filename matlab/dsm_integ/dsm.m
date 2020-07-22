@@ -36,9 +36,9 @@ clear firstPC firstMac PC Mac
 
 %% DSM Inputs
 Klist = [-2 2 -3 3 -4 4];          % Leveraging Maneuver Type (K:1 w/ Earth, pos or neg.) 
-thetaList = [5:0.5:75];      % List of intercept thetas
-%Klist = 2;
-%thetaList = 44;
+thetaList = [2:5:70];      % List of intercept thetas
+%Klist = -3;
+%thetaList = 40.7;
 pltFBvecs = false;        % Debug Flyby Velocity Vectors
 pltLevOrb = false;        % Debug Trajectory Visual
 
@@ -61,6 +61,8 @@ for i=1:length(Klist)
 
         % Calculate DSM and Leveraging Orbit Properties
         out = calcDsm3(K,theta,pltFBvecs,pltLevOrb);
+        %out = calcDsm2(K,theta,pltFBvecs,pltLevOrb,20);
+        
         
         if out.solfound
             allDsm.(strucName).(['t',thetaName]) = out;
@@ -72,6 +74,10 @@ for i=1:length(Klist)
     disp(i)
 end
 
+% Nominal Launch Vinf Values
+% 2: 5.0779
+% 3: 6.9272
+% 4: 7.9273
 
 
 %% Processing Results
@@ -109,6 +115,7 @@ end
 
 
 %% Figure of Leveraging Orbit
+if true
 plottitle = '$\Delta$VEGA Performance';
 
 SMA_J = 778.6e6*1000;   % m         v_esc = 18.4635 km/s
@@ -122,25 +129,35 @@ for i=1:length(levTypes)
     thetaValues = fieldnames(allDsm.(levTypes{i}));
 
     for j=1:length(thetaValues)
-        dv(j,i) = allDsm.(levTypes{i}).(thetaValues{j}).totalDV;
+        % CalcDSM2 Function
+        dsmdv = allDsm.(levTypes{i}).(thetaValues{j}).dsmDV;
+        vinfdv = allDsm.(levTypes{i}).(thetaValues{j}).vinflaunch;
+        dv(j,i) = dsmdv+vinfdv;
         ra(j,i) = (allDsm.(levTypes{i}).(thetaValues{j}).dvegaRA)/149600000;
+        
+        % CalcDSM3 Function
+        %dv(j,i) = allDsm.(levTypes{i}).(thetaValues{j}).totalDV;
+        %ra(j,i) = (allDsm.(levTypes{i}).(thetaValues{j}).dvegaRA)/149600000;
     end
 end
 
 hold on
 for i=1:6
-    plot(dv(:,i),ra(:,i))
+    if i==1 || i==3 || i==5
+        plot(dv(:,i),ra(:,i),'r','linewidth',1.5)
+    else
+        plot(dv(:,i),ra(:,i),'b','linewidth',1.5)
+    end
 end
-set(gca, 'YScale', 'log')
-xlim([4.5 10])
 
 SMA = [778.6e6;1.433e9;2.872e9;4.495e9]./149600000;
 for i=1:length(SMA)
-   plot([0 10],[SMA(i) SMA(i)])  
+   plot([0 10],[SMA(i) SMA(i)],'k','linewidth',2)  
 end
-
-
 hold off
+set(gca, 'YScale', 'log')
+xlim([4.5 10])
+
 
 ax = gca; ax.FontSize = 14;
 set(gca, 'TickLabelInterpreter','Latex');
@@ -152,5 +169,5 @@ set(ax, 'Position', [InSet(1:2), 1-InSet(1)-InSet(3), 1-InSet(2)-InSet(4)])
 grid on; box on; set(gcf,'color','w');
 % print(gcf,'-dpng','-r150',name);
 
-
+end
     
