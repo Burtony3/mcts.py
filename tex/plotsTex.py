@@ -1,16 +1,18 @@
 import spiceypy as spk
 import pykep as pk
+from pykep import propagate_lagrangian
 import matplotlib
+from matplotlib import patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import dill
 import sys
 sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
-f = open("../data/trees/clipper/clipper60k.pckl", "rb")
+f = open("../data/trees/clipper/clipper70k.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
 
-def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "show"):
+def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "show", removeVinfdv = True):
     # plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     ## for Palatino and other serif fonts use:
     #rc('font',**{'family':'serif','serif':['Palatino']})
@@ -59,11 +61,17 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
     for id in idList:
         attr = tree.queryBranchAttributes(id)
         x.append(attr[xAttr])
-        y.append(attr[yAttr])
-        if cAttr:
+        if yAttr == 'dvTot' and removeVinfdv:
+            y.append(attr[yAttr] - attr['vInfF'])
+        else:
+            y.append(attr[yAttr])
+        if cAttr and cAttr[:3] != 'top':
             c.append(attr[cAttr])
         seq.append(attr['seq'])
-        Δv.append(attr['dvTot'])
+        if removeVinfdv:
+            Δv.append(attr['dvTot'] - attr['vInfF'])
+        else:
+            Δv.append(attr['dvTot'])
 
     # PLOTTING
     ax.grid(lDict[xAttr][1], 'major', 'x', linestyle = "--", zorder = 3)
@@ -71,21 +79,26 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
     sDict = {}
     cDict = {}
     itr = 0
-    if cAttr == "seq": 
-        size = 20
+    if cAttr == "seq" or cAttr[:3] == 'top': 
         for i in range(len(x)):
             newBool = False
             # CHECKING FOR COLOR MATCHES KEY
-            if seq[i] in sDict.keys():
-                shape = sDict[seq[i]]
-                color = cDict[seq[i]]
+            if cAttr == 'seq':
+                size = 20
+                if seq[i] in sDict.keys():
+                    shape = sDict[seq[i]]
+                    color = cDict[seq[i]]
+                else:
+                    shape = shapeList[itr]
+                    color = cList[itr]
+                    sDict[seq[i]] = shape
+                    cDict[seq[i]] = color
+                    itr += 1
+                    newBool = True
             else:
-                shape = shapeList[itr]
-                color = cList[itr]
-                sDict[seq[i]] = shape
-                cDict[seq[i]] = color
-                itr += 1
-                newBool = True
+                size = 5
+                shape = 'o'
+                color = 'gray' if i > len(x) - int(cAttr[3:]) else 'black'
             if newBool:
                 sc = plt.scatter(x[i], y[i], s=size, zorder = 3, marker = shape, label = seq[i], color = color)
             else:
@@ -128,4 +141,117 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
         plt.savefig("filename.png")
 
 
-state(tree, 'dateL', 'dvTot', "seq", showTop = None)
+def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
+    AU2m = 149597870700
+    AU2km = AU2m/1000
+    plt.rc('text', usetex = True)
+    plt.rc('font', family = 'serif', size = 14)
+    matplotlib.rcParams["text.latex.preamble"] = r"\usepackage{xfrac}"
+    xLabel = "X-Position J2000 Frame (AU)"
+    yLabel = "Y-Position J2000 Frame (AU)"
+
+    # STARTING PLOT WINDOW
+    fig = plt.figure()
+    ax = fig.gca()
+
+    ax.set_xlabel(xLabel)
+    ax.set_ylabel(yLabel)
+
+    # CREATING COLOR LISTS
+    cList = ["blue", "orange", "green", "red", "purple", "brown", "pink", "gray", "olive", "cyan"]
+    cList = ["tab:"+color for color in cList]
+    cDict = {}
+
+    if not id:
+        idList = tree.getResults()
+        if type(showTop) == int:
+            idList = idList[showTop::-1]
+        else:
+            idList = idList[::-1]
+        id = idList[0]
+    else:
+        idList = id
+
+    # FINDING INITIAL EPOCH
+    et0 = tree.node[id].state[1]
+    if tree.enableDSM: tree.P.append("3") # Adding Earth for DSM Case
+    for P in tree.P:
+        # FINDING SECONDS IN 1 ORBIT PERIOD
+        tau = tree.tau[P]*86400
+        et1 = et0 + tau
+        et = tree.np.linspace(et0, et1, 250)
+
+        # COLLECTING DATA POINTS
+        x = []
+        y = []
+        for et_ in et:
+            r = tree.spk.spkezr(P, et_, tree.frame, tree.abcorr, tree.cntrBody)[0][:3]/tree.AU2km
+            x.append(r[0])
+            y.append(r[1])
+        ax.plot(x, y, ':k', linewidth=1)
+
+    # PLOTTING CENTER BODY SURFACE
+    ax.scatter(0, 0, s = 50, c = "#FFCC33", zorder = 4)
+
+    # RETRIEVING PLOTTED VALUES
+    itr = 0
+    for id in idList:
+        attr = tree.queryBranchAttributes(id)
+        seq = attr['seq']
+        lineage = tree.getLineage(id)[-3::-1]
+
+        if not seqT or seq in seqT:
+            if seq in cDict.keys():
+                color = cDict[seq]
+            else:
+                color = cList[itr]
+                cDict[seq] = color
+                itr += 1
+
+            for id_ in lineage:
+                l = tree.computeLambert(id_)
+                r = l.get_r1()
+                v = l.get_v1()[0]
+                T = l.get_tof()
+                mu = l.get_mu()
+
+                dt = T / (N - 1)
+
+                x = np.array([0.0] * N)
+                y = np.array([0.0] * N)
+
+                for i in range(N):
+                    x[i] = r[0] / AU2m
+                    y[i] = r[1] / AU2m
+                    # print(r, type(r), v, type(v), dt, type(dt), mu, type(mu))
+                    r, v = propagate_lagrangian(r, v, dt, mu)
+
+                ax.plot(x, y, linewidth = 1, color = color)
+
+    # print(cDict)
+
+    # ADDING FAMILIES TO LEGENDS
+    patchList = []
+    for key in cDict:
+        # lab = []
+        # for i in range(len(key)):
+        #     if key[i] in tmpDict.values():
+        #         lab.append([key_ for key_ in tmpDict.items() if key_[1] == key[i]][0][0])
+        #     else:
+        #         lab.append(self.letterDict[key[i]] if key[i] in self.letterDict else key[i])
+        # lab = ''.join(lab)
+        dataKey = mpatches.Patch(color = cDict[key], label=key)
+        patchList.append(dataKey)
+
+    if len(patchList) > 1:
+        plt.legend(handles = patchList)
+
+    ax.grid(zorder = 3)
+    ax.set_aspect('equal', 'box')
+    # ADDING COLORBAR
+    plt.tight_layout()
+    plt.show()
+
+
+# state(tree, 'seq', 'dvTot', "top50", showTop = None)
+orbit(tree, showTop = 25, seqT = ["EEVEEJ"])
