@@ -8,11 +8,11 @@ import numpy as np
 import dill
 import sys
 sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
-f = open("../data/trees/clipper/clipper70k.pckl", "rb")
+f = open("../data/trees/galileo/galileo.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
 
-def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "show", removeVinfdv = True):
+def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "show", removeVinfdv = True, pickID = None):
     # plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     ## for Palatino and other serif fonts use:
     #rc('font',**{'family':'serif','serif':['Palatino']})
@@ -72,6 +72,9 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
             Δv.append(attr['dvTot'] - attr['vInfF'])
         else:
             Δv.append(attr['dvTot'])
+        if pickID and id == pickID:
+            pIDx = x[-1]
+            pIDy = y[-1]
 
     # PLOTTING
     ax.grid(lDict[xAttr][1], 'major', 'x', linestyle = "--", zorder = 3)
@@ -114,6 +117,9 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
             cbar.ax.set_ylabel(lDict[cAttr][0])
     # print(sDict)
 
+    if pickID:
+        ax.scatter(pIDx, pIDy, s = 65, edgecolors = "black", marker = 'o', facecolors = 'none', linewidths = 1.25, label = "Plotted Result", zorder = 5)
+
     if xAttr == "seq" or xAttr == "dateL":
         # print(vals, labels)
         if xAttr == "dateL": 
@@ -123,10 +129,12 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
         plt.xticks(rotation = 30, ha = 'right', size=12)
 
     if cAttr == "seq":
+        ncol = len(sDict) // 2 + (1 if len(sDict) % 2 == 1 else 0)
+        if len(sDict) % 2 == 0 and pickID != None: ncol += 1
         plt.legend(
             numpoints = 1, 
             loc = "lower left", 
-            ncol = len(sDict) // 2 + (1 if len(sDict) % 2 == 1 else 0), 
+            ncol = ncol, 
             handletextpad = 0.1, prop={'size': 12}, 
             bbox_to_anchor = (0, 1.02, 1, 0.2)
         )
@@ -170,7 +178,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
             idList = idList[::-1]
         id = idList[0]
     else:
-        idList = id
+        idList = [id]
 
     # FINDING INITIAL EPOCH
     et0 = tree.node[id].state[1]
@@ -253,5 +261,5 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
     plt.show()
 
 
-# state(tree, 'seq', 'dvTot', "top50", showTop = None)
-orbit(tree, showTop = 25, seqT = ["EEVEEJ"])
+# state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 704335)
+orbit(tree, id = 704335)

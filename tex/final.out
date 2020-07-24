@@ -4,9 +4,10 @@
 \BOOKMARK [2][-]{figure.1}{Selection}{Doc-Start}% 4
 \BOOKMARK [2][-]{figure.1}{Expansion}{Doc-Start}% 5
 \BOOKMARK [2][-]{figure.1}{Simulation}{Doc-Start}% 6
-\BOOKMARK [2][-]{figure.1}{Backpropagation}{Doc-Start}% 7
-\BOOKMARK [1][-]{figure.1}{Deep Space Maneuvers Implementation}{}% 8
-\BOOKMARK [1][-]{figure.1}{Performance Evaluation}{}% 9
-\BOOKMARK [2][-]{section*.1}{Leveraging Maneuver to Saturn}{figure.1}% 10
-\BOOKMARK [2][-]{section*.1}{Europa Clipper Trajectory Recreation}{figure.1}% 11
-\BOOKMARK [2][-]{section*.1}{Triton Trajectory Recreation}{figure.1}% 12
+\BOOKMARK [2][-]{equation.0.1}{Backpropagation}{Doc-Start}% 7
+\BOOKMARK [1][-]{equation.0.2}{VEGA Maneuver Implementation}{}% 8
+\BOOKMARK [1][-]{figure.2}{Performance Evaluation}{}% 9
+\BOOKMARK [2][-]{section*.1}{Europa Clipper Trajectory Recreation}{figure.2}% 10
+\BOOKMARK [2][-]{table.2}{Galileo Trajectory Recreation}{figure.2}% 11
+\BOOKMARK [2][-]{figure.4}{Triton Trajectory Recreation}{figure.2}% 12
+\BOOKMARK [1][-]{figure.4}{MCTS Run Resutls}{}% 13

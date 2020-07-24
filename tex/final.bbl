@@ -5,4 +5,22 @@ D.~Hennes and D.~Izzo, ``{Interplanetary trajectory planning with Monte Carlo
   tree search},''  {\em IJCAI International Joint Conference on Artificial
   Intelligence}, Vol.~2015-Janua, No.~Ijcai, 2015, pp.~769--775.
 
+\bibitem{sims1994}
+J.~Sims and J.~Longuski, {\em Analysis of V(infinity) leveraging for
+  interplanetary missions}, 10.2514/6.1994-3769.
+
+\bibitem{Sims1997}
+A.~{Sims, Jon; Longuski, James; Staugler}, ``V(infinity) Leveraging for
+  Interplanetary Missions Multiple-Revolutuion Orbit Techniques,''  {\em
+  Journal of Guidance, Control, and Dynamics}, Vol.~20, No.~3, 1997,
+  pp.~409--415.
+
+\bibitem{Buffington2014}
+B.~Buffington, ``{Trajectory design for the europa clipper mission concept},''
+  {\em AIAA/AAS Astrodynamics Specialist Conference 2014}, 2014.
+
+\bibitem{DAmario1992}
+L.~A. D'Amario, L.~E. Bright, and A.~A. Wolf, ``{Galileo trajectory design},''
+  {\em Space Science Reviews}, 1992, 10.1007/BF00216849.
+
 \end{thebibliography}

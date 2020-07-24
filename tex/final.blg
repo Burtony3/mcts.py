@@ -3,44 +3,48 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: final.aux
 The style file: AAS_publication.bst
 Database file #1: references.bib
-You've used 1 entry,
+Warning--empty chapter and pages in sims1994
+Warning--empty publisher in sims1994
+Warning--empty year in sims1994
+You've used 5 entries,
             1928 wiz_defined-function locations,
-            494 strings with 3741 characters,
-and the built_in function-call counts, 356 in all, are:
-= -- 38
-> -- 8
+            520 strings with 4392 characters,
+and the built_in function-call counts, 1167 in all, are:
+= -- 109
+> -- 35
 < -- 0
-+ -- 3
-- -- 2
-* -- 26
-:= -- 54
-add.period$ -- 1
-call.type$ -- 1
++ -- 14
+- -- 9
+* -- 86
+:= -- 166
+add.period$ -- 5
+call.type$ -- 5
 change.case$ -- 0
 chr.to.int$ -- 0
-cite$ -- 1
-duplicate$ -- 17
-empty$ -- 32
-format.name$ -- 2
-if$ -- 85
+cite$ -- 8
+duplicate$ -- 66
+empty$ -- 129
+format.name$ -- 9
+if$ -- 283
 int.to.chr$ -- 0
-int.to.str$ -- 1
-missing$ -- 1
-newline$ -- 6
-num.names$ -- 1
-pop$ -- 1
+int.to.str$ -- 5
+missing$ -- 6
+newline$ -- 18
+num.names$ -- 5
+pop$ -- 23
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 15
+skip$ -- 34
 stack$ -- 0
-substring$ -- 32
-swap$ -- 9
+substring$ -- 64
+swap$ -- 21
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 0
-while$ -- 4
-width$ -- 2
-write$ -- 13
+warning$ -- 3
+while$ -- 11
+width$ -- 6
+write$ -- 46
+(There were 3 warnings)
