@@ -261,5 +261,5 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
     plt.show()
 
 
-# state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 704335)
-orbit(tree, id = 704335)
+state(tree, 'dateL', 'dvTot', "seq", showTop = 100, pickID = 704335)
+# orbit(tree, id = 704335)
