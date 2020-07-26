@@ -1,5 +1,9 @@
 \begin{thebibliography}{1}
 
+\bibitem{Hollenbeck}
+G.~R. Hollenbeck, ``{New Flight Techniques for Outer Planet Missions},''  {\em
+  Am Astron Soc/AIAA Astrodyn Spec Conf}, 1975.
+
 \bibitem{sims1994}
 J.~Sims and J.~Longuski, {\em Analysis of V(infinity) leveraging for
   interplanetary missions}, 10.2514/6.1994-3769.
@@ -9,5 +13,9 @@ A.~{Sims, Jon; Longuski, James; Staugler}, ``V(infinity) Leveraging for
   Interplanetary Missions Multiple-Revolutuion Orbit Techniques,''  {\em
   Journal of Guidance, Control, and Dynamics}, Vol.~20, No.~3, 1997,
   pp.~409--415.
+
+\bibitem{Hubbard2010}
+W.~B. Hubbard, ``{Ice Giants Decadal Study},''  {\em Planetary Science Decadal
+  Survey}, 2010.
 
 \end{thebibliography}
