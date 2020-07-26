@@ -8,6 +8,6 @@
 \BOOKMARK [1][-]{equation.0.5}{VEGA Maneuver Implementation}{}% 8
 \BOOKMARK [1][-]{figure.2}{Performance Evaluation}{}% 9
 \BOOKMARK [2][-]{section*.1}{Case 1: Europa Clipper Trajectory Recreation}{figure.2}% 10
-\BOOKMARK [2][-]{figure.3}{Case 2: Galileo Trajectory Recreation}{figure.2}% 11
-\BOOKMARK [2][-]{figure.4}{Case 3: Triton VEGA Opportunity Search}{figure.2}% 12
-\BOOKMARK [1][-]{figure.4}{Appendix A: Raw MCTS Run Results}{}% 13
+\BOOKMARK [2][-]{table.2}{Case 2: Galileo Trajectory Recreation}{figure.2}% 11
+\BOOKMARK [2][-]{figure.6}{Case 3: Triton VEGA Opportunity Search}{figure.2}% 12
+\BOOKMARK [1][-]{figure.6}{Appendix A: Raw MCTS Run Results}{}% 13

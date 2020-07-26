@@ -269,26 +269,35 @@ At the completion of the search, the algorithm had conducted 20 million Lambert 
     \label{fig:clipResults}
 \end{figure}
 
-Utilizing the highest performing EEVEEJ transfer, the dates MCTS supplied were optimized using MALTO (Mission Analysis Low Thrust Optimizer) \textbf{REF}. While this tool is primarily designed for low-thrust trajectories, the application is still capable of taking optimizing ballistic and chemical propulsion trajectories. Table \ref*{table:clipMInputs} shows the inputs to MALTO and their associated bounds for the optimizer to search. \textbf{CONTINUE AFTER MALTO SEARCH}
-\iffalse
-\begin{table}[htb]
+Utilizing the highest performing EEVEEJ transfer, the dates MCTS supplied were optimized using MALTO (Mission Analysis Low Thrust Optimizer) \textbf{REF}. While this tool is primarily designed for low-thrust trajectories, the application is still capable of taking optimizing ballistic and chemical propulsion trajectories. Table \ref*{table:clipMInputs} shows the MCTS date input into MALTO. For each flyby encounter, a bound of $\pm$100 days was set to give the optimizer leeway to minimize the discrepancy introduced by the powered flybys. Additionally, the Jupiter encounter was allowed $\pm$500 days in order for the arrival $V_\infty$ to be minimized. 
+
+Upon completion the optimization run, MALTO had converged on the solution in Figure \ref*{fig:clipMalto}. The resulting trajectory was well within the bounds placed on the optimizer for the flybys and arrival dates, as well, the arrival $V_\infty$ was reduced. In addition, the largest departure from the intial guess dates from MCTS, apart from Jupiter arrival, was the third flyby of Earth. The date had transitioned 1.5 months later than initially chosen, leading to an orbit of more than 1 complete revolution. With this test complete, it can be shown that this MCTS algorithm is capable in searching out long sequence interplanetary trajectories that need minimal tweaking in later steps of the optimization process. % The results fall well within the 100 day bounds set on the program, with the greatest change, in terms of dates, being the later Jupiter arrival and the last Earth flyby occuring 1.5 months later. Even though the unoptimized $\Delta V$ was well above 5 $\sfrac{km}{s}$, the optimized solution was able to entirely eliminate any $\Delta V$ cost. 
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width = 5in]{./fig/clipperMalto.png}
+    \caption{MALTO optimized Europa Clipper trajectory from MCTS dates}
+    \label{fig:clipMalto}
+\end{figure}
+
+% \iffalse
+\begin{table}[tb]
     \begin{center}
-        \caption{MCTS Results for MALTO Input File ||\textit{I'm not sure if this table is necessary}||}
+        \caption{MCTS output dates vs MALTO optimized dates}
         \label{table:clipMInputs}
-        \begin{tabular}{c|c}
-            \textbf{Input Name} & \textbf{Input Value}\\
+        \begin{tabular}{c|c|c}
+            \textbf{Date Category} & \textbf{MCTS Date} & \textbf{MALTO Date}\\
             \hline
-            Launch Date & June 04, 2022 \\
-            Earth Flyby \#1 & Jun 02, 2023 \\
-            Venus Flyby & November 23, 2023 \\ 
-            Earth Flyby \#2 & October 22, 2024 \\
-            Earth Flyby \#3 & October 20, 2027 \\
-            Jupiter Arrival & February 13, 2030 \\
-            Upper \& Lower Bound & $\pm$ 100 days
+            Launch Date & June 04, 2022 & May 12, 2022 \\
+            Earth Flyby \#1 & Jun 02, 2023 & May 12, 2023 \\
+            Venus Flyby & November 23, 2023 & November 22, 2023 \\ 
+            Earth Flyby \#2 & October 22, 2024 & October 2, 2024 \\
+            Earth Flyby \#3 & October 20, 2027 & December 2, 2027 \\
+            Jupiter Arrival & February 13, 2030 & March 17, 2031 \\
         \end{tabular}
     \end{center}
 \end{table}
-\fi
+% \fi
 
 \subsection{Case 2: Galileo Trajectory Recreation}
 
@@ -326,6 +335,13 @@ Table \ref*{table:galiInputs} lays out the inputs to the search algorithm, which
 \end{figure}
 
 At the conclusion of the search, the tree made 867,000 nodes and conducted 10 million Lambert arcs, in order to find the 12 solutions to the constraints. Of those solutions, the eighth was the nominal targeted trajectory. Figure \ref*{fig:galiResults} (Left) shows the 12 solutions ranked by their unoptimized mission $\Delta V$ usage, and the (Right) shows the circled nominal trajectory. In the same fashion as the Europa Clipper case, the optimal found trajectory deviates from what Galileo originally performed. The final Earth flyby was conducted in a 3:1 resonance rather than a 2:1 resonance and lead to an overall smaller incoming $V_\infty$. The 2:1 resonance case also exists within the found data set, but is the 11 of 12 that satisfies the criteria. Once again, similar to Europa Clipper, with the additional 1 year resonance, the spacecraft only arrives at Jupiter 3 months after targeted. With the trajectory leg dates, this solution will be optimized using MALTO to find the optimized version of this trajectory. \textbf{MORE ONCE MALTO RUN IS COMPLETE}
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width = 5in]{./fig/galileoMalto.png}
+    \caption{MALTO optimized Galileo trajectory from MCTS dates}
+    \label{fig:galiMalto}
+\end{figure}
 
 \subsection{Case 3: Triton $\Delta V$EGA Opportunity Search}
 \textbf{FOR ROHAN TO COMPLETE LATER}
