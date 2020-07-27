@@ -1,26 +1,148 @@
-@article{DAmario1992,
-abstract = {The Galileo spacecraft was launched by the Space Shuttle Atlantis on October 18, 1989. A two-stage Inertial Upper Stage propelled Galileo out of Earth parking orbit to begin its 6-year interplanetary transfer to Jupiter. Galileo has already received two gravity assists: from Venus on February 10, 1990 and from Earth on December 8, 1990. After a second gravity-assist flyby of Earth on December 8, 1992, Galileo will have achieved the energy necessary to reach Jupiter. Galileo's interplanetary trajectory includes a close flyby of asteroid 951-Gaspra on October 29, 1991, and, depending on propellant availability and other factors, there may be a second asteroid flyby of 243-Ida on August 28, 1993. Upon arrival at Jupiter on December 7, 1995, the Galileo Orbiter will relay data back to Earth from an atmospheric Probe which is released five months earlier. For about 75 min, data is transmitted to the Orbiter from the Probe as it descends on a parachute to a pressure depth of 20-30 bars in the Jovian atmosphere. Shortly after the end of Probe relay, the Orbiter ignites its rocket motor to insert into orbit about Jupiter. The orbital phase of the mission, referred to as the satellite tour, lasts nearly two years, during which time Galileo will complete 10 orbits about Jupiter. On each of these orbits, there will be a close encounter with one of the three outermost Galilean satellites (Europa, Ganymede, and Callisto). The gravity assist from each satellite is designed to target the spacecraft to the next encounter with minimal expenditure of propellant. The nominal mission is scheduled to end in October 1997 when the Orbiter enters Jupiter's magnetotail. {\textcopyright} 1992 Kluwer Academic Publishers.},
-author = {D'Amario, Louis A. and Bright, Larry E. and Wolf, Aron A.},
-doi = {10.1007/BF00216849},
-issn = {00386308},
-journal = {Space Science Reviews},
+@Comment >----------------------------------------BACKGROUND----------------------------------------<
+
+@incollection{Izzo2019,
+abstract = {After providing a brief historical overview on the synergies between artificial intelligence research, in the areas of evolutionary computations and machine learning, and the optimal design of interplanetary trajectories, we propose and study the use of deep artificial neural networks to represent, on-board, the optimal guidance profile of an interplanetary mission. The results, limited to the chosen test case of an Earth–Mars orbital transfer, extend the findings made previously for landing scenarios and quadcopter dynamics, opening a new research area in interplanetary trajectory planning.},
+archivePrefix = {arXiv},
+arxivId = {1802.00180},
+author = {Izzo, Dario and Sprague, Christopher Iliffe and Tailor, Dharmesh Vijay},
+booktitle = {Springer Optimization and Its Applications},
+doi = {10.1007/978-3-030-10501-3\_8},
+eprint = {1802.00180},
+issn = {19316836},
 mendeley-groups = {MCTS},
-title = {{Galileo trajectory design}},
-year = {1992}
+title = {{Machine Learning and Evolutionary Techniques in Interplanetary Trajectory Design}},
+year = {2019}
 }
-@article{Wagner2015,
-abstract = {A combination of multiple gravity-assist and impulsive Delta-V maneuvers is often required for interplanetary and interstellar space missions, such as NASA's Voyager 1 and 2, Galileo, and Cassini missions. The design of such complex interplanetary missions is difficult with traditional mission analysis techniques because the mission must be prepruned to determine potential trajectories. Prepruning has been necessary because these mission often require the optimization of dozens of variables in a highly nonlinear and discontinuous design space. This process risks pruning nonintuitive solutions, which may potentially contain the optimal trajectory. In this paper, a hybrid optimization algorithm that is capable of determining optimal interplanetary trajectories, including the number of gravity assists and the planetary flyby order, is developed. The hybrid optimization algorithm uses a stochastic genetic algorithm to globally search the design space, as well as traditional nonlinear programming gradient-based optimization tools to determine locally optimal trajectories. By combining the global convergence properties of genetic algorithms with the accuracy of gradient-based solvers, a robust optimization algorithm capable of determining near-optimal solutions for a complex interplanetary space mission is developed.},
-author = {Wagner, Sam and Wie, Bong},
-doi = {10.2514/1.G000874},
+
+@article{Li2019,
+abstract = {In the design of multitarget interplanetary missions, there are always many options available, making it often impractical to optimize in detail each transfer trajectory in a preliminary search phase. Fast and accurate estimation methods for optimal transfers are thus of great value. In this paper, deep feed-forward neural networks are employed to estimate solutions to three types of optimization problems: the transfer time of time-optimal low-thrust transfers, fuel consumption of fuel-optimal low-thrust transfers, and the total dv of minimum-dv J2-perturbed multi-impulse transfers. To generate the training data, low-thrust trajectories are optimized using the indirect method and J2-perturbed multi-impulse trajectories are optimized using J2 homotopy and particle swarm optimization. The hyper-parameters of our deep networks are searched by grid search, random search, and the tree-structured Parzen estimators approach. Results show that deep networks are capable of estimating the final mass or time of optimal transfers with extremely high accuracy; resulting into a mean relative error of less than 0.5{\%} for low-thrust transfers and less than 4{\%} for multi-impulse transfers. Our results are also compared with other off-the-shelf machine-learning algorithms and investigated with respect to their capability of predicting cases well outside of the training data.},
+author = {Li, Haiyang and Chen, Shiyu and Izzo, Dario and Baoyin, Hexi},
+journal = {arXiv preprint},
+keywords = {Mathematics - Optimization and Control},
+mendeley-groups = {MCTS},
+title = {{Deep Networks as Approximators of Optimal Transfers Solutions in Multitarget Missions}},
+year = {2019}
+}
+
+@article{Jiang2012,
+abstract = {This paper concerns the application of the homotopic approach, which solves the fuel-optimal problem of low-thrust trajectory by starting from the related and easier energy-optimal problem. To this end, some effective techniques are presented to reduce the computational time and increase the probability of finding the globally optimal solution. First, the optimal control problem is made homogeneous to the Lagrange multipliers by multiplying the performance index by a positive unknown factor. Hence, normalization is applicable to restrict the unknown multipliers on a unit hypersphere. Second, the switching function's first- and second-order derivatives with respect to time are derived to detect switching. The switching detection is embedded in the fourth-order Runge-Kutta algorithm with fixed step size to ensure integration accuracy for bang-bang control. Third, combined with the techniques of normalization and switching detection, the particle swarm optimization with well-chosen parameters considerably increases the probability of finding the approximate initial values of the globally optimal solution. Moreover, intermediate gravity assist, which brings complex inner constraints, is considered. To determine the approximate gravity assist date, analytical formulas are presented to evaluate the minimal maneuver impulse based on the results of Lambert problems. The first-order necessary conditions for gravity assist constraints are derived analytically. The optimal solution can be rapidly obtained by applying the techniques presented to solve the shooting function. The unknowns are far less than with direct methods, and the computational effort is also far lower. Two examples of fuel-optimal rendezvous problems from the Earth directly to Venus and from the Earth to Jupiter via Mars gravity assist are given to substantiate the perfect efficiency of these techniques.},
+author = {Jiang, Fanghua and Baoyin, Hexi and Li, Junfeng},
+doi = {10.2514/1.52476},
 issn = {07315090},
 journal = {Journal of Guidance, Control, and Dynamics},
 mendeley-groups = {MCTS},
-number = {11},
-pages = {2096--2107},
-title = {{Hybrid algorithm for multiple gravity-assist and impulsive Delta-V maneuvers}},
-volume = {38},
-year = {2015}
+title = {{Practical techniques for low-thrust trajectory optimization with homotopic approach}},
+year = {2012}
 }
+
+@article{Nath2016,
+abstract = {The mission design to a halo orbit around the libration points from Earth involves two important steps. In the first step, we design a halo orbit for a specified size and in the second step, we obtain an optimal transfer trajectory design to the halo orbit from an Earth parking orbit. Conventionally, the preliminary design for these steps is obtained using higher order analytical solution and the dynamical systems theory respectively. Refinements of the design are carried out using gradient based methods such as differential correction and pseudo arc length continuation method under the of circular restricted three body model. In this paper, alternative single level schemes are developed for both of these steps based on differential evolution, an evolutionary optimization technique. The differential evolution based scheme for halo orbit design produces precise halo orbit design avoiding the refinement steps. Further, in this approach, prior knowledge of higher order analytical solutions for the halo orbit design is not needed. The differential evolution based scheme for the transfer trajectory, identifies the precise location on the halo orbit that needs minimum energy for insertion and avoids exploration of multiple points. The need of a close guess is removed because the present scheme operates on a set of bounds for the unknowns. The constraint on the closest approach altitude from Earth is handled through objective function. The use of these schemes as the design and analysis tools within the of circular restricted three body model is demonstrated through case studies for missions to the first libration point of Sun–Earth system.},
+author = {Nath, Pranav and Ramanan, R. V.},
+doi = {10.1016/j.asr.2015.10.033},
+issn = {18791948},
+journal = {Advances in Space Research},
+keywords = {Differential correction,Differential evolution,Halo orbit design,Lagrangian point,Optimal transfer,Restricted three body problem},
+mendeley-groups = {MCTS},
+title = {{Precise halo orbit design and optimal transfer to halo orbits from earth using differential evolution}},
+year = {2016}
+}
+
+@article{Olds2007,
+abstract = {Global optimization methods have been increasingly under consideration for preliminary interplanetary mission design. One promising global method, differential evolution, has been identified as being particularly well suited to high-thrust trajectory optimization. Differential evolution is a stochastic direct search optimization method which uses parameter vectors that interact in a manner motivated by the evolution of living species. To improve the performance of differential evolution for this application, the effect of the tuning parameters is investigated over a diverse group of trajectory optimization problems. The quality of solutions obtained with differential evolution is found to be very sensitive to the selection of the routine's tuning parameters. A set of tuning parameter values is found that results in the rapid global optimization of an array of typical ballistic interplanetary missions. The fine-tuned differential evolution routine is implemented in a new tool, the mission-direct trajectory optimization program, and the effectiveness of this tool is demonstrated by the rapid solution of interplanetary trajectory optimization problems that involve complex features such as multiple gravity assists and parking orbit considerations. Copyright {\textcopyright} 20007 by the American Institute ot Aeronautics and Astronautics, Inc. All rights reserved.},
+author = {Olds, Aaron D. and Kluever, Craig A. and Cupples, Michael L.},
+doi = {10.2514/1.27242},
+issn = {00224650},
+journal = {Journal of Spacecraft and Rockets},
+mendeley-groups = {MCTS},
+title = {{Interplanetary mission design using differential evolution}},
+year = {2007}
+}
+
+@article{Zhuang2014,
+abstract = {A hybrid algorithm combining particle swarm optimization (PSO) algorithm with the Legendre pseudospectral method (LPM) is proposed for solving time-optimal trajectory planning problem of underactuated spacecrafts. At the beginning phase of the searching process, an initialization generator is constructed by the PSO algorithm due to its strong global searching ability and robustness to random initial values, however, PSO algorithm has a disadvantage that its convergence rate around the global optimum is slow. Then, when the change in fitness function is smaller than a predefined value, the searching algorithm is switched to the LPM to accelerate the searching process. Thus, with the obtained solutions by the PSO algorithm as a set of proper initial guesses, the hybrid algorithm can find a global optimum more quickly and accurately. 200 Monte Carlo simulations results demonstrate that the proposed hybrid PSO-LPM algorithm has greater advantages in terms of global searching capability and convergence rate than both single PSO algorithm and LPM algorithm. Moreover, the PSO-LPM algorithm is also robust to random initial values. {\textcopyright} 2013 IAA.},
+author = {Zhuang, Yufei and Huang, Haibin},
+doi = {10.1016/j.actaastro.2013.06.023},
+issn = {00945765},
+journal = {Acta Astronautica},
+keywords = {Nonlinear programming,Particle swarm optimization,Pseudospectral method,Time-optimal,Trajectory planning,Underactuated spacecraft},
+mendeley-groups = {MCTS},
+title = {{Time-optimal trajectory planning for underactuated spacecraft using a hybrid particle swarm optimization algorithm}},
+year = {2014}
+}
+
+@article{Zook2019,
+abstract = {Games are often designed to shape player behavior in a desired way; however, it can be unclear how design decisions affect the space of behaviors in a game. Designers usually explore this space through human playtesting, which can be time-consuming and of limited effectiveness in exhausting the space of possible behaviors. In this paper, we propose the use of automated planning agents to simulate humans of varying skill levels to generate game playthroughs. Metrics can then be gathered from these playthroughs to evaluate the current game design and identify its potential flaws. We demonstrate this technique in two games: the popular word game Scrabble and a collectible card game of our own design named Cardonomicon. Using these case studies, we show how using simulated agents to model humans of varying skill levels allows us to extract metrics to describe game balance (in the case of Scrabble) and highlight potential design flaws (in the case of Cardonomicon).},
+archivePrefix = {arXiv},
+arxivId = {1908.01423},
+author = {Zook, Alexander and Harrison, Brent and Riedl, Mark O.},
+eprint = {1908.01423},
+file = {:home/burtonyale/Downloads/zook-fdg15.pdf:pdf},
+keywords = {game design,game playing,monte-,playtesting,simulation},
+mendeley-groups = {MCTS},
+title = {{Monte-Carlo Tree Search for Simulation-based Strategy Analysis}},
+url = {http://arxiv.org/abs/1908.01423},
+year = {2019}
+}
+
+@article{Hughes2016,
+author = {Hughes, Kyle M.},
+file = {:home/burtonyale/Downloads/Gravity-assist trajectories to Venus Mars and the ice giants M.pdf:pdf},
+mendeley-groups = {MCTS},
+number = {December},
+title = {{Gravity-Assist Trajectories to Venus, Mars, and The Ice Giants: Mission Design with Human and Robotic Applications}},
+year = {2016}
+}
+
+@article{Izzo2013,
+abstract = {We make use of self-adaptation in a Differential Evolution algorithm and of the asynchronous island model to design a complex interplanetary trajectory touring the Galilean Jupiter moons (Io, Europa, Ganymede and Callisto) using the multiple gravity assist technique. Such a problem was recently the subject of an international competition organized by the Jet Propulsion Laboratory (NASA) and won by a trajectory designed by aerospace experts and reaching the final score of 311/324. We apply our method to the very same problem finding new surprising designs and orbital strategies and a score of up to 316/324. Copyright {\textcopyright} 2013 ACM.},
+author = {Izzo, Dario and Sim{\~{o}}es, Lu{\'{i}}s F. and M{\"{a}}rtens, Marcus and {De Croon}, Guido C.H.E. and Heritier, Aurelie and Yam, Chit Hong},
+doi = {10.1145/2463372.2463524},
+file = {:home/burtonyale/Downloads/gtoc6{\_}316.pdf:pdf},
+isbn = {9781450319638},
+journal = {GECCO 2013 - Proceedings of the 2013 Genetic and Evolutionary Computation Conference},
+keywords = {Differential evolution,Interplanetary trajectory optimization,Multi-criteria tree-search,Self-adaptation},
+mendeley-groups = {MCTS},
+pages = {1301--1308},
+title = {{Search for a grand tour of the Jupiter Galilean moons}},
+year = {2013}
+}
+
+@phdthesis{Penas2019,
+abstract = {The Kuiper Belt is considered to be formed by remnants of the original Solar System, that is why exploration missions to that region are susceptible of having an enormous scientific impact. Nonetheless, it is far away from Earth, missions to KBO targets a significant challenge. Additionally, current methods to identify trajec- tories that encounter multiple KBOs are computationally intensive with impractically long run times on the order of months. The present work deals with applying a rapid low-fidelity technique to identify candidate preliminary KBO sequences, to be used as a starting point for future mission designers to identify trajectories to multiple KBOs. This pathfinding approach uses two consecutive grid search types. First, a well-tuned grid search is implemented using Lambert arcs to reach a first KBO, including the introduc- tion of a new, systematic approach to identify the step sizes in target-body arrival date for the Lambert-based grid search. Then, second and third KBO encounters are assessed from the results of the first grid search and second KBO search respectively. Both second and third KBO searches are performed with a new algorithm consisting of a time grid along with STM linear propagation for maneuver calculation. Finally, an example trajectory resulting from this technique that encounters two KBOs is given as a potential flyable route.},
+author = {Penas, Miguel Benayas},
+file = {:home/burtonyale/Downloads/Miguel{\_}Benayas{\_}Penas{\_}MSc{\_}Thesis.pdf:pdf},
+mendeley-groups = {MCTS},
+pages = {60},
+school = {Delft University of Technology},
+title = {{A Rapid Grid-Search Technique for KBO Exploration Trajectories.}},
+year = {2019}
+}
+
+@article{Zuo2016,
+abstract = {The paper deals with the multiple gravity assist trajectories design. In order to improve the performance of the heuristic algorithms, such as differential evolution algorithm, in multiple gravity assist trajectories design optimization, a method combining BFS (breadth-first search) and EP-DE (differential evolution algorithm based on search space exploring and principal component analysis) is proposed. In this method, firstly find the possible multiple gravity assist planet sequences with pruning based BFS and use standard differential evolution algorithm to judge the possibility of all the possible trajectories. Then select the better ones from all the possible solutions. Finally, use EP-DE which will be introduced in this paper to find an optimal decision vector of spacecraft transfer time schedule (launch window and transfer duration) for each selected planet sequence. In this paper, several cases are presented to prove the efficiency of the method proposed.},
+author = {Zuo, Mingcheng and Dai, Guangming and Peng, Lei and Wang, Maocai and Xiong, Jinlian},
+doi = {10.1155/2016/3416046},
+issn = {16875974},
+journal = {International Journal of Aerospace Engineering},
+mendeley-groups = {MCTS},
+title = {{Multiple Gravity Assist Spacecraft Trajectories Design Based on BFS and EP-DE Algorithm}},
+year = {2016}
+}
+
+@misc{Browne2012,
+abstract = {Monte Carlo tree search (MCTS) is a recently proposed search method that combines the precision of tree search with the generality of random sampling. It has received considerable interest due to its spectacular success in the difficult problem of computer Go, but has also proved beneficial in a range of other domains. This paper is a survey of the literature to date, intended to provide a snapshot of the state of the art after the first five years of MCTS research. We outline the core algorithm's derivation, impart some structure on the many variations and enhancements that have been proposed, and summarize the results from the key game and nongame domains to which MCTS methods have been applied. A number of open research questions indicate that the field is ripe for future work. {\textcopyright} 2009 IEEE.},
+author = {Browne, Cameron B. and Powley, Edward and Whitehouse, Daniel and Lucas, Simon M. and Cowling, Peter I. and Rohlfshagen, Philipp and Tavener, Stephen and Perez, Diego and Samothrakis, Spyridon and Colton, Simon},
+booktitle = {IEEE Transactions on Computational Intelligence and AI in Games},
+doi = {10.1109/TCIAIG.2012.2186810},
+issn = {1943068X},
+keywords = {Artificial intelligence (AI),Monte Carlo tree search (MCTS),bandit-based methods,computer Go,game search,upper confidence bounds (UCB),upper confidence bounds for trees (UCT)},
+mendeley-groups = {MCTS},
+title = {{A survey of Monte Carlo tree search methods}},
+year = {2012}
+}
+
+@Comment >---------------------------------------MCTS GENERAL---------------------------------------<
+
 @article{Hennes2015,
 abstract = {Planning an interplanetary trajectory is a very complex task, traditionally accomplished by domain experts using computer-aided design tools. Recent advances in trajectory optimization allow automation of part of the trajectory design but have yet to provide an efficient way to select promising planetary encounter sequences. In this work, we present a heuristic-free approach to automated trajectory planning (including the encounter sequence planning) based on Monte Carlo Tree Search (MCTS). We discuss a number of modifications to traditional MCTS unique to the domain of interplanetary trajectory planning and provide results on the Rosetta and Cassini-Huygens interplanetary mission design problems. The resulting heuristic-free method is found to be orders of magnitude more efficient with respect to a standard tree search with heuristic-based pruning which is the current state-of-the art in this domain.},
 author = {Hennes, Daniel and Izzo, Dario},
@@ -35,39 +157,23 @@ title = {{Interplanetary trajectory planning with Monte Carlo tree search}},
 volume = {2015-Janua},
 year = {2015}
 }
-@article{Alibay2014,
-abstract = {Visited only by Voyager 2 in 1989, Neptune and its moon Triton hold important clues to the formation and evolution of the solar system and exoplanetary systems. Neptune-sized planets are the most commonly discovered exoplanets to date. Neptune, an ice giant, is theorized to have migrated from its formation location in the early solar system. This migration affects the expected interior structure, composition, and dynamical evolution of the planet. Triton is conjectured to be a heavily-processed, captured Kuiper Belt Object (KBO), a remnant from the early solar nebula and unique in our solar system. Triton may possess a subsurface aqueous ocean, making it an important astrobiological target. The 2013-2022 Planetary Science Decadal Survey [1] identified a number of high priority science goals for the Neptunian system, including understanding the structure, composition, and dynamics of Neptune's atmosphere and magnetosphere, as well as surveying the surface of Triton. Following these guidelines, we present a low cost flyby mission concept to Neptune and Triton: TRIDENT (Taking Remote and In-situ Data to Explore Neptune and Triton). TRIDENT would carry six instruments and a government furnished atmospheric probe and would provide significant improvements over the scientific measurements undertaken by Voyager 2. {\textcopyright} 2014 IEEE.},
-author = {Alibay, Farah and Fernandes, Philip and McGranaghan, Ryan and Leonard, Jason and Clegg, Ryan and Craig, Patricia and Day, Mackenzie and Fougere, Nicolas and Girazian, Zachary and Hosseini, Sona and Hutchins, Michael and Scully, Jennifer and Uckert, Kyle and Malaska, Michael and Patthoff, Alex and Ries, Paul and Budney, Charles and Mitchell, Karl},
-doi = {10.1109/AERO.2014.6836294},
-isbn = {9781479916221},
-issn = {1095323X},
-journal = {IEEE Aerospace Conference Proceedings},
+
+@article{Wagner2015,
+abstract = {A combination of multiple gravity-assist and impulsive Delta-V maneuvers is often required for interplanetary and interstellar space missions, such as NASA's Voyager 1 and 2, Galileo, and Cassini missions. The design of such complex interplanetary missions is difficult with traditional mission analysis techniques because the mission must be prepruned to determine potential trajectories. Prepruning has been necessary because these mission often require the optimization of dozens of variables in a highly nonlinear and discontinuous design space. This process risks pruning nonintuitive solutions, which may potentially contain the optimal trajectory. In this paper, a hybrid optimization algorithm that is capable of determining optimal interplanetary trajectories, including the number of gravity assists and the planetary flyby order, is developed. The hybrid optimization algorithm uses a stochastic genetic algorithm to globally search the design space, as well as traditional nonlinear programming gradient-based optimization tools to determine locally optimal trajectories. By combining the global convergence properties of genetic algorithms with the accuracy of gradient-based solvers, a robust optimization algorithm capable of determining near-optimal solutions for a complex interplanetary space mission is developed.},
+author = {Wagner, Sam and Wie, Bong},
+doi = {10.2514/1.G000874},
+issn = {07315090},
+journal = {Journal of Guidance, Control, and Dynamics},
 mendeley-groups = {MCTS},
-title = {{Design of a low cost mission to the Neptunian system}},
-year = {2014}
+number = {11},
+pages = {2096--2107},
+title = {{Hybrid algorithm for multiple gravity-assist and impulsive Delta-V maneuvers}},
+volume = {38},
+year = {2015}
 }
-@article{Landau2010,
-abstract = {A procedure to produce a large variety of trajectories to Uranus and Neptune is presented. A small set of exceptional trajectories emerges from this broad search and expands the range of missions available to these planets. Payload mass increases dramatically when a Jupiter flyby is available, and the choice of gravity-assist sequence has a greater effect on performance than the choice of propulsion system. The combination of solar electric propulsion and gravity assists enable missions with larger payloads than with chemical propulsion over a broad range of flight times and power levels. Results are provided for both aerocapture and chemical orbit insertion. Copyright 2009 California Institute of Technology.},
-author = {Landau, Damon and Lam, Try and Strange, Nathan},
-isbn = {9780877035572},
-issn = {00653438},
-journal = {Advances in the Astronautical Sciences},
-mendeley-groups = {MCTS},
-number = {January},
-pages = {2093--2112},
-title = {{Broad search and optimization of solar electric propulsion trajectories to Uranus and Neptune}},
-volume = {135},
-year = {2010}
-}
-@inproceedings{Buffington2014,
-abstract = {Europa is one of the most scientifically intriguing targets in planetary science due to its potential suitability for extant life. As such, NASA has funded the California Institute of Technology Jet Propulsion Laboratory and the Johns Hopkins University Applied Physics Laboratory to jointly determine and develop the best mission concept to explore Europa in the near future. The result of nearly 4 years of work-the Europa Clipper mission concept-is a multiple Europa flyby mission that could efficiently execute a number of high caliber science investigations to meet Europa science priorities specified in the 2011 NRC Decadal Survey, and is capable of providing reconnaissance data to maximize the probability of both a safe landing and access to surface material of high scientific value for a future Europa lander. This paper will focus on a major enabling component for this mission concept-the trajectory. A representative trajectory, referred to as 13F7-A21, would obtain global-regional coverage of Europa via a complex network of 45 flybys over the course of 3.5 years while also mitigating the effects of the harsh Jovian radiation environment. In addition, 5 Ganymede and 9 Callisto flybys would be used to manipulate the trajectory relative to Europa. The tour would reach a maximum Jovicentric inclination of 20.1°, have a deterministic $\Delta$V of 164 m/s (post periapsis raise maneuver), and a total ionizing dose of 2.8 Mrad (Si).},
-author = {Buffington, Brent},
-booktitle = {AIAA/AAS Astrodynamics Specialist Conference 2014},
-isbn = {9781624103087},
-mendeley-groups = {MCTS},
-title = {{Trajectory design for the europa clipper mission concept}},
-year = {2014}
-}
+
+@Comment >----------------------------------------DSM THEORY----------------------------------------<
+
 @inbook{sims1994,
 author = {Jon Sims and James Longuski},
 title = {Analysis of V(infinity) leveraging for interplanetary missions},
@@ -86,4 +192,85 @@ pages = {409--415},
 title = {V(infinity) Leveraging for Interplanetary Missions Multiple-Revolutuion Orbit Techniques},
 volume = {20},
 year = {1997}
+}
+
+
+@Comment >----------------------------------------VALIDATION----------------------------------------<
+
+@inproceedings{Sims2006,
+abstract = {A tool developed for the preliminary design of low-thrust trajectories is described. The trajectory is discretized into segments and a nonlinear programming method is used for optimization. The tool is easy to use, has robust convergence, and can handle many intermediate encounters. In addition, the tool has a wide variety of features, including several options for objective function and different low-thrust propulsion models (e.g., solar electric propulsion, nuclear electric propulsion, and solar sail). High-thrust, impulsive trajectories can also be optimized. Copyright {\textcopyright} 2006 by the American Institute of Aeronautics and Astronautics, Inc.},
+author = {Sims, Jon A. and Finlayson, Paul A. and Rinderle, Edward A. and Vavrina, Matthew A. and Kowalkowski, Theresa D.},
+booktitle = {Collection of Technical Papers - AIAA/AAS Astrodynamics Specialist Conference, 2006},
+doi = {10.2514/6.2006-6746},
+isbn = {1563478226},
+mendeley-groups = {MCTS},
+title = {{Implementation of a low-thrust trajectory optimization algorithm for preliminary design}},
+year = {2006}
+}
+
+@Comment [Europa Clipper]
+
+@inproceedings{Buffington2014,
+abstract = {Europa is one of the most scientifically intriguing targets in planetary science due to its potential suitability for extant life. As such, NASA has funded the California Institute of Technology Jet Propulsion Laboratory and the Johns Hopkins University Applied Physics Laboratory to jointly determine and develop the best mission concept to explore Europa in the near future. The result of nearly 4 years of work-the Europa Clipper mission concept-is a multiple Europa flyby mission that could efficiently execute a number of high caliber science investigations to meet Europa science priorities specified in the 2011 NRC Decadal Survey, and is capable of providing reconnaissance data to maximize the probability of both a safe landing and access to surface material of high scientific value for a future Europa lander. This paper will focus on a major enabling component for this mission concept-the trajectory. A representative trajectory, referred to as 13F7-A21, would obtain global-regional coverage of Europa via a complex network of 45 flybys over the course of 3.5 years while also mitigating the effects of the harsh Jovian radiation environment. In addition, 5 Ganymede and 9 Callisto flybys would be used to manipulate the trajectory relative to Europa. The tour would reach a maximum Jovicentric inclination of 20.1°, have a deterministic $\Delta$V of 164 m/s (post periapsis raise maneuver), and a total ionizing dose of 2.8 Mrad (Si).},
+author = {Buffington, Brent},
+booktitle = {AIAA/AAS Astrodynamics Specialist Conference 2014},
+isbn = {9781624103087},
+mendeley-groups = {MCTS},
+title = {{Trajectory design for the europa clipper mission concept}},
+year = {2014}
+}
+
+@Comment [Galileo]
+
+@article{DAmario1992,
+abstract = {The Galileo spacecraft was launched by the Space Shuttle Atlantis on October 18, 1989. A two-stage Inertial Upper Stage propelled Galileo out of Earth parking orbit to begin its 6-year interplanetary transfer to Jupiter. Galileo has already received two gravity assists: from Venus on February 10, 1990 and from Earth on December 8, 1990. After a second gravity-assist flyby of Earth on December 8, 1992, Galileo will have achieved the energy necessary to reach Jupiter. Galileo's interplanetary trajectory includes a close flyby of asteroid 951-Gaspra on October 29, 1991, and, depending on propellant availability and other factors, there may be a second asteroid flyby of 243-Ida on August 28, 1993. Upon arrival at Jupiter on December 7, 1995, the Galileo Orbiter will relay data back to Earth from an atmospheric Probe which is released five months earlier. For about 75 min, data is transmitted to the Orbiter from the Probe as it descends on a parachute to a pressure depth of 20-30 bars in the Jovian atmosphere. Shortly after the end of Probe relay, the Orbiter ignites its rocket motor to insert into orbit about Jupiter. The orbital phase of the mission, referred to as the satellite tour, lasts nearly two years, during which time Galileo will complete 10 orbits about Jupiter. On each of these orbits, there will be a close encounter with one of the three outermost Galilean satellites (Europa, Ganymede, and Callisto). The gravity assist from each satellite is designed to target the spacecraft to the next encounter with minimal expenditure of propellant. The nominal mission is scheduled to end in October 1997 when the Orbiter enters Jupiter's magnetotail. {\textcopyright} 1992 Kluwer Academic Publishers.},
+author = {D'Amario, Louis A. and Bright, Larry E. and Wolf, Aron A.},
+doi = {10.1007/BF00216849},
+issn = {00386308},
+journal = {Space Science Reviews},
+mendeley-groups = {MCTS},
+title = {{Galileo trajectory design}},
+year = {1992}
+}
+
+@Comment [Trident]
+
+@article{Alibay2014,
+abstract = {Visited only by Voyager 2 in 1989, Neptune and its moon Triton hold important clues to the formation and evolution of the solar system and exoplanetary systems. Neptune-sized planets are the most commonly discovered exoplanets to date. Neptune, an ice giant, is theorized to have migrated from its formation location in the early solar system. This migration affects the expected interior structure, composition, and dynamical evolution of the planet. Triton is conjectured to be a heavily-processed, captured Kuiper Belt Object (KBO), a remnant from the early solar nebula and unique in our solar system. Triton may possess a subsurface aqueous ocean, making it an important astrobiological target. The 2013-2022 Planetary Science Decadal Survey [1] identified a number of high priority science goals for the Neptunian system, including understanding the structure, composition, and dynamics of Neptune's atmosphere and magnetosphere, as well as surveying the surface of Triton. Following these guidelines, we present a low cost flyby mission concept to Neptune and Triton: TRIDENT (Taking Remote and In-situ Data to Explore Neptune and Triton). TRIDENT would carry six instruments and a government furnished atmospheric probe and would provide significant improvements over the scientific measurements undertaken by Voyager 2. {\textcopyright} 2014 IEEE.},
+author = {Alibay, Farah and Fernandes, Philip and McGranaghan, Ryan and Leonard, Jason and Clegg, Ryan and Craig, Patricia and Day, Mackenzie and Fougere, Nicolas and Girazian, Zachary and Hosseini, Sona and Hutchins, Michael and Scully, Jennifer and Uckert, Kyle and Malaska, Michael and Patthoff, Alex and Ries, Paul and Budney, Charles and Mitchell, Karl},
+doi = {10.1109/AERO.2014.6836294},
+isbn = {9781479916221},
+issn = {1095323X},
+journal = {IEEE Aerospace Conference Proceedings},
+mendeley-groups = {MCTS},
+title = {{Design of a low cost mission to the Neptunian system}},
+year = {2014}
+}
+
+
+@article{Landau2010,
+abstract = {A procedure to produce a large variety of trajectories to Uranus and Neptune is presented. A small set of exceptional trajectories emerges from this broad search and expands the range of missions available to these planets. Payload mass increases dramatically when a Jupiter flyby is available, and the choice of gravity-assist sequence has a greater effect on performance than the choice of propulsion system. The combination of solar electric propulsion and gravity assists enable missions with larger payloads than with chemical propulsion over a broad range of flight times and power levels. Results are provided for both aerocapture and chemical orbit insertion. Copyright 2009 California Institute of Technology.},
+author = {Landau, Damon and Lam, Try and Strange, Nathan},
+isbn = {9780877035572},
+issn = {00653438},
+journal = {Advances in the Astronautical Sciences},
+mendeley-groups = {MCTS},
+number = {January},
+pages = {2093--2112},
+title = {{Broad search and optimization of solar electric propulsion trajectories to Uranus and Neptune}},
+volume = {135},
+year = {2010}
+}
+
+@article{Hubbard2010,
+author = {Hubbard, William B},
+journal = {Planetary Science Decadal Survey},
+title = {{Ice Giants Decadal Study}},
+year = {2010}
+}
+@article{Hollenbeck,
+author = {Hollenbeck, G. R.},
+journal = {Am Astron Soc/AIAA Astrodyn Spec Conf},
+title = {{New Flight Techniques for Outer Planet Missions}},
+year = {1975}
 }

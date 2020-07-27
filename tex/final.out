@@ -1,13 +1,13 @@
-\BOOKMARK [1][-]{Doc-Start}{Introduction}{}% 1
-\BOOKMARK [1][-]{Doc-Start}{Background}{}% 2
-\BOOKMARK [1][-]{Doc-Start}{Monte Carlo Tree Search Implementation}{}% 3
-\BOOKMARK [2][-]{figure.1}{Selection}{Doc-Start}% 4
-\BOOKMARK [2][-]{equation.0.1}{Expansion}{Doc-Start}% 5
-\BOOKMARK [2][-]{equation.0.3}{Simulation}{Doc-Start}% 6
-\BOOKMARK [2][-]{equation.0.4}{Backpropagation}{Doc-Start}% 7
-\BOOKMARK [1][-]{equation.0.5}{VEGA Maneuver Implementation}{}% 8
-\BOOKMARK [1][-]{figure.2}{Performance Evaluation}{}% 9
-\BOOKMARK [2][-]{section*.1}{Case 1: Europa Clipper Trajectory Recreation}{figure.2}% 10
-\BOOKMARK [2][-]{table.2}{Case 2: Galileo Trajectory Recreation}{figure.2}% 11
-\BOOKMARK [2][-]{figure.6}{Case 3: Triton VEGA Opportunity Search}{figure.2}% 12
-\BOOKMARK [1][-]{figure.6}{Appendix A: Raw MCTS Run Results}{}% 13
+\BOOKMARK [1][-]{section*.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section*.2}{Background}{}% 2
+\BOOKMARK [1][-]{section*.3}{Monte Carlo Tree Search Implementation}{}% 3
+\BOOKMARK [2][-]{section*.4}{Selection}{section*.3}% 4
+\BOOKMARK [2][-]{section*.5}{Expansion}{section*.3}% 5
+\BOOKMARK [2][-]{section*.6}{Simulation}{section*.3}% 6
+\BOOKMARK [2][-]{section*.7}{Backpropagation}{section*.3}% 7
+\BOOKMARK [1][-]{section*.8}{bold0mu mumu VVVVVVEGA Maneuver Implementation}{}% 8
+\BOOKMARK [1][-]{section*.9}{Performance Evaluation}{}% 9
+\BOOKMARK [2][-]{section*.10}{Case 1: Europa Clipper Trajectory Recreation}{section*.9}% 10
+\BOOKMARK [2][-]{section*.11}{Case 2: Galileo Trajectory Recreation}{section*.9}% 11
+\BOOKMARK [2][-]{section*.12}{Case 3: Triton VEGA Opportunity Search}{section*.9}% 12
+\BOOKMARK [1][-]{section*.13}{Appendix A: Raw MCTS Run Results}{}% 13

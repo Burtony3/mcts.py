@@ -1,9 +1,70 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{Hennes2015}
 D.~Hennes and D.~Izzo, ``{Interplanetary trajectory planning with Monte Carlo
   tree search},''  {\em IJCAI International Joint Conference on Artificial
   Intelligence}, Vol.~2015-Janua, No.~Ijcai, 2015, pp.~769--775.
+
+\bibitem{Hughes2016}
+K.~M. Hughes, ``{Gravity-Assist Trajectories to Venus, Mars, and The Ice
+  Giants: Mission Design with Human and Robotic Applications},''  No.~December,
+  2016.
+
+\bibitem{Li2019}
+H.~Li, S.~Chen, D.~Izzo, and H.~Baoyin, ``{Deep Networks as Approximators of
+  Optimal Transfers Solutions in Multitarget Missions},''  {\em arXiv
+  preprint}, 2019.
+
+\bibitem{Jiang2012}
+F.~Jiang, H.~Baoyin, and J.~Li, ``{Practical techniques for low-thrust
+  trajectory optimization with homotopic approach},''  {\em Journal of
+  Guidance, Control, and Dynamics}, 2012, 10.2514/1.52476.
+
+\bibitem{Izzo2019}
+D.~Izzo, C.~I. Sprague, and D.~V. Tailor, ``{Machine Learning and Evolutionary
+  Techniques in Interplanetary Trajectory Design},''  {\em Springer
+  Optimization and Its Applications}, 2019, 10.1007/978-3-030-10501-3\_8.
+
+\bibitem{Nath2016}
+P.~Nath and R.~V. Ramanan, ``{Precise halo orbit design and optimal transfer to
+  halo orbits from earth using differential evolution},''  {\em Advances in
+  Space Research}, 2016, 10.1016/j.asr.2015.10.033.
+
+\bibitem{Olds2007}
+A.~D. Olds, C.~A. Kluever, and M.~L. Cupples, ``{Interplanetary mission design
+  using differential evolution},''  {\em Journal of Spacecraft and Rockets},
+  2007, 10.2514/1.27242.
+
+\bibitem{Zhuang2014}
+Y.~Zhuang and H.~Huang, ``{Time-optimal trajectory planning for underactuated
+  spacecraft using a hybrid particle swarm optimization algorithm},''  {\em
+  Acta Astronautica}, 2014, 10.1016/j.actaastro.2013.06.023.
+
+\bibitem{Penas2019}
+M.~B. Penas, {\em {A Rapid Grid-Search Technique for KBO Exploration
+  Trajectories.}}
+\newblock PhD thesis, Delft University of Technology, 2019.
+
+\bibitem{Izzo2013}
+D.~Izzo, L.~F. Sim{\~{o}}es, M.~M{\"{a}}rtens, G.~C. {De Croon}, A.~Heritier,
+  and C.~H. Yam, ``{Search for a grand tour of the Jupiter Galilean moons},''
+  {\em GECCO 2013 - Proceedings of the 2013 Genetic and Evolutionary
+  Computation Conference}, 2013, pp.~1301--1308, 10.1145/2463372.2463524.
+
+\bibitem{Browne2012}
+C.~B. Browne, E.~Powley, D.~Whitehouse, S.~M. Lucas, P.~I. Cowling,
+  P.~Rohlfshagen, S.~Tavener, D.~Perez, S.~Samothrakis, and S.~Colton, ``{A
+  survey of Monte Carlo tree search methods},''  2012,
+  10.1109/TCIAIG.2012.2186810.
+
+\bibitem{Wagner2015}
+S.~Wagner and B.~Wie, ``{Hybrid algorithm for multiple gravity-assist and
+  impulsive Delta-V maneuvers},''  {\em Journal of Guidance, Control, and
+  Dynamics}, Vol.~38, No.~11, 2015, pp.~2096--2107, 10.2514/1.G000874.
+
+\bibitem{Hollenbeck}
+G.~R. Hollenbeck, ``{New Flight Techniques for Outer Planet Missions},''  {\em
+  Am Astron Soc/AIAA Astrodyn Spec Conf}, 1975.
 
 \bibitem{sims1994}
 J.~Sims and J.~Longuski, {\em Analysis of V(infinity) leveraging for
@@ -15,6 +76,13 @@ A.~{Sims, Jon; Longuski, James; Staugler}, ``V(infinity) Leveraging for
   Journal of Guidance, Control, and Dynamics}, Vol.~20, No.~3, 1997,
   pp.~409--415.
 
+\bibitem{Sims2006}
+J.~A. Sims, P.~A. Finlayson, E.~A. Rinderle, M.~A. Vavrina, and T.~D.
+  Kowalkowski, ``{Implementation of a low-thrust trajectory optimization
+  algorithm for preliminary design},''  {\em Collection of Technical Papers -
+  AIAA/AAS Astrodynamics Specialist Conference, 2006}, 2006,
+  10.2514/6.2006-6746.
+
 \bibitem{Buffington2014}
 B.~Buffington, ``{Trajectory design for the europa clipper mission concept},''
   {\em AIAA/AAS Astrodynamics Specialist Conference 2014}, 2014.
@@ -22,5 +90,9 @@ B.~Buffington, ``{Trajectory design for the europa clipper mission concept},''
 \bibitem{DAmario1992}
 L.~A. D'Amario, L.~E. Bright, and A.~A. Wolf, ``{Galileo trajectory design},''
   {\em Space Science Reviews}, 1992, 10.1007/BF00216849.
+
+\bibitem{Hubbard2010}
+W.~B. Hubbard, ``{Ice Giants Decadal Study},''  {\em Planetary Science Decadal
+  Survey}, 2010.
 
 \end{thebibliography}
