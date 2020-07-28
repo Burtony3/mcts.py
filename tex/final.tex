@@ -1,11 +1,4 @@
-% use paper, or submit
-% use 11 pt (preferred), 12 pt, or 10 pt only
-
 \documentclass[letterpaper, preprint, paper,11pt]{AAS}	% for preprint proceedings
-%\documentclass[letterpaper, paper,11pt]{AAS}		% for final proceedings (20-page limit)
-%\documentclass[letterpaper, paper,12pt]{AAS}		% for final proceedings (20-page limit)
-%\documentclass[letterpaper, paper,10pt]{AAS}		% for final proceedings (20-page limit)
-%\documentclass[letterpaper, submit]{AAS}			% to submit to JAS
 \usepackage{bm}
 \usepackage{amsmath}
 \usepackage{subfigure}
@@ -48,18 +41,17 @@
 
 \title{Broad Trajectory Searches Using Monte Carlo Tree Search with the Inclusion of $\Delta$VEGA Trajectories}
 
-\author{Burton A. Yale\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: bayale@cpp.edu},  
-Jehosafat J. Cabrera\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: jehosafatc@cpp.edu},
-\ Rohan D. Patel\thanks{Undergraduate Student, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: rohanpatel@cpp.edu},
-\ and Navid Nakhjiri\thanks{Assistant Professor, Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave, E-mail: nnakhjiri@cpp.edu}
+\author{Burton A. Yale\thanks{Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave., Pomona, California, 91786, USA} \thanks{Undergraduate Student, E-mail: bayale@cpp.edu},
+\ Rohan D. Patel\footnotemark[1] \thanks{Undergraduate Student, E-mail: rohanpatel@cpp.edu},  
+Jehosafat J. Cabrera\footnotemark[1] \thanks{Undergraduate Student, E-mail: jehosafatc@cpp.edu},
+\ and Navid Nakhjiri\footnotemark[1] \thanks{Assistant Professor, E-mail: nnakhjiri@cpp.edu}
 }
-
 
 \maketitle{} 		
 
 
 \begin{abstract}
-Multiple flybys of the inner planets and the application of $V_{\infty}$ leveraging are essential trajectory design techniques to reduce the required launch energy for interplanetary missions. These trajectories are often difficult to formulate and require extensive computational resources. However, this problem can be classified as a sequential planning task which can be solved by a Monte Carlo Tree Search (MCTS) method. In this paper, a MCTS algorithm is developed and tested with a focus on reducing required $\Delta$V from the spacecraft. This method balances exploration and exploitation of the search space, and the algorithm’s performance is assessed by tweaking the selection policy parameter. Optimizations of several cases are studied to prove the feasibility of the tree search results. The algorithm will allow for inner-planetary flyby search planning for outer planetary missions.
+Multiple flybys of the inner planets and the application of $V_{\infty}$ leveraging are essential trajectory design techniques to reduce the required launch energy for interplanetary missions. These trajectories are often difficult to formulate and require extensive computational resources. However, this problem can be classified as a sequential planning task which can be solved by a Monte Carlo Tree Search (MCTS) method. In this paper, a MCTS algorithm is developed and tested with a focus on reducing required $\Delta V$ from the spacecraft by introducing the concept of $\Delta V$EGA orbits. By performing deep space maneuvers to increase the energy from an Earth flyby, this algorithm will be able to find sequences previously not considered. Optimizations of several cases are studied to prove the feasibility of the tree search results. The algorithm will allow for inner-planetary flyby search planning for outer planetary missions.
 \end{abstract}
 
 \section{Introduction}
@@ -147,21 +139,43 @@ Furthermore, children nodes that revisit the same parent planet have additional 
     \text{For } k \text{ in } [2, 3, 4]
 \end{equation}
 
-Once the list of states has been established, a new set of children nodes are created to match all combinations of ephemeris times and planetary NAIF ID pairs. In order to further prune the tree to reduce unnecessary calculations, Lambert arcs are calculated to each state pair to evauluate their associated $\Delta V$ cost. Any node that exceeds the mission budget is considered terminal and not used in any further exploration.
+Once the list of states has been established, a new set of children nodes are created to match all combinations of ephemeris times and planetary NAIF ID pairs. In order to further prune the tree to reduce unnecessary calculations, Lambert arcs are calculated to each state pair to evauluate their associated $\Delta V$ cost. Any node that exceeds the mission budget is considered terminal and not used in any further exploration. In order to calculate mission $\Delta V$ usage, the simulation uses powered flybys, as characterized by Wagner \cite{Wagner2015}.
 
-In order to calculate mission $\Delta V$ usage, the simulation uses powered flybys, as characterized by Wagner \cite{Wagner2015}.
+The powered flyby geometry consists of an incoming and outgoing spacecraft velocity vectors given by the solutions to the Lambert’s problem. This maneuver is used to either torque the spacecraft to a desired direction and/or further increase/decrease the magnitude of $V_{\infty, out}$. Therefore, a small $\Delta V$ investment is used in order to increase the performance and efficiency of the gravity assists. This maneuver can be performed at any location along the incoming and outgoing velocity vectors. Its effectiveness, moreover, is derived from the Oberth effect, which states that a $\Delta V$ maneuver is more efficient to change the overall orbital energy at high velocities. For this reason, it is common to design the maneuver at periapsis \cite{Brennan2015}. 
 
-\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{
-\textbf{Powered Flyby Discussion}
-\[ a_\text{in/out} = -\frac{\mu_p}{v^2_{\infty-\text{in/out}}} \]
-\[ \delta = \text{cos}^{-1}\left(\frac{ \vec{\textbf{v}}_{\infty-\text{in}} \cdot \vec{\textbf{v}}_{\infty-\text{out}} }{ v_{\infty-\text{in}} \cdot v_{\infty-\text{out}} }\right) \]
-\[ f =  \]
-\[ \frac{\text{d}f}{\text{d}e_{out}} =  \]
-\[ r_p = a_{in}(1 - e_{in}) = a_{out}(1 - e_{out}) \]
-\[ \Delta V_{fb} = \left| \sqrt{v^2_{\infty-\text{in}} + \frac{2\mu_p}{r_p}} - \sqrt{v^2_{\infty-\text{out}} + \frac{2\mu_p}{r_p}} \right| \]
-}}
+From this we can arrive at the formulation from Wagner as a Boundary Value Problem (BVP)\cite{Wagner2015}. It can be assumed that the flyby is coplanar, and the plane can be defined by the incoming and outgoing spacecraft velocities and the center of the encounter planet. The conditions that define the BVP are the incoming and outgoing $V_\infty$ and the total turning angle, $\delta$. The solution to the BVP is the $\Delta V$ and the value of the maneuver periapsis radius, $r_p$. The first initial condition to the problem is the semimajor axis, $a$, of the incoming and outgoing hyperbolic trajectories which is defined as:
 
-In addition to powered flyby $\Delta V$'s, fuel usage was also calculated for launch energies higher than the specified limit. If that max launch energy was defined as C3 = 36 $\sfrac{km^2}{s^2}$ and the spacecraft launched at a $V_\infty$ = 7 $\sfrac{km}{s}$, the incurred $\Delta V$ cost would be 1 $\sfrac{km}{s}$. 
+\begin{equation}
+    a_\text{in/out} = -\frac{\mu_p}{v^2_{\infty-\text{in/out}}}
+\end{equation}
+
+Where $\mu$ is the gravitational parameter of the flyby planet. Additionally, the required turn angle from the flyby, $\delta$, is another condition that must be met. This value is found by the following function finding the angle between the incoming and outgoing $V_\infty$ vectors:
+
+\begin{equation}
+    \delta = \text{cos}^{-1}\left(\frac{ \vec{\textbf{V}}_{\infty-\text{in}} \cdot \vec{\textbf{V}}_{\infty-\text{out}} }{ V_{\infty-\text{in}} \cdot V_{\infty-\text{out}} }\right)
+\end{equation}
+
+With $e_{out}$ as the iterated value, a function, and its derivative, can be defined. Using the Newton Raphson method of root finding to solve for the $e_{out}$ that coinsides with the two $V_\infty$ vectors. For each full loop, an initial $e_{out}$ value of 1.5 is used due to its performance in Wagner \cite{Wagner2015}.
+
+\begin{equation}
+    f = \left( \frac{a_{out}}{a_{in}} (e_{out} - 1) \right) \text{sin} \left( \delta - \text{sin}^{-1} \left( \frac{1}{e_{out}} \right) \right) 
+\end{equation}
+
+\begin{equation}
+    \frac{\text{d}f}{\text{d}e_{out}} = \left( \frac{a_{out}}{a_{in}}e_{out} - a_{out}{a_{in}} + 1 \right) \frac{ \text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right) }{ e_{out}^{2} \sqrt{1 - \sfrac{1}{e_{out}^{2}} } } + \frac{a_{out}}{a_{in}}\text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right)
+\end{equation}
+
+Once a value of $e_{out}$ has been found, it can then be used to find the actual periapsis radius, which is then used to find the required $\Delta V$. In addition, the periapsis radius is checked again body radius to prevent solutions that impact the planet's surface. 
+
+\begin{equation}
+    r_p = a_{out}(1 - e_{out})
+\end{equation}
+
+\begin{equation}
+    \Delta V_{GA} = \left| \sqrt{ v^2_{\infty-\text{in}} + \frac{2\mu}{r_p} } - \sqrt{ v^2_{\infty-\text{out}} + \frac{2\mu}{r_p} } \right|
+\end{equation}
+
+While this results in an increased computation cost at each step of the node creation process, this method of $\Delta V$ calculation allows for a better approximation of real life trajectory performance. In addition to powered flyby $\Delta V$'s, fuel usage was also calculated for launch energies higher than the specified limit. If that max launch energy was defined as C3 = 36 $\sfrac{km^2}{s^2}$ and the spacecraft launched at a $V_\infty$ = 7 $\sfrac{km}{s}$, the incurred $\Delta V$ cost would be 1 $\sfrac{km}{s}$. 
 
 After the states have been created, and the nodes pruned, the expand function selects the new node with the lowest associated $\Delta V$ cost to continue onto the Simulation step.
 
@@ -434,37 +448,38 @@ def mcts.run():
 \fi
 
 \appendix
-\newpage\section{Appendix A: Raw MCTS Run Results}
+\clearpage
+\section{Appendix A: Raw MCTS Run Results}
 \begin{table}[h!]
     \centering
     \caption{Top 23 results from broad search of Europa Clipper's launch window. Gray row shows nominal solution.}
     \begin{tabular}{lllllll}
         \toprule
-        \textbf{Result \#} & \textbf{Sequence}   & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$    & $\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$  & \textbf{ToF (Days) }           & \textbf{Arrival} $\boldsymbol{V_\infty (\frac{km}{s})}$          \\
+        \textbf{\textbf{\#}}\hspace{2em} & \textbf{\textbf{Sequence}} & \textbf{Dep. Date}\footnotemark[1] & \textbf{\textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$} & \textbf{$\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$} & \textbf{\textbf{ToF (Days) }} & \textbf{\textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$} \\
         \midrule
-        1  & EEVVEJ & 3.12  & 4.75 & 2392.28 & 6.62  \\
-        2  & EEVVEJ & 3.12  & 5.07 & 2019.14 & 6.30  \\
-        3  & EEVVEJ & 3.12  & 5.08 & 2013.15 & 6.36  \\
-        4  & EEVEJ  & 3.12  & 4.96 & 1561.77 & 6.54  \\
-        5  & EEJ    & 35.83 & 5.44 & 1533.57 & 6.15  \\
-        6  & EEJ    & 34.30 & 5.54 & 1533.57 & 6.10  \\
-        7  & EEVVEJ & 3.12  & 5.45 & 2025.13 & 6.27  \\
-        8  & EEJ    & 28.63 & 5.57 & 1523.57 & 6.17  \\
-        \rowcolor{lightgray}9  & EEVEEJ & 3.12  & 5.20 & 2810.10 & 6.58  \\
-        10  & EEVVEJ & 3.12  & 4.76 & 2351.48 & 7.02  \\
-        11 & EEVVEJ & 3.12  & 5.12 & 1978.34 & 6.71  \\
-        12 & EEVVEJ & 3.12  & 5.06 & 1972.34 & 6.76  \\
-        13 & EEVEJ  & 3.12  & 4.96 & 1520.96 & 6.94  \\
-        14 & EEVEJ  & 3.12  & 5.52 & 1612.78 & 6.41  \\
-        15 & EEJ    & 35.83 & 5.44 & 1492.77 & 6.51  \\
-        16 & EEJ    & 34.30 & 5.59 & 1492.77 & 6.45  \\
-        17 & EEVVEJ & 3.12  & 5.60 & 2007.16 & 6.45  \\
-        18 & EEJ    & 28.63 & 5.56 & 1482.76 & 6.53  \\
-        19 & EEVVEJ & 3.12  & 5.55 & 2398.27 & 6.57  \\
-        20 & EEVVEJ & 3.12  & 5.54 & 1984.33 & 6.66  \\
-        21 & EEVVEJ & 3.12  & 5.40 & 1966.35 & 6.84  \\
-        22 & EEVVEJ & 3.12  & 5.56 & 2386.29 & 6.68  \\
-        23 & EEVEEJ & 3.12  & 5.26 & 2769.29 & 7.01  \\
+        1                           & EEVVEJ                     & 8190                            & 3.12                                                   & 4.75                                                    & 2392                       & 6.62                                                             \\
+        2                           & EEVVEJ                     & 8190                            & 3.12                                                   & 5.07                                                    & 2019                       & 6.30                                                             \\
+        3                           & EEVVEJ                     & 8190                            & 3.12                                                   & 5.08                                                    & 2013                       & 6.36                                                             \\
+        4                           & EEVEJ                      & 8190                            & 3.12                                                   & 4.96                                                    & 1561                       & 6.54                                                             \\
+        6                           & EEJ                        & 8279                            & 34.30                                                  & 5.54                                                    & 1533                       & 6.10                                                             \\
+        5                           & EEJ                        & 8270                            & 35.83                                                  & 5.44                                                    & 1533                       & 6.15                                                             \\
+        7                           & EEVVEJ                     & 8190                            & 3.12                                                   & 5.45                                                    & 2025                       & 6.27                                                             \\
+        8                           & EEJ                        & 8279                            & 28.63                                                  & 5.57                                                    & 1523                       & 6.17                                                             \\
+        \rowcolor{lightgray}9       & EEVEEJ                     & 8190                            & 3.12                                                   & 5.20                                                    & 2810                       & 6.58                                                             \\
+        10                          & EEVVEJ                     & 8190                            & 3.12                                                   & 4.76                                                    & 2351                       & 7.02                                                             \\
+        11                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.12                                                    & 1978                       & 6.71                                                             \\
+        12                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.06                                                    & 1972                       & 6.76                                                             \\
+        13                          & EEVEJ                      & 8190                            & 3.12                                                   & 4.96                                                    & 1520                       & 6.94                                                             \\
+        14                          & EEVEJ                      & 8190                            & 3.12                                                   & 5.52                                                    & 1612                       & 6.41                                                             \\
+        15                          & EEJ                        & 8270                            & 35.83                                                  & 5.44                                                    & 1492                       & 6.51                                                             \\
+        16                          & EEJ                        & 8279                            & 34.30                                                  & 5.59                                                    & 1492                       & 6.45                                                             \\
+        17                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.60                                                    & 2007                       & 6.45                                                             \\
+        18                          & EEJ                        & 8279                            & 28.63                                                  & 5.56                                                    & 1482                       & 6.53                                                             \\
+        19                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.55                                                    & 2398                       & 6.57                                                             \\
+        20                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.54                                                    & 1984                       & 6.66                                                             \\
+        21                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.40                                                    & 1966                       & 6.84                                                             \\
+        22                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.56                                                    & 2386                       & 6.68                                                             \\
+        23                          & EEVEEJ                     & 8190                            & 3.12                                                   & 5.26                                                    & 2769                       & 7.01                                                             \\ 
         \bottomrule
     \end{tabular}
 \end{table}
@@ -473,24 +488,86 @@ def mcts.run():
     \centering
     \caption{All results from broad search of Galileo's launch window. Gray row shows nominal solution.}
     \begin{tabular}{lllllll}
-    \toprule
-    \textbf{Result \#} & \textbf{Sequence}   & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$    & $\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$  & \textbf{ToF (Days) }           & \textbf{Arrival} $\boldsymbol{V_\infty (\frac{km}{s})}$          \\
-    \midrule
-    1         & EVEJ  & 19.71 & 1.71 & 1162.28        & 6.64 \\
-    2         & EVEJ  & 19.71 & 1.53 & 1099.71        & 7.38 \\
-    3         & EVEEJ & 20.75 & 2.42 & 2395.81        & 6.73 \\
-    4         & EVVEJ & 19.71 & 2.02 & 1904.48        & 7.27 \\
-    5         & EVEEJ & 15.94 & 2.65 & 2360.62        & 6.67 \\
-    6         & EEVEJ & 27.93 & 2.37 & 2030.56        & 7.17 \\
-    7         & EVEEJ & 28.73 & 2.82 & 2325.42        & 6.72 \\
-    \rowcolor{lightgray}8         & EVEEJ & 21.75 & 2.78 & 2325.42        & 6.87 \\
-    9         & EEVEJ & 28.97 & 2.70 & 2013.05        & 7.09 \\
-    10         & EVVEJ & 15.42 & 2.62 & 1879.77        & 7.24 \\
-    11        & EVEEJ & 22.03 & 2.77 & 2289.24        & 7.20 \\
-    12        & EVVEJ & 15.42 & 2.65 & 1869.28        & 7.33 \\
-    \bottomrule
+        \toprule
+        \textbf{\textbf{\#}}\hspace{2em} & \textbf{\textbf{Sequence}} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$ & \textbf{$\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$} & \textbf{\textbf{ToF (Days) }} & \textbf{\textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$} \\ 
+        \midrule
+        1                           & EVEJ                       & -3739                           & 19.71                                         & 1.71                                                    & 1162                       & 6.64                                                             \\
+        2                           & EVEJ                       & -3739                           & 19.71                                         & 1.53                                                    & 1099                       & 7.38                                                             \\
+        3                           & EVEEJ                      & -3781                           & 20.75                                         & 2.42                                                    & 2395                       & 6.73                                                             \\
+        4                           & EVVEJ                      & -3739                           & 19.71                                         & 2.02                                                    & 1904                       & 7.27                                                             \\
+        5                           & EVEEJ                      & -3739                           & 15.94                                         & 2.65                                                    & 2360                       & 6.67                                                             \\
+        6                           & EEVEJ                      & -3852                           & 27.93                                         & 2.37                                                    & 2030                       & 7.17                                                             \\
+        7                           & EVEEJ                      & -3710                           & 28.73                                         & 2.82                                                    & 2325                       & 6.72                                                             \\
+        \rowcolor{lightgray}8       & EVEEJ                      & -3724                           & 21.75                                         & 2.78                                                    & 2325                       & 6.87                                                             \\
+        9                           & EEVEJ                      & -3824                           & 28.97                                         & 2.70                                                    & 2013                       & 7.09                                                             \\
+        10                          & EVVEJ                      & -3710                           & 15.42                                         & 2.62                                                    & 1879                       & 7.24                                                             \\
+        11                          & EVEEJ                      & -3724                           & 22.03                                         & 2.77                                                    & 2289                       & 7.20                                                             \\
+        12                          & EVVEJ                      & -3710                           & 15.42                                         & 2.65                                                    & 1869                       & 7.33                                                             \\ 
+        \bottomrule
     \end{tabular}
 \end{table}
+
+\begin{table}[h!]
+    \centering
+    \caption{Top 25 results from $\Delta V$EGA search to Neptune launch window. Gray row shows solutions optimized above.}
+    \begin{tabular}{lllllll}
+    \toprule
+    \textbf{\#}\hspace{2em} & \textbf{Sequence} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$    & $\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$  & \textbf{ToF (Days)} & \textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$ \\ 
+    \midrule
+    1                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.17        & 6385      & 7.84          \\
+    2                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.35        & 7240      & 6.27          \\
+    3                  & E(2:1+)EJN        & 10593                 & 28.14       & 1.42        & 6371      & 7.86          \\
+    4                  & E(2:1+)EJN        & 10593                 & 28.14       & 1.43        & 5516      & 10.12         \\
+    5                  & E(2:1+)EJN        & 10593                 & 28.14       & 1.47        & 4598      & 13.77         \\
+    6                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.48        & 8095      & 5.14          \\
+    7                  & E(3:1-)EJN        & 10713                 & 48.30       & 1.48        & 7385      & 6.01          \\
+    8                  & E(2:1+)EJN        & 10593                 & 28.14       & 1.51        & 8999      & 4.3           \\
+    9                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.57        & 5530      & 10.09         \\
+    10                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.58        & 9012      & 4.29          \\
+    11                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.58        & 8950      & 4.32          \\
+    12                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.59        & 4612      & 13.73         \\
+    13                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.61        & 7226      & 6.29          \\
+    14                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.63        & 8144      & 5.11          \\
+    15                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.69        & 8157      & 5.1           \\
+    16                 & E(3:1-)EJN        & 10701                 & 48.30       & 1.71        & 6530      & 7.47          \\
+    17                 & E(3:1-)EJN        & 10713                 & 48.30       & 1.72        & 8240      & 4.99          \\
+    18                 & E(2:1+)EJN        & 10605                 & 28.14       & 1.73        & 6371      & 7.84          \\
+    19                 & E(3:1-)EJN        & 10713                 & 48.30       & 1.74        & 6530      & 7.46          \\
+    20                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.74        & 8081      & 5.16          \\
+    21                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.76        & 7289       & 6.22          \\
+    22                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.83        & 7302      & 6.2           \\
+    23                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.84        & 8936       & 4.33          \\
+    24                 & E(3:1+)EJN        & 10641                 & 49.38       & 1.85        & 7457      & 6.01          \\
+    25                 & E(3:1+)EJN        & 10641                 & 49.69       & 1.86        & 8319      & 4.98          \\ \bottomrule
+    \end{tabular}
+\end{table}
+\footnotetext[1]{Days since January 01, 2000 (J2000)}
+
+\clearpage
+
+\section{Appendix B: Sequence Family Plots}
+\begin{figure}[h!]
+    \begin{subfigure}{}
+        \includegraphics[width=3in]{./fig/clipperFamilies.png}
+        \label{fig:clipFam}
+        % \caption{Top 25 results from Europa Clipper dataset, color sorted by sequence}
+    \end{subfigure}
+    \begin{subfigure}{}
+        \includegraphics[width=3.55in]{./fig/galileoFamilies.png}
+        \label{fig:galiFam}
+        % \caption{Top 12 results from Galileo dataset, color sorted by sequence}
+    \end{subfigure}
+    \caption{(Left) Top 25 results from Europa Clipper dataset, color sorted by sequence (Right) Top 12 results from Galileo dataset, color sorted by sequence}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=3in]{./fig/tridentFamilies.png}
+    \label{fig:tridFam}
+    \caption{Top 25 results from Neptune Flyby dataset, color sorted by sequence}
+\end{figure}
+
+
+\clearpage
 \bibliographystyle{AAS_publication}   % Number the references.
 \bibliography{references}   % Use references.bib to resolve the labels.
 

@@ -11,6 +11,8 @@ sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
 f = open("../data/trees/galileo/galileo.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
+# idList = np.loadtxt("idList.txt", delimiter="\n")
+
 
 def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "show", removeVinfdv = True, pickID = None):
     # plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -150,6 +152,24 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
 
 
 def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
+    def plotLam(l):
+        r = l.get_r1()
+        v = l.get_v1()[0]
+        T = l.get_tof()
+        mu = l.get_mu()
+
+        dt = T / (N - 1)
+
+        x = np.array([0.0] * N)
+        y = np.array([0.0] * N)
+
+        for i in range(N):
+            x[i] = r[0] / AU2m
+            y[i] = r[1] / AU2m
+            # print(r, type(r), v, type(v), dt, type(dt), mu, type(mu))
+            r, v = propagate_lagrangian(r, v, dt, mu)
+        return x, y
+
     AU2m = 149597870700
     AU2km = AU2m/1000
     plt.rc('text', usetex = True)
@@ -170,7 +190,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
     cList = ["tab:"+color for color in cList]
     cDict = {}
 
-    if not id:
+    if type(id) != np.ndarray:
         idList = tree.getResults()
         if type(showTop) == int:
             idList = idList[showTop::-1]
@@ -178,7 +198,13 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
             idList = idList[::-1]
         id = idList[0]
     else:
-        idList = [id]
+        idList = [int(val) for val in id]
+        id = idList[0]
+        if len(idList) > showTop:
+            idList = idList[showTop::-1]
+        else:
+            idList = idList[::-1]
+
 
     # FINDING INITIAL EPOCH
     et0 = tree.node[id].state[1]
@@ -217,24 +243,61 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
                 itr += 1
 
             for id_ in lineage:
-                l = tree.computeLambert(id_)
-                r = l.get_r1()
-                v = l.get_v1()[0]
-                T = l.get_tof()
-                mu = l.get_mu()
+                if len(tree.node[id_].state) == 3:
+                    # RETRIEVING PARENT AND STATE
+                    parent = tree.node[id_].parent
+                    X = tree.spk.spkezr(tree.node[parent].state[0][0], tree.node[parent].state[1], tree.frame, tree.abcorr, tree.cntrBody)[0]
 
-                dt = T / (N - 1)
+                    # RETRIVING DSM INFORMATION
+                    K = tree.node[id_].state[0][1]
+                    _, _, dt, vinfL = tree.queryDSM(K, tree.node[id_].state[2])
 
-                x = np.array([0.0] * N)
-                y = np.array([0.0] * N)
+                    # CALCULATING DSM APEHELION
+                    rp1 = X[:3]                         # Perihelion position
+                    theta = tree.getJ2000Ang(rp1)       # Angle of perihelion wrt J2000
+                    vp = X[3:]                          # Perihleion velocity
+                    r = tree.np.linalg.norm(rp1)        # Normal Value
+                    v = tree.np.linalg.norm(vp) + vinfL # Normal Value
+                    mu = tree.spk.bodvrd('sun', 'GM', 1)[1].item() # μ of Sun
+                    a = -mu/(v**2 - (2*mu)/r)           # Semi-Major Axis
+                    tof = tree.math.pi*tree.math.sqrt(a**3 / mu) # ½ period time of flight
+                    ra = 2*a - r                        # Apehelion normal value           
+                    phi = theta + tree.math.pi + tree.np.radians(1) # Angle of apehelion wrt J2000 (+ small bias)
+                    ra = [ra*tree.math.cos(phi), ra*tree.math.sin(phi), 0]  # Apehelion vector
 
-                for i in range(N):
-                    x[i] = r[0] / AU2m
-                    y[i] = r[1] / AU2m
-                    # print(r, type(r), v, type(v), dt, type(dt), mu, type(mu))
-                    r, v = propagate_lagrangian(r, v, dt, mu)
+                    # MARKING DSM MANEUVER POINT
+                    ax.scatter(ra[0]/tree.AU2km, ra[1]/tree.AU2km, color = color, marker='x')
 
-                ax.plot(x, y, linewidth = 1, color = color)
+                    # CREATING LAMBERT ARC INPUTS
+                    ra = tree.np.array(ra)
+                    rp2 = tree.spk.spkezr(tree.node[id_].state[0][0], tree.node[id_].state[1], tree.frame, tree.abcorr, tree.cntrBody)[0][:3]
+                    
+                    # LAMBERT ARC FROM LAUNCH TO DSM POINT
+                    l1 = tree.pk.lambert_problem(
+                        r1 = rp1*1000,
+                        r2 = ra*1000,
+                        tof = tof,
+                        mu = tree.pk.MU_SUN
+                    )
+                    x, y = plotLam(l1)
+                    ax.plot(x, y, linewidth = 1, color = color)
+
+                    # LAMBERT ARC FROM DSM POINT TO FLYBY
+                    l2 = tree.pk.lambert_problem(
+                        r1 = ra*1000,
+                        r2 = rp2*1000,
+                        tof = (dt*86400 - tof),
+                        mu = tree.pk.MU_SUN
+                    )
+                    x, y = plotLam(l2)
+                    ax.plot(x, y, linewidth = 1, color = color)
+
+                else:
+                    l = tree.computeLambert(id_)
+
+                    x, y = plotLam(l)
+
+                    ax.plot(x, y, linewidth = 1, color = color)
 
     # print(cDict)
 
@@ -246,7 +309,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
         #     if key[i] in tmpDict.values():
         #         lab.append([key_ for key_ in tmpDict.items() if key_[1] == key[i]][0][0])
         #     else:
-        #         lab.append(self.letterDict[key[i]] if key[i] in self.letterDict else key[i])
+        #         lab.append(tree.letterDict[key[i]] if key[i] in tree.letterDict else key[i])
         # lab = ''.join(lab)
         dataKey = mpatches.Patch(color = cDict[key], label=key)
         patchList.append(dataKey)
@@ -261,5 +324,5 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
     plt.show()
 
 
-state(tree, 'dateL', 'dvTot', "seq", showTop = 100, pickID = 704335)
-# orbit(tree, id = 704335)
+# state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 384842)
+orbit(tree)
