@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex dsmtheory"] 1595807730 "dsmtheory.aux" "dsmtheory.bbl" "dsmtheory" 1595807790
+["bibtex dsmtheory"] 1595923103 "dsmtheory.aux" "dsmtheory.bbl" "dsmtheory" 1595926862
   "./AAS_publication.bst" 1299638082 17438 b0110560a858beeea248ed6fbdc49cd1 ""
   "./referencesDSMSsection.bib" 1595802957 1126 53adca2686d30360fbbf1bdfa93defc0 ""
-  "dsmtheory.aux" 1595807790 2908 5c78d1a4375f4fd1a5f8cf0419765ae1 "pdflatex"
+  "dsmtheory.aux" 1595926862 3780 69a44309e717c2faaf2f53f5a3ea6af6 "pdflatex"
   (generated)
-  "dsmtheory.blg"
   "dsmtheory.bbl"
-["pdflatex"] 1595807789 "dsmtheory.tex" "dsmtheory.pdf" "dsmtheory" 1595807790
-  "/dev/null" 1595807546 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "dsmtheory.blg"
+["pdflatex"] 1595926861 "dsmtheory.tex" "dsmtheory.pdf" "dsmtheory" 1595926862
+  "/dev/null" 1595926655 0 d41d8cd98f00b204e9800998ecf8427e ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -119,12 +119,13 @@
   "Figures/dsmmatlab.png" 1595435536 77374 fba9b089b9cda6d6fe995946ca2e24bd ""
   "Figures/eejn21plus.png" 1595805404 83649 4e78c1ef5b0659df2a34ebe0666ed755 ""
   "Figures/eejn31minus.png" 1595805404 75722 40924d1e95af7bc54c2a51bce1bedfeb ""
-  "dsmtheory.aux" 1595807790 2908 5c78d1a4375f4fd1a5f8cf0419765ae1 "pdflatex"
-  "dsmtheory.bbl" 1595807730 706 39223ecc64541fc6691429403f746838 "bibtex dsmtheory"
-  "dsmtheory.out" 1595807790 138 e890bf4ae4cb97517604db6b768fdb71 "pdflatex"
-  "dsmtheory.tex" 1595807789 11363 77c0a3722b07f5a21f324152f4a47bdf ""
+  "Figures/tridentMCTS.png" 1595919334 63118 846ef92ed8378a977dac22af18e4ac0c ""
+  "dsmtheory.aux" 1595926862 3780 69a44309e717c2faaf2f53f5a3ea6af6 "pdflatex"
+  "dsmtheory.bbl" 1595923103 706 39223ecc64541fc6691429403f746838 "bibtex dsmtheory"
+  "dsmtheory.out" 1595926862 149 02792d06e34134b24aaec68ed1cd15f6 "pdflatex"
+  "dsmtheory.tex" 1595926861 15619 3cd0193599bf42986787d78ea6446841 ""
   (generated)
-  "dsmtheory.out"
-  "dsmtheory.pdf"
   "dsmtheory.log"
+  "dsmtheory.pdf"
+  "dsmtheory.out"
   "dsmtheory.aux"

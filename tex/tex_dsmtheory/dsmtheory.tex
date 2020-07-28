@@ -24,7 +24,7 @@ A $\Delta V$EGA orbit, also referred to as a leveraging orbit specifically of Ea
 %
 \begin{figure}[htb]
 	\centering\includegraphics[width=3.6in]{./Figures/dsmmatlab}
-	\caption{Example of a computed 3:$1^{-} \Delta$VEGA trajectory to Saturn's semi-major axis. The launch $V_\infty$ is 6.97 km/s and the required DSM $\Delta$V is 0.39 km/s. The EGA flyby altitude was constrained to 200 km, which yielded the highest post flyby energy.}
+	\caption{Example of a computed 3:$1^{-} \Delta$VEGA trajectory with a final aphelion radius roughly that of Saturn's semi-major axis. The launch $V_\infty$ is 6.97 km/s and the required DSM $\Delta$V is 0.39 km/s. The EGA flyby altitude was constrained to 200 km, which yielded the highest post flyby energy.}
 	\label{fig:dsmmatlab}
 \end{figure}
 %
@@ -39,8 +39,8 @@ A $\Delta V$EGA orbit, also referred to as a leveraging orbit specifically of Ea
 
 
 
-\subsection{Case 3: Triton $\Delta V$EGA Opportunity Search}
-The tree search algorithm can now be extended to an exploratory context to find possible trajectories for future concepts. With the interest in icy moon exploration in the solar system, a sequence to Neptune, and in return Triton, is explored\cite{Hubbard2010}. An arbitrary launch period was selected for this evaluation. The search is limited to trajectories with the inclusion of a $\Delta V$EGAs to evaluate its integration and performance. The number of iterations was set at 10,000 as this is seen to have a good compromise between calculation time and the number of search results. For a sequence to Neptune, it is desired to have a higher incoming relative velocity at Jupiter in order to have the appropriate outgoing energy to reach Neptune. With this in mind, the intent of the search was to find $\Delta V$EGA trajectories that deliver a high post EGA semi-major axis. The $\textit{detail}$ option is set to 16 which creates 8 $k$:1$^{-}$ and 8 $k$:1$^{+}$ nodes for each $k$ family. This spread is seen to balance the computation time (because of the number of nodes created) and the accuracy of the  DMS $\Delta$V. The C3 is set to emphasize the use of 2:1 $\Delta V$EGAs and the 3 and 4 $k$ leveraging families  would include the additional required velocity in the unoptimized $\Delta$V. The angular dispersion was set to 22 degrees yielding a fairly dense search space solution set. The results of the input search space are summarized in Table~\ref{tab:tritonInputs}:
+\subsection{Case 3: $\Delta V$EGA Opportunities to Neptune via Jupiter}
+The tree search algorithm can now be extended to an exploratory context to find possible trajectories. With the interest in icy moon exploration in the solar system, a sequence to Neptune, and in return Triton, is explored\cite{Hubbard2010}. An arbitrary launch period was selected for this evaluation, and the search is limited to trajectories with the inclusion of a $\Delta V$EGA to evaluate its integration and performance. The number of iterations was set at 10,000 as this is seen to have a good compromise between calculation time and the number of search results. For a sequence to Neptune, it is desired to have a higher incoming relative velocity at Jupiter in order to have the appropriate outgoing energy to reach Neptune. With this in mind, the intent of the search was to find $\Delta V$EGA trajectories that deliver a high post EGA semi-major axis so the encounter velocity is maximized. The $\textit{detail}$ option is set to 16 which creates 8 $k$:1$^{-}$ and $k$:1$^{+}$ nodes for each $k$ family. This spread is seen to balance the computation time, due to the number of nodes created, and the accuracy of the DSM's $\Delta$V estimate. The launch C3 is set to explore the possibility of 2:1 $\Delta V$EGAs and the 3 and 4 $k$ leveraging families  would include the additional required velocity in the unoptimized $\Delta$V. The angular dispersion was set to 22 degrees yielding a fairly dense search space solution set. The results of the input search space are summarized in Table~\ref{tab:tritonInputs}:
 %
 %
 \begin{table}[h]
@@ -63,10 +63,20 @@ The tree search algorithm can now be extended to an exploratory context to find 
 \end{table}
 %
 %
-\\\indent The search completed in 700 seconds and resulted in 1714 sequences from the 178,545 nodes created. As expected, most solutions used the 2:1 or 3:1 leveraging maneuvers, and a few 4:1 and direct EJN sequences were found with large unoptimized $\Delta$Vs.
-$\textbf{Need to finish discussion on the search results.}$
-\\\indent Fig.~\ref{fig:maltotriton} shows two optimized trajectories resulting from the search. The left plot is an example of a 2:1$^{+}$ $\Delta V$EGA which requires a launch $V_\infty$ magnitude of 5.39 $km/s$.
-\\$\textbf{Need to finish discussion on MALTO plot below.}$
+%
+\begin{figure}[ht]
+	\centering\includegraphics[width=3.6in]{./Figures/tridentMCTS}
+	\caption{Different resulting E($\Delta$V)EJN sequence types from the search. The outermost dashed line is the semi-major axis of Jupiter, the middle dashed line is Earth's, and the innermost is Venus's. The $\Delta V$EGA type is labeled above and the mark on the leveraging orbit denotes the approximate DSM location.}
+	\label{fig:tridentMCTS}
+\end{figure}
+%
+%
+\\\indent The search completed in 700 seconds and resulted in 1,714 sequences from the 178,545 nodes created. As expected, most solutions used the 2:1 or 3:1 leveraging maneuvers, and a few 4:1 and direct EJN sequences were found with large unoptimized $\Delta$V values. Fig.~\ref{fig:tridentMCTS} shows three different $\Delta V$EGA sequence types that comprise a majority of the search results. It is important to note that the 2:1$^{-}$ trajectories were not found in the search space due to not being able to deliver sufficient $V_\infty$ to Jupiter to continue onto Neptune. The 2:1$^{+}$ trajectories have long duration flight times (in excess of 17 years) which is expected due to the relatively low heliocentric energy flyby of Jupiter compared to other leveraging orbit families. Table~\ref{tab:tritontop25} lists the top 25 trajectories from the sequence that minimize the unoptimized $\Delta$V. Several 3:1 cases appeared in the results which reduce the flight time to Neptune to around two thirds the time (13 years) 
+%
+%
+\\\indent For the optimization process, all initial guess conditions were taken from the tree search output and following bounds were set: plus or minus 30 days for the Earth launch, flyby, and DSM epochs and plus or minus 100 days for the Jupiter and Neptune encounter epochs. The maximum launch $V_\infty$ was allowed to be 0.01 $km/s$ over the predicted requirement from the search, and the limits on the DSM $\Delta$V were plus or minus 0.3 $km/s$ from the estimated value from the used lookup table solution. Fig.~\ref{fig:maltotriton} shows examples of two optimized trajectories resulting from the search. The left plot is an example of a 2:1$^{+}$ $\Delta V$EGA which requires a launch $V_\infty$ magnitude of 5.39 $km/s$ (as opposed to the 5.38 $km/s$ from the prediction). The 2:1 leveraging trajectory has an incoming $V_\infty$ to Jupiter of around 8 $km/s$ which yields a 6400 day flight time to Neptune. Though the trajectory has a relatively low Neptune arrival velocity (around 7.8 $km/s$), making it a good candidate for a capture, the flight time makes the mission considerably longer than the 3:1 solution. The case presented utilized an intercept $\theta_E$ of 42 degrees which has an estimated DSM $\Delta V$ of 0.43 $km/s$, and the optimizer's computed $\Delta$V is 0.55 $km/s$. Because the tree search selects evenly spaced nodes between a range of $\theta_E$ values, it is likely to under or overestimate the required maneuver magnitude. The optimizer is able to move the DSM epoch, account for flyby targeting, and the subsequent intercept true anomaly, further introducing variance in the required $\Delta$V. The 3:1 case in Fig.~\ref{fig:maltotriton} (right side) has a launch $V_\infty$
+
+Both cases reach a bounded value, denoted by the parenthesis around the TOF at Neptune, and this likely due to dates shifting from the initial conditions.
 %
 %
 \begin{figure}[ht]
@@ -90,6 +100,38 @@ The deep space maneuver magnitude and direction vary from the search results due
 
 The search returns several cases of interest which have been optimized and shown in Fig.~\ref{fig:maltotriton1} and Fig.~\ref{fig:maltotriton2}. Sequences that utilize a 2:1$^{-}$ and 2:1$^{+}$ have the lowest launch energy, but also have fairly large deep space maneuvers. The
 \\$\textbf{THIS PART IS NOT DONE YET}$
+
+
+
+\clearpage
+\noindent $\textbf{Notes}$
+\\
+\\\noindent Intro
+		\\-We can remove the machine learning paragraph. We already mention the alg is heuristic free.
+		\\-Should we mention rosetta if we don't prove it in the test cases?
+		\\-Add a work scope (In this paper we are going to do ...)
+\\
+\\\noindent Theory
+    \\-Theory $e_{out}$ needs to be defined in words (I assume its eccentricity from eq8)
+		\\-Sentence starting with "Using the Newton..." is a fragment
+		\\-"real life" under equation 9
+		\\-"fuel usage" should be reworded?
+		\\-comparing energy and vinf together (select 1 or the other)
+		\\-DSM theory I use "we" but we dont really use we anywhere else in the theory
+\\
+\\\noindent Test Cases
+		\\- maybe reword "no basis for its astrodynamics" (In order to test the algorithm's performance and ability to return useful sequence pairs...)
+		\\-"Europa Clipper's" 3rd sentence in Performance Evaluation
+		\\-push limits of powered flyby?
+		\\-we can remove the "trident" name for Neptune trajectories bc they are not using EEVEE sequences.
+		\\-The first case is a search to find a sequence similar to Europa Clipper's interplanetary trajectory (15F9-A22 EEVEEJ) utilizing multiple gravity assists of Earth and Venus to reach Jupiter[source].
+		\\-maybe we should include a reminder of what d means?
+		\\-"1.9 billion possible combinations possible..." reword
+		\\-For Table 2 we should mention its dates for Europa Clipper and not Galileo in the caption.
+		\\-After table 3, "An additional constrain"
+		\\$<$got up to Figure 5$>$
+		\\
+	  \\-label for Table 8 in appendix to reference in text (I am using ref tab:tritontop25  right now in the text)
 
 
 \phantom{p. 1}
