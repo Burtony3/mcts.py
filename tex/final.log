@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.7.18)  27 JUL 2020 23:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.7.18)  27 JUL 2020 23:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -846,7 +846,7 @@ Overfull \hbox (11.44937pt too wide) in paragraph at lines 490--508
  []
 
 
-Overfull \hbox (17.9209pt too wide) in paragraph at lines 513--543
+Overfull \hbox (17.9209pt too wide) in paragraph at lines 513--544
  [][] 
  []
 
@@ -861,34 +861,34 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 <./fig/clipperFamilies.png, id=259, 462.528pt x 413.3844pt>
 File: ./fig/clipperFamilies.png Graphic file (type png)
 <use ./fig/clipperFamilies.png>
-Package pdftex.def Info: ./fig/clipperFamilies.png  used on input line 551.
+Package pdftex.def Info: ./fig/clipperFamilies.png  used on input line 552.
 (pdftex.def)             Requested size: 216.81pt x 193.77345pt.
 <./fig/galileoFamilies.png, id=260, 462.528pt x 346.896pt>
 File: ./fig/galileoFamilies.png Graphic file (type png)
 <use ./fig/galileoFamilies.png>
-Package pdftex.def Info: ./fig/galileoFamilies.png  used on input line 556.
+Package pdftex.def Info: ./fig/galileoFamilies.png  used on input line 557.
 (pdftex.def)             Requested size: 256.55872pt x 192.42897pt.
 
-Overfull \hbox (48.07074pt too wide) in paragraph at lines 550--560
+Overfull \hbox (48.07074pt too wide) in paragraph at lines 551--561
 [][] [] [] [][] []
  []
 
 <./fig/tridentFamilies.png, id=261, 462.528pt x 377.9721pt>
 File: ./fig/tridentFamilies.png Graphic file (type png)
 <use ./fig/tridentFamilies.png>
-Package pdftex.def Info: ./fig/tridentFamilies.png  used on input line 564.
+Package pdftex.def Info: ./fig/tridentFamilies.png  used on input line 565.
 (pdftex.def)             Requested size: 216.81pt x 177.17398pt.
 [18
 
  <./fig/clipperFamilies.png> <./fig/galileoFamilies.png> <./fig/tridentFamilies.png>] (/home/burtonyale/Documents/repos/MCTS.py/tex/final.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 574.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 575.
  [19
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 574.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 575.
  (/home/burtonyale/Documents/repos/MCTS.py/tex/final.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 574.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 574.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 575.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 575.
 Package rerunfilecheck Info: File `final.out' has not changed.
 (rerunfilecheck)             Checksum: 2A34837B516F138F06604D2C8753ECD5;939.
 
@@ -899,12 +899,12 @@ LaTeX Font Warning: Size substitutions with differences
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 574.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 575.
  ) 
 Here is how much of TeX's memory you used:
  10037 strings out of 483183
  159327 string characters out of 5966292
- 648935 words of memory out of 5000000
+ 649935 words of memory out of 5000000
  24709 multiletter control sequences out of 15000+600000
  579926 words of font info for 130 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -924,7 +924,7 @@ pdfTeX warning (dest): name{section*.2} has been referenced but does not exist, 
 pdfTeX warning (dest): name{section*.1} has been referenced but does not exist, replaced by a fixed one
 
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmbsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on /home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf (19 pages, 979174 bytes).
+Output written on /home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf (19 pages, 979418 bytes).
 PDF statistics:
  367 PDF objects out of 1000 (max. 8388607)
  299 compressed objects within 3 object streams

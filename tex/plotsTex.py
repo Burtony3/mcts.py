@@ -8,7 +8,7 @@ import numpy as np
 import dill
 import sys
 sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
-f = open("../data/trees/galileo/galileo.pckl", "rb")
+f = open("../data/trees/trident/triton.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
 # idList = np.loadtxt("idList.txt", delimiter="\n")
@@ -190,7 +190,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
     cList = ["tab:"+color for color in cList]
     cDict = {}
 
-    if type(id) != np.ndarray:
+    if type(id) != np.ndarray and type(id) != list:
         idList = tree.getResults()
         if type(showTop) == int:
             idList = idList[showTop::-1]
@@ -207,6 +207,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
 
     # FINDING INITIAL EPOCH
+    print(idList)
     et0 = tree.node[id].state[1]
     if tree.enableDSM: tree.P.append("3") # Adding Earth for DSM Case
     for P in tree.P:
@@ -325,4 +326,4 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
 
 # state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 384842)
-orbit(tree)
+orbit(tree, id = [121249, 109667])

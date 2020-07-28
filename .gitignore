@@ -11,3 +11,5 @@ data/trees/galileo/galileo.pckl
 *~*
 data/trees/clipper/clipper70k.pckl
 *.malto*
+tex/net.py
+src/exp.py
