@@ -1,0 +1,19 @@
+% File of MALTO event times and types
+% Type 1 = Departure       
+% Type 2 = Matchpoint      
+% Type 3 = End Spiral In   
+% Type 4 = Begin Stay      
+% Type 5 = Begin Spiral Out
+% Type 6 = Arrival         
+%  
+%         Time (JD)           Duration (days)   Mass (kg)    Flyby alt (km)       Event Type
+%  
+   0.245976089639539225D+07        0.0000       4000.0000          0.0000         1   % Departure       
+   0.246003190497725969D+07        0.0000       4000.0000          0.0000         2   % Matchpoint      
+   0.246030291355912713D+07        0.0000       4000.0000             NaN         6   % Arrival         
+   0.246030291355912713D+07        0.0000       4000.0000          0.0000         1   % Departure       
+   0.246056075964820525D+07        0.0000       3578.5189          0.0000         2   % Matchpoint      
+   0.246081860573728336D+07        0.0000       3578.5189        200.0000         6   % Arrival         
+   0.246081860573728336D+07        0.0000       3578.5189          0.0000         1   % Departure       
+   0.246204955286864191D+07        0.0000       3578.5189          0.0000         2   % Matchpoint      
+   0.246328050000000000D+07        0.0000       3578.5189          0.0000         6   % Arrival         
