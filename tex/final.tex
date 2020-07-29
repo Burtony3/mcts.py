@@ -368,40 +368,41 @@ When inputting trajectory dates into MALTO, it was found the 3:1 sequence sugges
         \end{tabular}
     \end{center}
 \end{table}
-%%%%%%TEMP%%%%%%%%%
-\newpage
-%%%%%%%%%%%%%%%%%%%
+
 \subsection{Case 3: Triton $\Delta V$EGA Opportunity Search}
-The tree search algorithm can now be extended to an exploratory context to find possible trajectories for future concepts. With the interest in icy moon exploration in the solar system, a sequence to Neptune, and in return Triton, is explored\cite{Hubbard2010}. An arbitrary launch period was selected for this evaluation. The search is limited to trajectories with the inclusion of a $\Delta V$EGAs to evaluate its integration and performance. The number of iterations was set at 10,000 as this is seen to have a good compromise between calculation time and the number of search results. For a sequence to Neptune, it is desired to have a higher incoming relative velocity at Jupiter in order to have the appropriate outgoing energy to reach Neptune. With this in mind, the intent of the search was to find $\Delta V$EGA trajectories that deliver a high post EGA semi-major axis. The $\textit{detail}$ option is set to 16 which creates 8 $k$:1$^{-}$ and 8 $k$:1$^{+}$ nodes for each $k$ family. This spread is seen to balance the computation time (because of the number of nodes created) and the accuracy of the  DMS $\Delta$V. The C3 is set to emphasize the use of 2:1 $\Delta V$EGAs and the 3 and 4 $k$ leveraging families  would include the additional required velocity in the unoptimized $\Delta$V. The angular dispersion was set to 22 degrees yielding a fairly dense search space solution set. The results of the input search space are summarized in Table~\ref{tab:tritonInputs}:
-%
-%
+The tree search algorithm can now be extended to an exploratory context to find possible trajectories. With the interest in icy moon exploration in the solar system, a sequence to Neptune, and in return Triton, is explored\cite{Hubbard2010}. An arbitrary launch period was selected for this evaluation, and the search is limited to trajectories with the inclusion of a $\Delta V$EGA to evaluate its integration and performance. The number of iterations was set at 10,000 as this is seen to have a good compromise between calculation time and the number of search results. For a sequence to Neptune, it is desired to have a higher incoming relative velocity at Jupiter in order to have the appropriate outgoing energy to reach Neptune. With this in mind, the intent of the search was to find $\Delta V$EGA trajectories that deliver a high post EGA semi-major axis so the encounter velocity is maximized. The $\textit{detail}$ option is set to 16 which creates 8 $k$:1$^{-}$ and $k$:1$^{+}$ nodes for each $k$ family. This spread is seen to balance the computation time, due to the number of nodes created, and the accuracy of the DSM's $\Delta$V estimate. The launch C3 is set to explore the possibility of 2:1 $\Delta V$EGAs and the 3 and 4 $k$ leveraging families  would include the additional required velocity in the unoptimized $\Delta$V. The angular dispersion was set to 22 degrees yielding a fairly dense search space solution set. The results of the input search space are summarized in Table~\ref{tab:tritonInputs}:
+
 \begin{table}[h]
     \begin{center}
         \caption{Inputs for $\Delta V$EGA Trajectories to Neptune via Jupiter}
         \label{tab:tritonInputs}
-        \begin{tabular}{lc}
-            \toprule
+        \begin{tabular}{l|c}
+					\toprule
             \textbf{Input Name} & \textbf{Input Value}\\
-            \midrule
+            \hline
             Arrival Planet & Neptune \\
             Launch Window \quad \quad & Jan 01, 2029 --- Jul 01, 2029 \\
             Iterations & 10,000 \\
             $\Delta V$ Budget & 4.5 $\sfrac{km}{s}$ \\
             Max C3 & 35 $\sfrac{km^2}{s^2}$ \\
             Detail ($d$) & 16 \\
-            \bottomrule
+						\bottomrule
         \end{tabular}
     \end{center}
 \end{table}
 %
-%
+\begin{figure}[ht]
+	\centering\includegraphics[width=3.6in]{./fig/tridentMCTS}
+	\caption{Different resulting E($\Delta$V)EJN sequence types from the search. The outermost dashed line is the semi-major axis of Jupiter, the middle dashed line is Earth's, and the innermost is Venus's. The $\Delta V$EGA type is labeled above and the mark on the leveraging orbit denotes the approximate DSM location.}
+	\label{fig:tridentMCTS}
+\end{figure}
 
-The search completed in 700 seconds and resulted in 1714 sequences from the 178,545 nodes created. As expected, most solutions used the 2:1 or 3:1 leveraging maneuvers, and a few 4:1 and direct EJN sequences were found with large unoptimized $\Delta$Vs.
-\textbf{Need to finish discussion on the search results.}
-Fig.~\ref{fig:maltotriton} shows two optimized trajectories resulting from the search. The left plot is an example of a 2:1$^{+}$ $\Delta V$EGA which requires a launch $V_\infty$ magnitude of 5.39 $km/s$.
-\textbf{Need to finish discussion on MALTO plot below.}
-%
-%
+The search completed in 700 seconds and resulted in 1,714 sequences from the 178,545 nodes created. As expected, most solutions used the 2:1 or 3:1 leveraging maneuvers, and a few 4:1 and direct EJN sequences were found with large unoptimized $\Delta$V values. Fig.~\ref{fig:tridentMCTS} shows three different $\Delta V$EGA sequence types that comprise a majority of the search results. It is important to note that the 2:1$^{-}$ trajectories were not found in the search space due to not being able to deliver sufficient $V_\infty$ to Jupiter to continue onto Neptune. The 2:1$^{+}$ trajectories have long duration flight times (in excess of 17 years) which is expected due to the relatively low heliocentric energy flyby of Jupiter compared to other leveraging orbit families. Table~\ref{tab:tritontop25} lists the top 25 trajectories from the sequence that minimize the unoptimized $\Delta$V. Several 3:1 cases appeared in the results which reduce the flight time to Neptune to around two thirds the time (13 years) 
+
+For the optimization process, all initial guess conditions were taken from the tree search output and following bounds were set: plus or minus 30 days for the Earth launch, flyby, and DSM epochs and plus or minus 100 days for the Jupiter and Neptune encounter epochs. The maximum launch $V_\infty$ was allowed to be 0.01 $km/s$ over the predicted requirement from the search, and the limits on the DSM $\Delta$V were plus or minus 0.3 $km/s$ from the estimated value from the used lookup table solution. Fig.~\ref{fig:maltotriton} shows examples of two optimized trajectories resulting from the search. The left plot is an example of a 2:1$^{+}$ $\Delta V$EGA which requires a launch $V_\infty$ magnitude of 5.39 $km/s$ (as opposed to the 5.38 $km/s$ from the prediction). The 2:1 leveraging trajectory has an incoming $V_\infty$ to Jupiter of around 8 $km/s$ which yields a 6400 day flight time to Neptune. Though the trajectory has a relatively low Neptune arrival velocity (around 7.8 $km/s$), making it a good candidate for a capture, the flight time makes the mission considerably longer than the 3:1 solution. The case presented utilized an intercept $\theta_E$ of 42 degrees which has an estimated DSM $\Delta V$ of 0.43 $km/s$, and the optimizer's computed $\Delta$V is 0.55 $km/s$. Because the tree search selects evenly spaced nodes between a range of $\theta_E$ values, it is likely to under or overestimate the required maneuver magnitude. The optimizer is able to move the DSM epoch, account for flyby targeting, and the subsequent intercept true anomaly, further introducing variance in the required $\Delta$V. The 3:1 case in Fig.~\ref{fig:maltotriton} (right side) has a launch $V_\infty$
+
+Both cases reach a bounded value, denoted by the parenthesis around the TOF at Neptune, and this likely due to dates shifting from the initial conditions.
+
 \begin{figure}[ht]
 		\centering
 		\begin{minipage}{0.50\textwidth}
@@ -410,19 +411,17 @@ Fig.~\ref{fig:maltotriton} shows two optimized trajectories resulting from the s
     \end{minipage}\hfill
 		\begin{minipage}{0.50\textwidth}
 				\centering
-				\includegraphics[width=1.0\textwidth]{./fig/eejn31minus}
+				\includegraphics[width=1.0\textwidth]{./fig/eejn31minus4000}
 		\end{minipage}
 		\caption{Optimized trajectory examples from the search. The left plot is an example of a 2:1$^{+}$ and the right is a 3:1$^{-}$. The 2:1$^{+}$ is able to reach Neptune with a much lower $V_\infty$ due to a slower relative velocity into Jupiter when compared to the 3:1$^{-}$ sequence.}
 		\label{fig:maltotriton}
 \end{figure}
-%
-%
-\textbf{Need to add discussion on leveraging performance}
+
+$\textbf{Need to add discussion on leveraging performance}$
 The deep space maneuver magnitude and direction vary from the search results due to various factors. The optimization process takes into account the change in declination for the outgoing flyby and so depending on the transfer, an additional Z-component of velocity is added by the optimizer to target the appropriate Earth flyby B-Plane angle. Another source of discrepancy is in the maneuver location. In the lookup table, the assumption is that the deep space maneuver is conducted at the aphelion of the leveraging orbit. In practice, the maneuver can be shifted before of after by the optimizer. Table~\ref{tab:} summarizes a few optimized cases and their predicted DSM $\Delta$V versus the calculated value from the optimization process.
 
-
 The search returns several cases of interest which have been optimized and shown in Fig.~\ref{fig:maltotriton1} and Fig.~\ref{fig:maltotriton2}. Sequences that utilize a 2:1$^{-}$ and 2:1$^{+}$ have the lowest launch energy, but also have fairly large deep space maneuvers. The
-\textbf{THIS PART IS NOT DONE YET}
+$\textbf{THIS PART IS NOT DONE YET}$
 
 \iffalse
 \begin{lstlisting}
@@ -451,7 +450,7 @@ def mcts.run():
 \section{Appendix A: Raw MCTS Run Results}
 \begin{table}[h!]
     \centering
-    \caption{Top 23 results from broad search of Europa Clipper's launch window. Gray row shows nominal solution.}
+    \caption{Top 22 results from broad search of Europa Clipper's launch window. Gray row shows nominal solution.}
     \begin{tabular}{lllllll}
         \toprule
         \textbf{\textbf{\#}}\hspace{2em} & \textbf{\textbf{Sequence}} & \textbf{Dep. Date}\footnotemark[1] & \textbf{\textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$} & \textbf{$\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$} & \textbf{\textbf{ToF (Days) }} & \textbf{\textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$} \\
@@ -477,8 +476,7 @@ def mcts.run():
         19                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.55                                                    & 2398                       & 6.57                                                             \\
         20                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.54                                                    & 1984                       & 6.66                                                             \\
         21                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.40                                                    & 1966                       & 6.84                                                             \\
-        22                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.56                                                    & 2386                       & 6.68                                                             \\
-        23                          & EEVEEJ                     & 8190                            & 3.12                                                   & 5.26                                                    & 2769                       & 7.01                                                             \\ 
+        22                          & EEVVEJ                     & 8190                            & 3.12                                                    & 5.26                                                    & 2769                       & 7.01                                                             \\ 
         \bottomrule
     \end{tabular}
 \end{table}
@@ -505,7 +503,8 @@ def mcts.run():
         \bottomrule
     \end{tabular}
 \end{table}
-
+\footnotetext[1]{Days since January 01, 2000 (J2000)}
+\iffalse
 \begin{table}[h!]
     \centering
     \caption{Top 25 results from $\Delta V$EGA search to Neptune launch window. Gray row shows solutions optimized above.}
@@ -541,7 +540,7 @@ def mcts.run():
     \bottomrule
     \end{tabular}
 \end{table}
-\footnotetext[1]{Days since January 01, 2000 (J2000)}
+\fi
 
 \clearpage
 
