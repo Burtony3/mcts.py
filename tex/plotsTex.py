@@ -8,7 +8,7 @@ import numpy as np
 import dill
 import sys
 sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
-f = open("../data/trees/trident/triton.pckl", "rb")
+f = open("../src/tridentCaseC.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
 # idList = np.loadtxt("idList.txt", delimiter="\n")
@@ -235,7 +235,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
         seq = attr['seq']
         lineage = tree.getLineage(id)[-3::-1]
 
-        if not seqT or seq in seqT:
+        if len(seq) == 10: #not seqT or seq in seqT:
             if seq in cDict.keys():
                 color = cDict[seq]
             else:
@@ -326,4 +326,4 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
 
 # state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 384842)
-orbit(tree, id = [121249, 109667])
+orbit(tree, showTop = 30)

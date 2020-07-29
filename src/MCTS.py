@@ -243,12 +243,12 @@ class MCTS(object):
 
         # DICT FOR DSM θ RANGES
         kDict = {
-            '2-': [ -7,   -75  ],
-            '2+': [  7,    63  ],
-            '3-': [ -7,   -75  ],
-            '3+': [ 13,    42.5], #← Holes in CSV
-            '4-': [-31.5, -75  ],
-            '4+': [ 26,    42.5]
+            '2-': [ -5,   -75  ],
+            '2+': [  5,    75  ],
+            '3-': [ -5,   -75  ],
+            '3+': [  5,    75  ], #← Holes in CSV
+            '4-': [ -5,   -75  ],
+            '4+': [  5,    75  ]
         }
 
         # INITIALIZING STATE PAIRS
@@ -566,9 +566,9 @@ class MCTS(object):
                 # ROTATE VECTOR TO ALIGN WITH J2000 FRAME FROM ROTATEING FRAME
                 pE = self.spk.spkezr(self.node[gparent].state[0], self.node[gparent].state[1], self.frame, self.abcorr, self.cntrBody)[0][:3]
                 theta = self.getJ2000Ang(pE)
-                theta = 2*np.pi - (theta + self.np.radians(90))
+                theta = theta + self.np.radians(90)
                 c, s = (self.np.cos(theta), self.np.sin(theta))
-                R = np.array([[c, -s], [s, c]])
+                R = np.array([[c, s], [-s, c]])
                 vi = self.np.dot(vi, R)
                 vi = self.np.append(vi, 0)
 
@@ -948,24 +948,43 @@ class MCTS(object):
         vInfOVec = []
         vInfIVec = []
         for id in lineage:
-            # FINDING LAMBERT
-            l = self.computeLambert(id)
+            if len(self.node[id].state) == 3:
+                _, _, _, vinfL = self.queryDSM(self.node[id].state[0][-2], self.node[id].state[2])
+                vinf = self.np.array([vinfL, 0, 0])
+            else:
+                # FINDING LAMBERT
+                l = self.computeLambert(id)
 
-            # FINDING OUTPUT V∞ OF LEG
-            vp = self.spk.spkezr(
-                self.node[self.node[id].parent].state[0][:-2] if len(self.node[self.node[id].parent].state) == 3 else self.node[self.node[id].parent].state[0], 
-                self.node[self.node[id].parent].state[1], 
-                self.frame, self.abcorr, self.cntrBody
-            )[0][3:]
-            vInfOVec.append(self.np.array(l.get_v1()[0])/1000 - vp)
+                # FINDING OUTPUT V∞ OF LEG
+                vp = self.spk.spkezr(
+                    self.node[self.node[id].parent].state[0][:-2] if len(self.node[self.node[id].parent].state) == 3 else self.node[self.node[id].parent].state[0], 
+                    self.node[self.node[id].parent].state[1], 
+                    self.frame, self.abcorr, self.cntrBody
+                )[0][3:]
+                vinf = self.np.array(l.get_v1()[0])/1000 - vp
+            vInfOVec.append(vinf)
 
-            # FINDING INBOUND V∞ OF LEG
-            vp = self.spk.spkezr(
-                self.node[id].state[0][:-2] if len(self.node[id].state) == 3 else self.node[id].state[0], 
-                self.node[id].state[1], 
-                self.frame, self.abcorr, self.cntrBody
-            )[0][3:]
-            vInfIVec.append(self.np.array(l.get_v2()[0])/1000 - vp)
+            if len(self.node[id].state) == 3:
+                _, vi, _, _ = self.queryDSM(self.node[id].state[0][-2], self.node[id].state[2])
+                parent = self.node[id].parent
+                # ROTATE VECTOR TO ALIGN WITH J2000 FRAME FROM ROTATEING FRAME
+                pE = self.spk.spkezr(self.node[parent].state[0], self.node[parent].state[1], self.frame, self.abcorr, self.cntrBody)[0][:3]
+                th = self.getJ2000Ang(pE)
+                # print(th, type(th))
+                th = th + self.np.radians(90)
+                c, s = (self.np.cos(th), self.np.sin(th))
+                R = self.np.array([[c, s], [-s, c]])
+                vi = self.np.dot(vi, R)
+                vinf = self.np.append(vi, 0)
+            else:
+                # FINDING INBOUND V∞ OF LEG
+                vp = self.spk.spkezr(
+                    self.node[id].state[0][:-2] if len(self.node[id].state) == 3 else self.node[id].state[0], 
+                    self.node[id].state[1], 
+                    self.frame, self.abcorr, self.cntrBody
+                )[0][3:]
+                vinf = self.np.array(l.get_v2()[0])/1000 - vp
+            vInfIVec.append(vinf)
 
         # ADJUSTING LIST TO SHOW FOR EACH PLANET
         vInfOVec.append("None")
