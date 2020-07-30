@@ -10,45 +10,45 @@ Warning--empty publisher in Curtis2013
 Warning--empty chapter and pages in sims1994
 Warning--empty publisher in sims1994
 Warning--empty year in sims1994
-You've used 21 entries,
+You've used 23 entries,
             1928 wiz_defined-function locations,
-            620 strings with 7564 characters,
-and the built_in function-call counts, 4232 in all, are:
-= -- 359
-> -- 199
+            635 strings with 7912 characters,
+and the built_in function-call counts, 4959 in all, are:
+= -- 439
+> -- 221
 < -- 0
-+ -- 76
-- -- 55
-* -- 318
-:= -- 644
-add.period$ -- 23
-call.type$ -- 21
++ -- 84
+- -- 61
+* -- 372
+:= -- 738
+add.period$ -- 25
+call.type$ -- 23
 change.case$ -- 0
 chr.to.int$ -- 0
-cite$ -- 28
-duplicate$ -- 230
-empty$ -- 461
-format.name$ -- 55
-if$ -- 1005
+cite$ -- 30
+duplicate$ -- 266
+empty$ -- 526
+format.name$ -- 61
+if$ -- 1186
 int.to.chr$ -- 0
-int.to.str$ -- 21
-missing$ -- 21
-newline$ -- 68
-num.names$ -- 21
-pop$ -- 97
+int.to.str$ -- 23
+missing$ -- 23
+newline$ -- 74
+num.names$ -- 23
+pop$ -- 100
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 90
+skip$ -- 121
 stack$ -- 0
-substring$ -- 144
-swap$ -- 54
+substring$ -- 216
+swap$ -- 74
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 7
-while$ -- 33
-width$ -- 23
-write$ -- 178
+while$ -- 41
+width$ -- 25
+write$ -- 199
 (There were 7 warnings)
