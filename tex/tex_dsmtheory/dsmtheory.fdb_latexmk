@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex dsmtheory"] 1595923103 "dsmtheory.aux" "dsmtheory.bbl" "dsmtheory" 1595926862
+["bibtex dsmtheory"] 1596090492 "dsmtheory.aux" "dsmtheory.bbl" "dsmtheory" 1596091940
   "./AAS_publication.bst" 1299638082 17438 b0110560a858beeea248ed6fbdc49cd1 ""
   "./referencesDSMSsection.bib" 1595802957 1126 53adca2686d30360fbbf1bdfa93defc0 ""
-  "dsmtheory.aux" 1595926862 3780 69a44309e717c2faaf2f53f5a3ea6af6 "pdflatex"
+  "dsmtheory.aux" 1596091940 2677 e6d533556ef3683a9a16a0a7ae44f57a "pdflatex"
   (generated)
-  "dsmtheory.bbl"
   "dsmtheory.blg"
-["pdflatex"] 1595926861 "dsmtheory.tex" "dsmtheory.pdf" "dsmtheory" 1595926862
-  "/dev/null" 1595926655 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "dsmtheory.bbl"
+["pdflatex"] 1596091939 "dsmtheory.tex" "dsmtheory.pdf" "dsmtheory" 1596091940
+  "/dev/null" 1596091541 0 d41d8cd98f00b204e9800998ecf8427e ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -46,7 +46,6 @@
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1248133631 35469 70d41d2b9ea31d5d813066df7c99281c ""
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
-  "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb" 1248133631 31809 8670ca339bf94e56da1fc21c80635e2a ""
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1248133631 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1248133631 32726 0a1aea6fcd6468ee2cf64d891f5c43c8 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
@@ -117,15 +116,14 @@
   "/usr/local/texlive/2019/texmf.cnf" 1557341546 577 d150fef99ac436ad1156e86b0892f6ef ""
   "AAS.cls" 1300558742 24466 06c89235df8688b294c4ecb0d9debe6f ""
   "Figures/dsmmatlab.png" 1595435536 77374 fba9b089b9cda6d6fe995946ca2e24bd ""
-  "Figures/eejn21plus.png" 1595805404 83649 4e78c1ef5b0659df2a34ebe0666ed755 ""
+  "Figures/eejn21plus.png" 1596005576 78962 0df120a9a8875b664fb32715f05491b1 ""
   "Figures/eejn31minus.png" 1595805404 75722 40924d1e95af7bc54c2a51bce1bedfeb ""
-  "Figures/tridentMCTS.png" 1595919334 63118 846ef92ed8378a977dac22af18e4ac0c ""
-  "dsmtheory.aux" 1595926862 3780 69a44309e717c2faaf2f53f5a3ea6af6 "pdflatex"
-  "dsmtheory.bbl" 1595923103 706 39223ecc64541fc6691429403f746838 "bibtex dsmtheory"
-  "dsmtheory.out" 1595926862 149 02792d06e34134b24aaec68ed1cd15f6 "pdflatex"
-  "dsmtheory.tex" 1595926861 15619 3cd0193599bf42986787d78ea6446841 ""
+  "dsmtheory.aux" 1596091940 2677 e6d533556ef3683a9a16a0a7ae44f57a "pdflatex"
+  "dsmtheory.bbl" 1596090492 587 135dd55a33a9105d4be86ef8e995f350 "bibtex dsmtheory"
+  "dsmtheory.out" 1596091940 149 02792d06e34134b24aaec68ed1cd15f6 "pdflatex"
+  "dsmtheory.tex" 1596091939 13300 dbf76930c6332543bd1265aa81671df7 ""
   (generated)
   "dsmtheory.log"
-  "dsmtheory.pdf"
   "dsmtheory.out"
+  "dsmtheory.pdf"
   "dsmtheory.aux"

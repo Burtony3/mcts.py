@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  28 JUL 2020 02:01
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  29 JUL 2020 23:52
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -707,137 +707,85 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 <./Figures/dsmmatlab.png, id=14, 562.2606pt x 440.847pt>
 File: ./Figures/dsmmatlab.png Graphic file (type png)
 <use ./Figures/dsmmatlab.png>
-Package pdftex.def Info: ./Figures/dsmmatlab.png  used on input line 26.
+Package pdftex.def Info: ./Figures/dsmmatlab.png  used on input line 28.
 (pdftex.def)             Requested size: 260.17244pt x 203.98944pt.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 27.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 29.
 [1
 
 {/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2 <./Figures/dsmmatlab.png (PNG copy)>]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 42.
+(hyperref)                removing `math shift' on input line 48.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\Delta' on input line 42.
+(hyperref)                removing `\Delta' on input line 48.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 42.
+(hyperref)                removing `math shift' on input line 48.
 
-LaTeX Font Info:    Calculating math sizes for size <7.665> on input line 57.
-
-LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-
-LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-
-LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-
-LaTeX Font Warning: Font shape `OT1/cmr/bx/n' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-
-LaTeX Font Warning: Font shape `OML/cmm/b/it' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-
-LaTeX Font Warning: Font shape `OMS/cmsy/b/n' in size <3.83249> not available
-(Font)              size <5> substituted on input line 57.
-
-<./Figures/tridentMCTS.png, id=45, 462.528pt x 427.8384pt>
-File: ./Figures/tridentMCTS.png Graphic file (type png)
-<use ./Figures/tridentMCTS.png>
-Package pdftex.def Info: ./Figures/tridentMCTS.png  used on input line 68.
-(pdftex.def)             Requested size: 260.17244pt x 240.67155pt.
-
-LaTeX Warning: Reference `tab:' on page 3 undefined on input line 74.
-
-[3
-
-]
-<./Figures/eejn21plus.png, id=59, 421.575pt x 316.0608pt>
+<./Figures/eejn21plus.png, id=45, 421.575pt x 316.0608pt>
 File: ./Figures/eejn21plus.png Graphic file (type png)
 <use ./Figures/eejn21plus.png>
-Package pdftex.def Info: ./Figures/eejn21plus.png  used on input line 86.
+Package pdftex.def Info: ./Figures/eejn21plus.png  used on input line 56.
 (pdftex.def)             Requested size: 216.81pt x 162.54887pt.
-<./Figures/eejn31minus.png, id=60, 421.575pt x 316.0608pt>
+<./Figures/eejn31minus.png, id=46, 421.575pt x 316.0608pt>
 File: ./Figures/eejn31minus.png Graphic file (type png)
 <use ./Figures/eejn31minus.png>
-Package pdftex.def Info: ./Figures/eejn31minus.png  used on input line 90.
+Package pdftex.def Info: ./Figures/eejn31minus.png  used on input line 60.
 (pdftex.def)             Requested size: 216.81pt x 162.54887pt.
+[3
 
-
-LaTeX Warning: Reference `tab:' on page 4 undefined on input line 98.
-
-
-LaTeX Warning: Reference `fig:maltotriton1' on page 4 undefined on input line 101.
-
-
-LaTeX Warning: Reference `fig:maltotriton2' on page 4 undefined on input line 101.
-
-[4 <./Figures/tridentMCTS.png>] [5 <./Figures/eejn21plus.png (PNG copy)> <./Figures/eejn31minus.png (PNG copy)>]
-Underfull \hbox (badness 10000) in paragraph at lines 107--135
+ <./Figures/eejn21plus.png (PNG copy)> <./Figures/eejn31minus.png (PNG copy)>] [4]
+Underfull \hbox (badness 10000) in paragraph at lines 102--130
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 107--135
+Underfull \hbox (badness 10000) in paragraph at lines 102--130
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 107--135
+Underfull \hbox (badness 10000) in paragraph at lines 102--130
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 107--135
+Underfull \hbox (badness 10000) in paragraph at lines 102--130
 
  []
 
-[6
+[5
 
 ] (./dsmtheory.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 142.
- [7
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 137.
+ [6
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 142.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 137.
  (./dsmtheory.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 142.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 142.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 137.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 137.
 Package rerunfilecheck Info: File `dsmtheory.out' has not changed.
 (rerunfilecheck)             Checksum: 02792D06E34134B24AAEC68ED1CD15F6;149.
-
-
-LaTeX Font Warning: Size substitutions with differences
-(Font)              up to 2.90001pt have occurred.
-
-
-LaTeX Warning: There were undefined references.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 142.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 137.
  ) 
 Here is how much of TeX's memory you used:
- 16731 strings out of 492616
- 299176 string characters out of 6129482
- 364166 words of memory out of 5000000
- 20497 multiletter control sequences out of 15000+600000
- 558234 words of font info for 86 fonts, out of 8000000 for 9000
+ 16647 strings out of 492616
+ 297698 string characters out of 6129482
+ 359740 words of memory out of 5000000
+ 20418 multiletter control sequences out of 15000+600000
+ 554670 words of font info for 74 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 40i,22n,71p,1749b,508s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on dsmtheory.pdf (7 pages, 415896 bytes).
+ 40i,12n,63p,2267b,331s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on dsmtheory.pdf (6 pages, 354411 bytes).
 PDF statistics:
- 127 PDF objects out of 1000 (max. 8388607)
- 100 compressed objects within 1 object stream
- 19 named destinations out of 1000 (max. 500000)
- 37 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 107 PDF objects out of 1000 (max. 8388607)
+ 84 compressed objects within 1 object stream
+ 15 named destinations out of 1000 (max. 500000)
+ 32 words of extra memory for PDF output out of 10000 (max. 10000000)
 
