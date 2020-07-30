@@ -140,21 +140,30 @@ Furthermore, child nodes that revisit the same parent planet have additional eph
 
 Once the list of states has been established, a new set of children nodes are created to match all combinations of ephemeris times and planetary NAIF ID pairs. In order to further prune the tree to reduce unnecessary calculations, Lambert arcs are calculated to each state pair to evauluate their associated $\Delta V$ cost. Any node that exceeds the mission budget is considered terminal and not used in any further exploration. In order to calculate mission $\Delta V$ usage, the simulation uses powered flybys, as characterized by Wagner \cite{Wagner2015}.
 
-The powered flyby geometry consists of an incoming and outgoing spacecraft velocity vectors given by the solutions to the Lambert’s problem. This maneuver is used to either torque the spacecraft to a desired direction and/or further increase/decrease the magnitude of $V_{\infty, out}$. Therefore, a small $\Delta V$ investment is used in order to increase the performance and efficiency of the gravity assists. This maneuver can be performed at any location along the incoming and outgoing velocity vectors. Its effectiveness, moreover, is derived from the Oberth effect, which states that a $\Delta V$ maneuver is more efficient to change the overall orbital energy at high velocities. For this reason, it is common to design the maneuver at periapsis \cite{Brennan2015}. 
+The powered flyby geometry consists of an incoming and outgoing spacecraft velocity vectors given by the solutions to the Lambert’s problem. A graphical overview of this condition is shown in Figure \ref*{fig:flyby}. This maneuver is used to either bend the spacecraft to a desired direction and/or further increase/decrease the magnitude of $V_{\infty, out}$. Therefore, a small $\Delta V$ investment can be used in order to increase the performance and efficiency of the gravity assists. While this maneuver can be performed at any location along the incoming and outgoing velocity vectors, there is a maxima in terms of efficiency. Its effectiveness, moreover, is derived from the Oberth effect, which states that a $\Delta V$ maneuver is more efficient to change the overall orbital energy at high velocities. For this reason, it is common to design the maneuver at periapsis \cite{Brennan2015}. While this maneuver can be utilized to enhance trajectory characteristics, it serves a different purpose for MCTS, who's goal is to minimize this value. 
 
-From this we can arrive at the formulation from Wagner as a Boundary Value Problem (BVP)\cite{Wagner2015}. It can be assumed that the flyby is coplanar, and the plane can be defined by the incoming and outgoing spacecraft velocities and the center of the encounter planet. The conditions that define the BVP are the incoming and outgoing $V_\infty$ and the total turning angle, $\delta$. The solution to the BVP is the $\Delta V$ and the value of the maneuver periapsis radius, $r_p$. The first initial condition to the problem is the semimajor axis, $a$, of the incoming and outgoing hyperbolic trajectories which is defined as:
+\begin{figure}[h!tb]
+    \centering
+    \includegraphics[width=3in]{fig/flyby.png}
+    \caption{Geometry of a patch conics flyby \cite{Curtis2013}}
+    \label{fig:flyby}
+\end{figure}
+
+In order to mitigate the coarse nature of the search, this powered flyby will be used to evaluate the effectiveness of the epoch in which the flyby occurs. For values that exceed the total budget, it can be surmised that the flyby is at a non-optimal time. In addition, while smaller $\Delta V$ flyby's lead to ballistic, or near ballistic, solutions, there have been cases where even high $\Delta V$ solutions, $> 1 \text{ } \sfrac{km}{s}$, have been converged.
+
+From this we arrive at the formulation of the boundary value problem, as described by Wagner\cite{Wagner2015}. It is assumed that the flyby is coplanar, and the plane can be defined by the incoming and outgoing spacecraft velocities and the center of the encounter planet. The conditions that define the BVP are the incoming and outgoing $V_\infty$ and the total turning angle, $\delta$. The solution to the BVP is the $\Delta V$ and the value of the maneuver periapsis radius, $r_p$. The first initial condition to the problem is the semimajor axis, $a$, of the incoming and outgoing hyperbolic trajectories which is defined as:
 
 \begin{equation}
     a_\text{in/out} = -\frac{\mu_p}{v^2_{\infty-\text{in/out}}}
 \end{equation}
 
-Where $\mu$ is the gravitational parameter of the flyby planet. Additionally, the required turn angle from the flyby, $\delta$, is another condition that must be met. This value is found by the following function finding the angle between the incoming and outgoing $V_\infty$ vectors:
+Where $\mu$ is the standard gravitational parameter of the flyby planet. Additionally, the required turn angle from the flyby, $\delta$, is another condition that must be met. This value is found by the following function finding the angle between the incoming and outgoing $V_\infty$ vectors:
 
 \begin{equation}
     \delta = \text{cos}^{-1}\left(\frac{ \vec{\textbf{V}}_{\infty-\text{in}} \cdot \vec{\textbf{V}}_{\infty-\text{out}} }{ V_{\infty-\text{in}} \cdot V_{\infty-\text{out}} }\right)
 \end{equation}
 
-With $e_{out}$, the eccentricity of the outbound hyperbolic flyby orbit, as the iterated value, a function, and its derivative, can be defined. Using the Newton Raphson method of root finding to solve for the $e_{out}$ that coinsides with the two $V_\infty$ vectors. For each full loop, an initial $e_{out}$ value of 1.5 is used due to its performance in Wagner \cite{Wagner2015}.
+With $e_{out}$, the eccentricity of the outbound hyperbolic flyby orbit, as the iterated value, a function, and its derivative, can be defined. In order to solve for $e_{out}$, the root finding method of Newton Raphson will be used to find the eccentricity that coinsides with the two $V_\infty$ vectors. For each full loop, an initial $e_{out}$ value of 1.5 is used due to its performance in Wagner \cite{Wagner2015}.
 
 \begin{equation}
     f = \left( \frac{a_{out}}{a_{in}} (e_{out} - 1) \right) \text{sin} \left( \delta - \text{sin}^{-1} \left( \frac{1}{e_{out}} \right) \right) 
@@ -164,7 +173,7 @@ With $e_{out}$, the eccentricity of the outbound hyperbolic flyby orbit, as the 
     \frac{\text{d}f}{\text{d}e_{out}} = \left( \frac{a_{out}}{a_{in}}e_{out} - a_{out}{a_{in}} + 1 \right) \frac{ \text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right) }{ e_{out}^{2} \sqrt{1 - \sfrac{1}{e_{out}^{2}} } } + \frac{a_{out}}{a_{in}}\text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right)
 \end{equation}
 
-Once a value of $e_{out}$ has been found, it can then be used to find the actual periapsis radius, which is then used to find the required $\Delta V$. In addition, the periapsis radius is checked again body radius to prevent solutions that impact the planet's surface. 
+Once a value of $e_{out}$ has been found, it can then be used to find the actual periapsis radius, which is then used to find the required maneuver $\Delta V$. In addition, the periapsis radius is checked again body radius to prevent solutions that impact the planet's surface. 
 
 \begin{equation}
     r_p = a_{out}(1 - e_{out})
@@ -376,14 +385,14 @@ The tree search algorithm can now be extended to an exploratory context to find 
     \begin{center}
         \caption{Inputs for $\Delta V$EGA Trajectories to Neptune via Jupiter}
         \label{tab:tritonInputs}
-        \begin{tabular}{l|c}
+        \begin{tabular}{lc}
 					\toprule
             \textbf{Input Name} & \textbf{Input Value}\\
             \hline
             Arrival Planet & Neptune \\
             Launch Window \quad \quad & Jan 01, 2029 --- Jul 01, 2029 \\
             Iterations & 10,000 \\
-            $\Delta V$ Budget & 4.5 $\sfrac{km}{s}$ \\
+            $\Delta V$ Budget & 3 $\sfrac{km}{s}$ \\
             Max C3 & 35 $\sfrac{km^2}{s^2}$ \\
             Detail ($d$) & 16 \\
 						\bottomrule
