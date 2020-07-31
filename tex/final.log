@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.7.18)  31 JUL 2020 15:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.7.18)  31 JUL 2020 16:10
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -649,7 +649,7 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-<fig/mctsFuncs.png, id=115, 822.07124pt x 713.66624pt>
+<fig/mctsFuncs.png, id=111, 822.07124pt x 713.66624pt>
 File: fig/mctsFuncs.png Graphic file (type png)
 <use fig/mctsFuncs.png>
 Package pdftex.def Info: fig/mctsFuncs.png  used on input line 84.
@@ -681,66 +681,66 @@ LaTeX Font Warning: Font shape `OMS/cmsy/b/n' in size <3.83249> not available
 (Font)              size <5> substituted on input line 101.
 
 [3 </home/burtonyale/Documents/repos/MCTS.py/tex/fig/mctsFuncs.png>] [4]
-<fig/flybyGeo.png, id=137, 529.22719pt x 505.89pt>
+<fig/flybyGeo.png, id=133, 529.22719pt x 505.89pt>
 File: fig/flybyGeo.png Graphic file (type png)
 <use fig/flybyGeo.png>
 Package pdftex.def Info: fig/flybyGeo.png  used on input line 144.
 (pdftex.def)             Requested size: 216.81pt x 207.24641pt.
  [5 </home/burtonyale/Documents/repos/MCTS.py/tex/fig/flybyGeo.png (PNG copy)>] [6] [7]
-<./fig/dsmmatlab.png, id=173, 562.2606pt x 440.847pt>
+<./fig/dsmmatlab.png, id=169, 562.2606pt x 440.847pt>
 File: ./fig/dsmmatlab.png Graphic file (type png)
 <use ./fig/dsmmatlab.png>
-Package pdftex.def Info: ./fig/dsmmatlab.png  used on input line 218.
+Package pdftex.def Info: ./fig/dsmmatlab.png  used on input line 219.
 (pdftex.def)             Requested size: 260.17244pt x 203.98944pt.
  [8 <./fig/dsmmatlab.png (PNG copy)>] [9]
-<./fig/clipperResults.png, id=198, 364.9635pt x 346.896pt>
+<./fig/clipperResults.png, id=194, 364.9635pt x 346.896pt>
 File: ./fig/clipperResults.png Graphic file (type png)
 <use ./fig/clipperResults.png>
-Package pdftex.def Info: ./fig/clipperResults.png  used on input line 264.
+Package pdftex.def Info: ./fig/clipperResults.png  used on input line 265.
 (pdftex.def)             Requested size: 173.44756pt x 164.862pt.
-<./fig/clipperMCTS.png, id=199, 390.258pt x 346.896pt>
+<./fig/clipperMCTS.png, id=195, 390.258pt x 346.896pt>
 File: ./fig/clipperMCTS.png Graphic file (type png)
 <use ./fig/clipperMCTS.png>
-Package pdftex.def Info: ./fig/clipperMCTS.png  used on input line 269.
+Package pdftex.def Info: ./fig/clipperMCTS.png  used on input line 270.
 (pdftex.def)             Requested size: 180.67499pt x 160.60097pt.
-<./fig/clipperMalto.png, id=202, 425.4294pt x 316.5426pt>
+<./fig/clipperMalto.png, id=198, 425.4294pt x 316.5426pt>
 File: ./fig/clipperMalto.png Graphic file (type png)
 <use ./fig/clipperMalto.png>
-Package pdftex.def Info: ./fig/clipperMalto.png  used on input line 300.
+Package pdftex.def Info: ./fig/clipperMalto.png  used on input line 301.
 (pdftex.def)             Requested size: 361.34999pt x 268.8741pt.
  [10 <./fig/clipperResults.png> <./fig/clipperMCTS.png>] [11 <./fig/clipperMalto.png (PNG copy)>]
-<./fig/galileoResults.png, id=220, 359.9046pt x 346.896pt>
+<./fig/galileoResults.png, id=216, 359.9046pt x 346.896pt>
 File: ./fig/galileoResults.png Graphic file (type png)
 <use ./fig/galileoResults.png>
-Package pdftex.def Info: ./fig/galileoResults.png  used on input line 350.
+Package pdftex.def Info: ./fig/galileoResults.png  used on input line 351.
 (pdftex.def)             Requested size: 198.7425pt x 191.5609pt.
-<./fig/galileoMCTS.png, id=221, 377.9721pt x 346.896pt>
+<./fig/galileoMCTS.png, id=217, 377.9721pt x 346.896pt>
 File: ./fig/galileoMCTS.png Graphic file (type png)
 <use ./fig/galileoMCTS.png>
-Package pdftex.def Info: ./fig/galileoMCTS.png  used on input line 355.
+Package pdftex.def Info: ./fig/galileoMCTS.png  used on input line 356.
 (pdftex.def)             Requested size: 216.81pt x 198.98196pt.
  [12 <./fig/galileoResults.png> <./fig/galileoMCTS.png>]
-<./fig/galileoMalto.png, id=235, 425.4294pt x 316.5426pt>
+<./fig/galileoMalto.png, id=231, 425.4294pt x 316.5426pt>
 File: ./fig/galileoMalto.png Graphic file (type png)
 <use ./fig/galileoMalto.png>
-Package pdftex.def Info: ./fig/galileoMalto.png  used on input line 387.
+Package pdftex.def Info: ./fig/galileoMalto.png  used on input line 388.
 (pdftex.def)             Requested size: 361.34999pt x 268.8741pt.
  [13 <./fig/galileoMalto.png (PNG copy)>]
-<./fig/tridentMCTS.png, id=247, 523.2348pt x 510.9489pt>
+<./fig/tridentMCTS.png, id=243, 523.2348pt x 510.9489pt>
 File: ./fig/tridentMCTS.png Graphic file (type png)
 <use ./fig/tridentMCTS.png>
-Package pdftex.def Info: ./fig/tridentMCTS.png  used on input line 434.
+Package pdftex.def Info: ./fig/tridentMCTS.png  used on input line 435.
 (pdftex.def)             Requested size: 260.17244pt x 254.07045pt.
  [14]
-<./fig/eejn21plus.png, id=260, 421.575pt x 316.0608pt>
+<./fig/eejn21plus.png, id=256, 421.575pt x 316.0608pt>
 File: ./fig/eejn21plus.png Graphic file (type png)
 <use ./fig/eejn21plus.png>
-Package pdftex.def Info: ./fig/eejn21plus.png  used on input line 468.
+Package pdftex.def Info: ./fig/eejn21plus.png  used on input line 469.
 (pdftex.def)             Requested size: 209.58255pt x 157.12816pt.
-<./fig/eejn31minus4850.png, id=261, 421.575pt x 316.0608pt>
+<./fig/eejn31minus4850.png, id=257, 421.575pt x 316.0608pt>
 File: ./fig/eejn31minus4850.png Graphic file (type png)
 <use ./fig/eejn31minus4850.png>
-Package pdftex.def Info: ./fig/eejn31minus4850.png  used on input line 488.
+Package pdftex.def Info: ./fig/eejn31minus4850.png  used on input line 489.
 (pdftex.def)             Requested size: 209.58255pt x 157.12816pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
@@ -749,70 +749,70 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [16 <./fig/eejn21plus.png (PNG copy)> <./fig/eejn31minus4850.png (PNG copy)>] [17]
-Overfull \hbox (11.44937pt too wide) in paragraph at lines 555--583
+Overfull \hbox (11.44937pt too wide) in paragraph at lines 551--579
  [][] 
  []
 
 
-Overfull \hbox (11.44937pt too wide) in paragraph at lines 588--606
+Overfull \hbox (11.44937pt too wide) in paragraph at lines 584--602
  [][] 
  []
 
 [18
 
 ]
-<./fig/clipperFamilies.png, id=294, 462.528pt x 413.3844pt>
+<./fig/clipperFamilies.png, id=290, 462.528pt x 413.3844pt>
 File: ./fig/clipperFamilies.png Graphic file (type png)
 <use ./fig/clipperFamilies.png>
-Package pdftex.def Info: ./fig/clipperFamilies.png  used on input line 653.
+Package pdftex.def Info: ./fig/clipperFamilies.png  used on input line 649.
 (pdftex.def)             Requested size: 216.81pt x 193.77345pt.
-<./fig/galileoFamilies.png, id=295, 462.528pt x 346.896pt>
+<./fig/galileoFamilies.png, id=291, 462.528pt x 346.896pt>
 File: ./fig/galileoFamilies.png Graphic file (type png)
 <use ./fig/galileoFamilies.png>
-Package pdftex.def Info: ./fig/galileoFamilies.png  used on input line 658.
+Package pdftex.def Info: ./fig/galileoFamilies.png  used on input line 654.
 (pdftex.def)             Requested size: 256.55872pt x 192.42897pt.
 
-Overfull \hbox (48.07074pt too wide) in paragraph at lines 652--662
+Overfull \hbox (48.07074pt too wide) in paragraph at lines 648--658
 [][] [] [] [][] []
  []
 
-<./fig/tridentFamilies.png, id=296, 462.528pt x 432.8973pt>
+<./fig/tridentFamilies.png, id=292, 462.528pt x 432.8973pt>
 File: ./fig/tridentFamilies.png Graphic file (type png)
 <use ./fig/tridentFamilies.png>
-Package pdftex.def Info: ./fig/tridentFamilies.png  used on input line 666.
+Package pdftex.def Info: ./fig/tridentFamilies.png  used on input line 662.
 (pdftex.def)             Requested size: 216.81pt x 202.9201pt.
 [19
 
  <./fig/clipperFamilies.png> <./fig/galileoFamilies.png> <./fig/tridentFamilies.png>] (/home/burtonyale/Documents/repos/MCTS.py/tex/final.bbl) [20
 
 ]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 677.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 677.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 673.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 673.
  (/home/burtonyale/Documents/repos/MCTS.py/tex/final.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 677.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 677.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 673.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 673.
 Package rerunfilecheck Info: File `final.out' has not changed.
-(rerunfilecheck)             Checksum: AA40F8BFE0410B8655EC30081C32C78B;1023.
+(rerunfilecheck)             Checksum: AC7EE02A5FF9F9E9917043603AAE323A;979.
 
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 2.90001pt have occurred.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 677.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 673.
  ) 
 Here is how much of TeX's memory you used:
- 19903 strings out of 483183
- 374091 string characters out of 5966292
- 828762 words of memory out of 5000000
- 34352 multiletter control sequences out of 15000+600000
+ 19901 strings out of 483183
+ 374077 string characters out of 5966292
+ 829762 words of memory out of 5000000
+ 34351 multiletter control sequences out of 15000+600000
  576884 words of font info for 124 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,21n,70p,2990b,1123s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,21n,70p,2983b,1123s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmbsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmbsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on /home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf (20 pages, 1122562 bytes).
+Output written on /home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf (20 pages, 1122685 bytes).
 PDF statistics:
- 417 PDF objects out of 1000 (max. 8388607)
- 340 compressed objects within 4 object streams
- 98 named destinations out of 1000 (max. 500000)
- 224 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 413 PDF objects out of 1000 (max. 8388607)
+ 336 compressed objects within 4 object streams
+ 97 named destinations out of 1000 (max. 500000)
+ 216 words of extra memory for PDF output out of 10000 (max. 10000000)
 
