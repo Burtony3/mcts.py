@@ -1,0 +1,50 @@
+﻿\begin{tikzpicture}[x=3in,y=3in]
+\usetikzlibrary{calc, angles, quotes, decorations.text}
+\tikzset{>=latex,
+  add/.style args={#1 and #2}{to path={%
+ ($(\tikztostart)!-#1!(\tikztotarget)$)--($(\tikztotarget)!-#2!(\tikztostart)$)%
+  \tikztonodes}}
+} 
+% VARIABLES
+	% Asthetic
+	\def\axwidth{0.33mm};
+	\def\vwidth{0.2mm};
+
+	% Vector Lengths and Points
+	\node (cntr) at (1,1) {}; % Central Node
+	\def\axLength{-0.5in};  % Axis arrow length
+	\def\vpLength{1.25in}; % Body velocity vector length
+
+% SOI
+ \draw (cntr) circle (3in);
+
+%CTRL BODY
+\draw[line width=\vwidth, ->] (cntr) -- ++(\vpLength, 0) node [text width=1cm,above] {$\vec{V}_p$};
+\draw[fill=lightgray] (cntr) circle [radius=0.175in];
+
+% AXES
+\coordinate (uv) at (2, 1);
+\draw [line width=\axwidth, <-] (uv) node [text width=1cm,above]  {$\vec{\textbf{u}}_v$} -- ++(\axLength, 0);
+\coordinate (us) at (1, 2);
+\draw [line width=\axwidth, <-] (us) node [text width=1.2cm,below]  {$\vec{\textbf{u}}_{sun}$} -- ++(0, \axLength);
+
+% TRAJECTORY
+\coordinate (asm) at (0.82, 0.82);
+\coordinate (vi) at (0.672, 1.94);
+\coordinate (vo) at (1.972, 0.782);
+\draw [line width=0.5mm, >->]  (vi) node [text width=2cm,below right] {$V_{\infty,in}$}.. controls (asm) .. (vo)node [text width=1cm,below left] {$V_{\infty,out}$};
+\coordinate (rp) at (0.948, 0.948);
+\draw[fill=black] (rp) circle [radius=0.033in];
+\node [below left] (rp_) at (rp) {$r_p$};
+
+% ASYMPTOTE
+\draw [dashed, line width=\axwidth, add=0in and .75in] (vi) to (asm);
+\draw [dashed, line width=\axwidth, add=0in and .75in] (vo) to (asm);
+\coordinate (del) at (0.841, 0.663);
+\pic [draw, <->,
+      angle radius=12mm, angle eccentricity=1.2,
+      "$\delta$"] {angle = del--asm--vo};
+
+% Vinf Vector Comparison
+
+\end{tikzpicture}

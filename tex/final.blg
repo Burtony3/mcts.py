@@ -6,49 +6,48 @@ Database file #1: references.bib
 Warning--empty journal in Hughes2016
 Warning--empty publisher in Izzo2019
 Warning--empty journal in Brennan2015
-Warning--empty publisher in Curtis2013
 Warning--empty chapter and pages in sims1994
 Warning--empty publisher in sims1994
 Warning--empty year in sims1994
-You've used 23 entries,
+You've used 22 entries,
             1928 wiz_defined-function locations,
-            636 strings with 7946 characters,
-and the built_in function-call counts, 4972 in all, are:
-= -- 440
-> -- 218
+            630 strings with 7800 characters,
+and the built_in function-call counts, 4824 in all, are:
+= -- 427
+> -- 214
 < -- 0
-+ -- 83
-- -- 60
-* -- 369
-:= -- 736
-add.period$ -- 25
-call.type$ -- 23
++ -- 81
+- -- 59
+* -- 361
+:= -- 716
+add.period$ -- 23
+call.type$ -- 22
 change.case$ -- 0
 chr.to.int$ -- 0
-cite$ -- 30
-duplicate$ -- 270
-empty$ -- 533
-format.name$ -- 60
-if$ -- 1192
+cite$ -- 28
+duplicate$ -- 261
+empty$ -- 513
+format.name$ -- 59
+if$ -- 1155
 int.to.chr$ -- 0
-int.to.str$ -- 23
-missing$ -- 23
-newline$ -- 74
-num.names$ -- 23
-pop$ -- 103
+int.to.str$ -- 22
+missing$ -- 21
+newline$ -- 70
+num.names$ -- 22
+pop$ -- 96
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 123
+skip$ -- 122
 stack$ -- 0
 substring$ -- 216
-swap$ -- 74
+swap$ -- 73
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 7
-while$ -- 41
-width$ -- 25
-write$ -- 200
-(There were 7 warnings)
+warning$ -- 6
+while$ -- 40
+width$ -- 24
+write$ -- 192
+(There were 6 warnings)
