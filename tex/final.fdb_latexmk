@@ -1,15 +1,15 @@
 # Fdb version 3
-["bibtex final"] 1596219293 "final.aux" "final.bbl" "final" 1596219601
+["bibtex final"] 1596220585 "final.aux" "final.bbl" "final" 1596220586
   "./AAS_publication.bst" 1299641682 17438 b0110560a858beeea248ed6fbdc49cd1 ""
-  "final.aux" 1596219601 10997 6d4003184f9a2d2b0eb256d618d299a4 "pdflatex"
+  "final.aux" 1596220586 10997 6d4003184f9a2d2b0eb256d618d299a4 "pdflatex"
   "references.bib" 1596185145 33787 77610f21e6e1fac6fadcf644b964197f ""
   (generated)
-  "final.blg"
   "final.bbl"
-["pdflatex"] 1596219600 "/home/burtonyale/Documents/repos/MCTS.py/tex/final.tex" "/home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf" "final" 1596219601
+  "final.blg"
+["pdflatex"] 1596220585 "/home/burtonyale/Documents/repos/MCTS.py/tex/final.tex" "/home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf" "final" 1596220586
   "/etc/texmf/web2c/texmf.cnf" 1595131296 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.aux" 1596219601 10997 6d4003184f9a2d2b0eb256d618d299a4 ""
-  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.tex" 1596219600 75142 af90a6165ec0dac8e9282cde743362a8 ""
+  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.aux" 1596220586 10997 6d4003184f9a2d2b0eb256d618d299a4 ""
+  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.tex" 1596220577 76527 123afc526b8fcaae2d015e28b6a23a69 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/helvetic/phvb7t.tfm" 1136768653 2240 eb56c13537f4d8a0bd3fafc25572b1bd ""
@@ -247,14 +247,14 @@
   "fig/mctsFuncs.png" 1595392808 90568 83ec5122c8cef5eb38b5a6b264c1b3f6 ""
   "fig/tridentFamilies.png" 1596013217 87628 d147ea5b93fe1b152e518843ec3950c9 ""
   "fig/tridentMCTS.png" 1596013042 80592 8beca513a452c285f6f8709726c0d1ec ""
-  "final.aux" 1596219601 10997 6d4003184f9a2d2b0eb256d618d299a4 "pdflatex"
-  "final.bbl" 1596219293 4796 3b3325bc5045616b8237db778faaa195 "bibtex final"
-  "final.out" 1596219601 1023 aa40f8bfe0410b8655ec30081c32c78b "pdflatex"
-  "final.tex" 1596219600 75142 af90a6165ec0dac8e9282cde743362a8 ""
+  "final.aux" 1596220586 10997 6d4003184f9a2d2b0eb256d618d299a4 "pdflatex"
+  "final.bbl" 1596220585 4796 3b3325bc5045616b8237db778faaa195 "bibtex final"
+  "final.out" 1596220586 1023 aa40f8bfe0410b8655ec30081c32c78b "pdflatex"
+  "final.tex" 1596220577 76527 123afc526b8fcaae2d015e28b6a23a69 ""
   (generated)
-  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf"
-  "final.aux"
-  "final.out"
-  "final.pdf"
-  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.log"
   "final.log"
+  "final.out"
+  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.pdf"
+  "/home/burtonyale/Documents/repos/MCTS.py/tex/final.log"
+  "final.pdf"
+  "final.aux"

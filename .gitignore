@@ -13,3 +13,7 @@ data/trees/clipper/clipper70k.pckl
 *.malto*
 tex/net.py
 src/exp.py
+results/galileo/galileo.pckl
+results/clipper/clipper70k.pckl
+results/clipper/clipper60k.pckl
+tests/exp.py

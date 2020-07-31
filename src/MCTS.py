@@ -62,7 +62,7 @@ class MCTS(object):
         self.filepath     = self.os.getcwd()
         
         # IMPORTING DSM .CSV
-        self.dsmDvCsv = self.pd.read_csv(self.filepath + "/../matlab/dsm_integ/dsm_ega.csv", header=0)
+        self.dsmDvCsv = self.pd.read_csv(self.filepath + "/../data/dsm_ega.csv", header=0)
 
         # SAVING ENVIRONMENT PARAMENTERS
         self.frame = frame
