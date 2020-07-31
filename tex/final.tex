@@ -12,7 +12,6 @@
 \usepackage{booktabs}                   % Table Styling
 \usepackage{multirow}                   % Table Styling
 \usepackage{tikz}
-% \usepackage{caption}
 
 % DEFINING CODE COLORS
 \definecolor{comments}{rgb}{0.0, 0.5, 0.0}
@@ -40,43 +39,44 @@
 
 \author{
     Burton A. Yale
-        \thanks{Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave., Pomona, California, 91786, USA} 
+        \thanks{Aerospace Engineering, Cal Poly Pomona, 3801 W Temple Ave., Pomona, California, 91786, USA}
         \thanks{Undergraduate Student, E-mail: bayale@cpp.edu},
-    Rohan D. Patel\footnotemark[1] 
-        \thanks{Undergraduate Student, E-mail: rohanpatel@cpp.edu},  
-    Jehosafat J. Cabrera\footnotemark[1] 
+    Rohan D. Patel\footnotemark[1]
+        \thanks{Undergraduate Student, E-mail: rohanpatel@cpp.edu},
+    Jehosafat J. Cabrera\footnotemark[1]
         \thanks{Undergraduate Student, E-mail: jehosafatc@cpp.edu},
-    and Navid Nakhjiri\footnotemark[1] 
+    and Navid Nakhjiri\footnotemark[1]
         \thanks{Assistant Professor, E-mail: nnakhjiri@cpp.edu}
 }
 
-\maketitle{} 		
-
+\maketitle{}
 
 \begin{abstract}
 Multiple flybys of the inner planets and the application of $V_{\infty}$ leveraging are essential trajectory design techniques to reduce the required launch energy for interplanetary missions. These trajectories are often difficult to formulate and require extensive computational resources. However, this problem can be classified as a combinatorial task which can be solved by the Monte Carlo Tree Search (MCTS) method. In this paper, an MCTS algorithm is developed and tested. The tree search is able to incorporate $V_\infty$ leveraging of Earth ($\Delta V$EGA), which will allow the algorithm to find an addtional set of feasible sequences. Several cases are optimized and the tree search's performance and accuracy is discussed. This algorithm will allow for the inner-planetary flyby search planning for outer planet missions.
 \end{abstract}
 
-\section{Introduction}
-Broad trajectory searches are one of the first steps in mission planning, allowing for the selection of candidate sequences given a list of constraints. As is the nature with combinatorial problems, every additional flyby adds another dimension to the search space. Brute force methods lead to expensive but thorough results. Also, by pruning possible choices before the each selection, the overall computation time can be significantly decreased, at the expense of not finding all possible results. The method of interest for this paper is enumerated searches, a subset of grid searches, as recent work has proven their ability to quickly and accurately locate multi-leg interplanetary trajectories\cite{Hennes2015}. \textbf{M}onte \textbf{C}arlo \textbf{T}ree \textbf{S}earch (MCTS), is a heuristics-based adaptation of the enumerated search, and has the ability to both explore and exploit its environment. With this, it is possible for the algorithm to efficiently narrow down possible search paths for future iterations to explore. As such, larger search spaces can be employed without exponential growth in computation time. This algorithm will deliver a set of planetary sequences and the dates associated that meet mission criteria, such as destination, launch windows, total fuel budgets, etc. These results can then be passed on to the next phase of the design, optimization.
+\section*{Introduction}
+\pdfbookmark[1]{Introduction}{intro}
 
-In this paper, we discuss and implement the MCTS method to the multi-flyby sequence problem. We consider Earth $V_\infty$ leveraging in the search space by approximating the required $\Delta V$ and flyby conditions of $\Delta V$EGA trajectories. This paper demonstrates the capability of the algorithm to find ballistic or $\Delta V$EGA trajectories to the outer planets.
+Broad trajectory searches are one of the first steps in mission planning, allowing for the selection of candidate sequences given a list of constraints. As is the nature with combinatorial problems, every additional flyby adds another dimension to the search space. Brute force methods lead to expensive but thorough results. Also, by pruning possible choices before the each selection, the overall computation time can be significantly decreased, at the expense of not finding all possible results. The method of interest for this paper is enumerated searches, a subset of grid searches, as recent work has proven their ability to quickly and accurately locate multi-leg interplanetary trajectories\cite{Hennes2015}. \textbf{M}onte \textbf{C}arlo \textbf{T}ree \textbf{S}earch (MCTS), is a heuristics-based adaptation of the enumerated search, and has the ability to both explore and exploit its environment. With this, it is possible for the algorithm to efficiently narrow down possible search paths for future iterations to explore. As such, larger search spaces can be employed without exponential growth in computation time. This algorithm will deliver a set of planetary sequences and the dates associated that meet mission criteria, such as destination, launch windows, total $\Delta V$ budgets, etc. These results can then be passed on to the next phase of the design, optimization.
 
-\section{Background}
+In this paper, we discuss and implement the MCTS method to the multi-flyby sequence problem. We consider Earth $V_\infty$ leveraging in the search space by approximating the required $\Delta V$ and flyby conditions of $\Delta V$EGA trajectories. This paper demonstrates the capability of the algorithm to find ballistic or $\Delta V$EGA multi-flyby sequences to the outer planets.
 
-Interplanetary mission design is an iterative process. First, a sequence of encounter bodies is selected and is followed by evaluating all possible trajectories for that specified sequence. Due to the increasing complexity of gravity assists and combinatorial solutions, a low-fidelity tool is generally utilized first to find regions of interest. This is then followed by a high-fidelity tool that searches through prospective and highly valued regions.  This is often referred to as pathfinding and path-solving, respectively \cite{Hughes2016}. Pathfinding is a sequence optimization problem that provides a diverse set of mission options. Path-solving, on the other hand, embodies a single-leg transfer trajectory optimization problem where two types of transfer models, low-thrust and multi-impulse, are mainly considered\cite{Li2019}. Some common techniques for pathfinding and generating search spaces include evolutionary algorithms, machine learning, evolutionary neuro-controllers, and tree searches methods \cite{Izzo2019}.
+\section*{Background}
+\pdfbookmark[1]{Background}{bg}
 
-Evolutionary algorithms are optimization routines that make use of heuristics and Darwinian evolution to solve complex optimization problems. Three popular type of evolutionary algorithms are genetic algorithms, Differential Evolution (DE), and Particle Swarm Optimization (PSO). DE has been successfully used as an optimization routine to design Halo Orbits and optimal trajectories to Halo Orbits, and as a interplanetary mission design algorithm \cite{Nath2016, Olds2007}.  The Cassini and Galileo missions were considered as case studies to analyze the performance of these algorithm. The DE routine was able to come within appropriate bounds of both trajectories and found optimal sequences with the given flight constraints. PSO was used by Zhuang et. al.\cite{Zhuang2014} in combination with Legendre pseudo-spectral method for solving time-optimal trajectory planning problems. The PSO algorithm was robust enough to handle random and changing the fitness function of the algorithm is smaller than a predefined value, the searching algorithm is switched the Legendre pseudo-spectral method for fast convergence. When considering non-evolutionary algorithms for pathfinding, a common method is the use of the grid-search technique. This has been previously used as a search method to find possible trajectories to Kuiper belt objects (KBOs) \cite{Penas2019}. Grid search is a type of search algorithm with the ability to map the entire search space so that no regions of interest missed. This method has been used to properly parameterize the time-of-flight between encounter bodies. This type of search algorithm, however, can be expensive in terms of computing power and time. To alleviate both of these constraints, heuristics can be implemented. Beam Search (BS), a heuristic tree search algorithm, can be used as a method to find a sequence of planets for gravitational assists \cite{Penas2019}. BS uses the method of Breadth-First Search (BFS) to find the tree of possibilities. With each layer of the tree and orders the nodes in accordance to their heuristic cost. It only chooses the nodes with a maximum value to build from. Depth-First Search (DPS), alternatively, is used as a searching criterion to traverse down the tree \cite{Izzo2013}. Contrary to BFS, DPS does not search the tree at every level but rather explores a branch until the termination criteria is met. After, it propagates up each parent node updating branches to start the process again. Both the BFS and DPS, search and prune the environmental choices consecutively. Using the Lazy Race Tree Search, the search space is pruned, and nodes ranked through the time of flight \cite{Izzo2013}. The use of heuristics avoids finding redundant solutions and increases the efficiency of the method used. Izzo et. al. \cite{Hennes2015} proposed the use of the Monte Carlo Tree Search to find fast solutions to interplanetary trajectories. 
+Multi-flyby sequence generation begins with a set of target encounter bodies to visit and the evaluation of the feasibility of transfers between them. First, a sequence of encounter bodies is selected and is followed by evaluating all possible trajectories for that specified sequence. Due to the increasing complexity of gravity assists and combinatorial solutions, a low-fidelity tool is generally utilized first to map out the search space. Once a set of possible sequences and their respective encounter epochs are known, solutions of interest can be optimized in further detail. This is often referred to as pathfinding and path-solving, respectively \cite{Hughes2016}. Pathfinding is a sequence optimization problem that provides a diverse set of mission options. Path-solving, on the other hand, embodies a single-leg transfer trajectory optimization problem where two types of transfer models, low-thrust and multi-impulse, are mainly considered\cite{Li2019}. Some common techniques for pathfinding and generating search spaces include evolutionary algorithms, machine learning, evolutionary neuro-controllers, and tree searches methods \cite{Izzo2019}.
 
-Monte Carlo methods have been suggested extensively for games with a random behavior and minimal observability. The nature of the Monte Carlo methods, however, allow them to be applied to deterministic games with faultless information \cite{Browne2012}. Starting from the initial state, a large amount of games and actions are simulated until the end of the game. In the majority of cases, actions are chosen at random with no link to the game theory. What this means, is that even if the iterative process is executed for an extended period of time, the move selected and path selected is not optimal.  
+Evolutionary algorithms are optimization routines that make use of heuristics and Darwinian evolution to solve complex optimization problems. Three popular type of evolutionary algorithms are genetic algorithms, Differential Evolution (DE), and Particle Swarm Optimization (PSO). DE has been successfully used as an optimization routine to design Halo Orbits and optimal trajectories to Halo Orbits, and as a interplanetary mission design algorithm \cite{Nath2016, Olds2007}.  The Cassini and Galileo missions were considered as case studies to analyze the performance of these algorithm. The DE routine was able to come within appropriate bounds of both trajectories and found optimal sequences with the given flight constraints. PSO was used by Zhuang et al.\cite{Zhuang2014} in combination with Legendre pseudo-spectral method for solving time-optimal trajectory planning problems. The PSO algorithm was robust enough to handle random and changing the fitness function of the algorithm is smaller than a predefined value, the searching algorithm is switched the Legendre pseudo-spectral method for fast convergence. When considering non-evolutionary algorithms for pathfinding, a common method is the use of the grid-search technique. This has been previously used as a search method to find possible trajectories to Kuiper belt objects (KBOs) \cite{Penas2019}. Grid search is a type of search algorithm with the ability to map the entire search space so that no regions of interest missed. This method has been used to properly parameterize the time-of-flight between encounter bodies. This type of search algorithm, however, can be expensive in terms of computing power and time. To alleviate both of these constraints, heuristics can be implemented. Beam Search (BS), a heuristic tree search algorithm, can be used as a method to find a sequence of planets for gravitational assists \cite{Penas2019}. BS uses the method of Breadth-First Search (BFS) to find the tree of possibilities. With each layer of the tree and orders the nodes in accordance to their heuristic cost. It only chooses the nodes with a maximum value to build from. Depth-First Search (DPS), alternatively, is used as a searching criterion to traverse down the tree \cite{Izzo2013}. Contrary to BFS, DPS does not search the tree at every level but rather explores a branch until the termination criteria is met. After, it propagates up each parent node updating branches to start the process again. Both the BFS and DPS, search and prune the environmental choices consecutively. Using the Lazy Race Tree Search, the search space is pruned, and nodes ranked through the time of flight \cite{Izzo2013}. The use of heuristics avoids finding redundant solutions and increases the efficiency of the method used. Izzo et al. \cite{Hennes2015} proposed the use of the Monte Carlo Tree Search to find fast solutions to interplanetary trajectories.
 
-The search sensitivity criteria of DPS, BS, and BFS are explored in conjunction with that of the MCTS and compared. Currently, there exists a deficiency in these algorithms to take advantage of the $\Delta V$EGA trajectories and there derivatives. This paper will present a solution to exploit this missed opportunity.
+Monte Carlo methods have been suggested extensively for games with a random behavior and minimal observability. The nature of the Monte Carlo methods, however, allow them to be applied to deterministic games with faultless information \cite{Browne2012}. Starting from the initial state, a large amount of games and actions are simulated until the end of the game. In the majority of cases, actions are chosen at random with no link to the game theory. What this means, is that even if the iterative process is executed for an extended period of time, the move selected and path selected is not optimal. The search sensitivity criteria of DPS, BS, and BFS are explored in conjunction with that of the MCTS and compared. Currently, there exists a deficiency in these algorithms to take advantage of the $\Delta V$EGA trajectories and there derivatives. This paper will present a solution to this missed opportunity.
 
-\section{Monte Carlo Tree Search Implementation}
+\section*{Monte Carlo Tree Search Implementation}
+\pdfbookmark[1]{Monte Carlo Tree Search Implementation}{mcts}
 
-The tree is built upon a set of individual nodes, connected to each other through their parent and children, much like a family tree. Each node has a corresponding state to represent a leg in the trajectory of the spacecraft, with a planetary body, and the time at which it is encountered. As the algorithm builds the tree, the process can be characterized by four essential steps: \circled{1} selection, \circled{2} expansion, \circled{3} simulation, and \circled{4} backpropagation, as depicted in Figure \ref*{fig:mctsFunc}. 
+The tree is built upon a set of individual nodes, connected to each other through their parent and children, much like a family tree. Each node has a corresponding state to represent a leg in the trajectory of the spacecraft, with a planetary body, and the time at which it is encountered. As the algorithm builds the tree, the process can be characterized by four essential steps: \circled{1} selection, \circled{2} expansion, \circled{3} simulation, and \circled{4} backpropagation, as depicted in Figure \ref*{fig:mctsFunc}.
 
-At the initialization of the tree, an array of launch nodes is specified based upon user input. If the sample time span is larger than a year, the number of corresponding nodes will be modified in order to evenly sample the launch window. From this point, the algorithm will begin its core loop to search out possible trajectory sequences, until the, user defined, iteration budget is depleted. 
+At the initialization of the tree, an array of launch nodes is specified based upon user input. If the sample time span is larger than a year, the number of corresponding nodes will be modified in order to evenly sample the launch window. From this point, the algorithm will begin its core loop to search out possible trajectory sequences, until the, user defined, iteration budget is depleted.
 
 \begin{figure}[htb]
     \centering
@@ -91,8 +91,8 @@ At the initialization of the tree, an array of launch nodes is specified based u
     \label{fig:mctsFunc}
 \end{figure}
 
-\subsection{Selection} 
-At the start of each iteration, we initializes at the root of the tree, $id = 0$, and from its children, select the node with the highest associated UCB1 reward, with $X$ being the future reward from exploring of the node and its children, $N$ being the number of visits the node has received, and $n$ being the number of visits the parent node has received. 
+\subsection{Selection}
+At the start of each iteration, we initializes at the root of the tree, $id = 0$, and from its children, select the node with the highest associated UCB1 reward, with $X$ being the future reward from exploring of the node and its children, $N$ being the number of visits the node has received, and $n$ being the number of visits the parent node has received.
 \begin{equation}
     \label{eq:UCB1}
     \text{UCB1 Node Value: } X + C_p \sqrt{\frac{\ln{n}}{N}}
@@ -100,35 +100,35 @@ At the start of each iteration, we initializes at the root of the tree, $id = 0$
 
 The exploration exploitation parameter, $C_p$, has a value of $\sfrac{1}{\sqrt{2}}$ which was selected due to its performance demonstrated by Hennes \cite{Hennes2015}. This reward policy allows the tree to explore all valuable nodes, while still exploiting nodes that return high enough future rewards.
 
-Once a child node has been selected, this process will repeat until a leaf node, a node with no children, has been reached. As the function navigates down a branch, if, at any point, all of a selected nodes children are deemed terminal, such as exceeding the total $\Delta V$ budget, the current node is also declared terminal. When this condition is met, the select function will restart its search process at root of the tree. With this implementation, the tree is able to further constrict the search space, reducing computation time. Once the selection process leads to a leaf node, the node $id$ will be passed to the next step, the expansion function. 
+Once a child node has been selected, this process will repeat until a leaf node, a node with no children, has been reached. As the function navigates down a branch, if, at any point, all of a selected nodes children are deemed terminal, such as exceeding the total $\Delta V$ budget, the current node is also declared terminal. When this condition is met, the select function will restart its search process at root of the tree. With this implementation, the tree is able to further constrict the search space, reducing computation time. Once the selection process leads to a leaf node, the node $id$ will be passed to the next step, the expansion function.
 
 \subsection{Expansion}
-When a leaf node is reached and has not been deemed terminal, the next step of the algorithm is to create a new set of state pairs to explore. Before initializing a new group of nodes, we take into account the state of arrival, the child node, and the departure, the parent node. As planetary motion is of conics, Cartesian grid position sampling is not viable, thus angular divisions are required to efficiently sample a planet's position. For each of the possible planets to visit, the following policy is implemented: 
+When a leaf node is reached and has not been deemed terminal, the next step of the algorithm is to create a new set of state pairs to explore. Before initializing a new group of nodes, we take into account the state of arrival, the child node, and the departure, the parent node. As planetary motion is of conics, Cartesian grid position sampling is not viable, thus angular divisions are required to efficiently sample a planet's position. For each of the possible planets to visit, the following policy is implemented:
 \begin{equation*}
     \label{eq:ephemArray}
-    E = 
+    E =
     \left(\begin{array}{c}
-        n*(\tau_1 + \tau_0) + t_0 \\ 
+        n*(\tau_1 + \tau_0) + t_0 \\
         \vdots \\
         m*(\tau_1 + \tau_0) + t_0 \\
     \end{array}\right)
-    \text{ for } 
-    \left\{\begin{array}{lll} 
-        n = 0.10, & m = 1.00 &\text{if } a_1 < 2 \text{ AU} \\ 
+    \text{ for }
+    \left\{\begin{array}{lll}
+        n = 0.10, & m = 1.00 &\text{if } a_1 < 2 \text{ AU} \\
         n = 0.05, & m = 0.25 &\text{if } a_1 \geq 2 \text{ AU}
     \end{array}\right.
 \end{equation*}
-For the ephemeris array $E$, the ephemeris state of the child node is dictated by the period of the node's associated planet, $\tau_1$, and the period of the parent node's planet, $\tau_0$. This array is bounded using the parameters $n$ and $m$, which are defined by the semi-major axis of the child node's planet, $a_1$. The values for $n$ and $m$ for the inner planets, $a_1 < 2$ AU, were selected based upon their performance in Hennes \cite{Hennes2015}. These values however are not ideal for travel to the outer planets. For example, with the previous values, Lambert arcs time of flights could be in excess of 12 years for a leg to Jupiter. Additionally, if Jupiter are to be used for a gravitational assist to another outer body, faster transfers are required. Based on their performance in simulations, the values of $n = 0.05$ and $m = 0.25$ lead to more transfers that satisfied mission requirements. 
+For the ephemeris array $E$, the ephemeris state of the child node is dictated by the period of the node's associated planet, $\tau_1$, and the period of the parent node's planet, $\tau_0$. This array is bounded using the parameters $n$ and $m$, which are defined by the semi-major axis of the child node's planet, $a_1$. The values for $n$ and $m$ for the inner planets, $a_1 < 2$ AU, were selected based upon their performance in Hennes \cite{Hennes2015}. These values however are not ideal for travel to the outer planets. For example, with the previous values, Lambert arcs time of flights could be in excess of 12 years for a leg to Jupiter. Additionally, if Jupiter are to be used for a gravitational assist to another outer body, faster transfers are required. Based on their performance in simulations, the values of $n = 0.05$ and $m = 0.25$ lead to more transfers that satisfied mission requirements.
 
-With the upper and lower bounds of the array set, an additional parameter for detail, $d$, specifies the length of the array, also defining the resolution of the time steps. Additionally, this allows for dynamic angular detail in the ephemeris arrays. The inner planetary sequences are more sensitive to large time steps which could lead to missed transfers. Thus, the fixed array length lead to smaller time steps for inner planets, and larger for outer planets. For the purpose of this paper, a value of $d = 16$ was found to be sufficient for all calculations as a balance between computation time and detail. 
+With the upper and lower bounds of the array set, an additional parameter for detail, $d$, specifies the length of the array, also defining the resolution of the time steps. Additionally, this allows for dynamic angular detail in the ephemeris arrays. The inner planetary sequences are more sensitive to large time steps which could lead to missed transfers. Thus, the fixed array length lead to smaller time steps for inner planets, and larger for outer planets. For the purpose of this paper, a value of $d = 16$ was found to be sufficient for all calculations as a balance between computation time and detail.
 
 Furthermore, child nodes that revisit the same parent planet have additional epheremis node tweaks to allow for better performance. The $n$ and $m$ values are set to 0.9, and 1 accordingly, for the set of values in $k$. This allows the tree to search differing, non-impulsive, leveraging orbits of 2:1, 3:1, and 4:1 resonances. At this time, only leveraging sequences with revolutions of less than 1 were allowed. To avoid the singularity solution of the Lambert problem for angles of 0$^\circ$ and 180$^\circ$, the last node is offset by three days. The implementation of Earth specific leveraging orbits are discussed in the next section in greater detail.
 
 \begin{equation*}
     \label{eq:ephemArrayLev}
-    E = 
+    E =
     \left(\begin{array}{c}
-        k*n*\tau + t_0 \\ 
+        k*n*\tau + t_0 \\
         \vdots \\
         k*m*\tau + t_0 - 3 \text{ days} \\
     \end{array}\right)\hspace{1.5em}
@@ -161,14 +161,14 @@ Where $\mu_p$ is the standard gravitational parameter of the flyby planet. Addit
 With $e_{out}$, the eccentricity of the outbound hyperbolic flyby orbit, as the iterated value, a function, and its derivative, can be defined. In order to solve for $e_{out}$, the root finding method of Newton Raphson is used to find the eccentricity that coincides with the two $V_\infty$ vectors. For each full loop, an initial $e_{out}$ value of 1.5 is used due to its performance in Wagner \cite{Wagner2015}.
 
 \begin{equation}
-    f = \left( \frac{a_{out}}{a_{in}} (e_{out} - 1) \right) \text{sin} \left( \delta - \text{sin}^{-1} \left( \frac{1}{e_{out}} \right) \right) 
+    f = \left( \frac{a_{out}}{a_{in}} (e_{out} - 1) \right) \text{sin} \left( \delta - \text{sin}^{-1} \left( \frac{1}{e_{out}} \right) \right)
 \end{equation}
 
 \begin{equation}
     \frac{\text{d}f}{\text{d}e_{out}} = \left( \frac{a_{out}}{a_{in}}e_{out} - a_{out}{a_{in}} + 1 \right) \frac{ \text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right) }{ e_{out}^{2} \sqrt{1 - \sfrac{1}{e_{out}^{2}} } } + \frac{a_{out}}{a_{in}}\text{cos}\left( \delta - \text{sin}^{-1} \left( \sfrac{1}{e_{out}} \right) \right)
 \end{equation}
 
-Once a value of $e_{out}$ has been found, it can then be used to find the actual periapsis radius, which is then used to find the required maneuver $\Delta V$. In addition, the periapsis radius is checked again body radius to prevent solutions that impact the planet's surface. 
+Once a value of $e_{out}$ has been found, it can then be used to find the actual periapsis radius, which is then used to find the required maneuver $\Delta V$. In addition, the periapsis radius is checked again body radius to prevent solutions that impact the planet's surface.
 
 \begin{equation}
     r_p = a_{out}(1 - e_{out})
@@ -202,7 +202,8 @@ At the end of the core MCTS loop, the backpropagation step communicates the expe
 
 Once the cost is propagated up the tree, the loop restarts at another iteration, exploring a new set of state pairs. This process will repeat until the computation budget is depleted. At completion, the tree will evaluate all leaf nodes that meet the mission constraints to pass to the next step in the trajectory design process, optimization.
 
-\section{$\boldsymbol{\Delta V}$EGA Maneuver Implementation}
+\section*{$\boldsymbol{\Delta V}$EGA Maneuver Implementation}
+\pdfbookmark[1]{dVEGA Maneuver Implementation}{dv}
 
 A $\Delta V$EGA orbit, also referred to as a leveraging orbit specifically of Earth, launches with the intent to gravity assist off the body for a higher post-flyby heliocentric energy\cite{Hollenbeck}. Leveraging orbits are classified by their nominal resonance period multiple with respect to the flyby body's heliocentric orbit, and we will refer to this number as "$k$". For example, a leveraging orbit that has a period roughly 3 times as large as Earth's will have a $k=3$ which is represented as a 3:1 $\Delta V$EGA trajectory. The actual period of these orbits will vary either greater than or less than the nominal time due to encountering the body at a different Earth heliocentric true anomaly. Trajectories with a larger period are referred to as $k$:$1^{+} \Delta V$EGA and those with a shorter are $k$:$1^{-} \Delta V$EGA trajectories. To modify the Earth flyby true anomaly a maneuver at the aphelion, referred to as a deep space maneuver, is executed.
 
@@ -221,15 +222,16 @@ The deep space maneuver (DSM) and subsequent Earth launch characteristics are ca
 
 A Lambert arc is computed between these points and the resulting initial velocity change is used to find the DSM vector. The final velocity vector is assumed to be the heliocentric velocity of the leveraging orbit at the EGA. The relative velocity, $\vec{\textbf{V}}_{\infty}$, is computed and a planar flyby of Earth can now be calculated from the tree search algorithm. Figure~\ref{fig:dsmmatlab} illustrates an example leveraging orbit being calculated for $\theta_{E}$ = 40.$7^{\circ}$. An energy maximizing flyby and propagation to the new aphelion is added to the end of the $\Delta V$EGA orbit to show the resulting trajectory.
 
-From testing, we noticed that as $\mid\theta_E\mid$ increased, a normal component in the orbit plane of the DSM $\Delta V$ appeared and grew larger. To limit the $\Delta V$ to only a tangential component, and in return to reduce the total $\Delta V$ required, a minimizer is employed. This optimization comes at the expense of a higher launch energy and a longer flight time for trajectories requiring large $\mid\theta_E\mid$. Differing trends from Sims et. al. analysis of $V_\infty$ leveraging\cite{sims1994} were only noticed in high total $\Delta V$ cases for each $k$ leveraging orbit family. These solutions were discarded from the lookup table due to delivering lower aphelion radii post-flyby when compared to lower total $\Delta V$ leveraging orbits of the same family. The case presented in Figure~\ref{fig:dsmmatlab} is intended to match that discussed by Sims et. al\cite{Sims1997} and has nearly identical results. The inclusion of deep space maneuvers, not specific to $\Delta V$EGAs, are not implemented in the current form of the tree search. However, because the algorithm patches the two conics forming the leveraging orbit using the Lambert's method, the possibility to extend DSM maneuvers for off-tangent $V_\infty$ departures and targeting for the flyby can be implemented. This inclusion adds another dimension to the lookup table, but offers greater flexibility in the placement of  leveraging maneuvers in the sequence. It can also include $V_\infty$ leveraging of other planets.
+From testing, we noticed that as $\mid\theta_E\mid$ increased, a normal component in the orbit plane of the DSM $\Delta V$ appeared and grew larger. To limit the $\Delta V$ to only a tangential component, and in return to reduce the total $\Delta V$ required, a minimizer is employed. This optimization comes at the expense of a higher launch energy and a longer flight time for trajectories requiring large $\mid\theta_E\mid$. Differing trends from Sims et al. analysis of $V_\infty$ leveraging\cite{sims1994} were only noticed in high total $\Delta V$ cases for each $k$ leveraging orbit family. These solutions were discarded from the lookup table due to delivering lower aphelion radii post-flyby when compared to lower total $\Delta V$ leveraging orbits of the same family. The case presented in Figure~\ref{fig:dsmmatlab} is intended to match that discussed by Sims et al\cite{Sims1997} and has nearly identical results. The inclusion of deep space maneuvers, not specific to $\Delta V$EGAs, are not implemented in the current form of the tree search. However, because the algorithm patches the two conics forming the leveraging orbit using the Lambert's method, the possibility to extend DSM maneuvers for off-tangent $V_\infty$ departures and targeting for the flyby can be implemented. This inclusion adds another dimension to the lookup table, but offers greater flexibility in the placement of  leveraging maneuvers in the sequence. It can also include $V_\infty$ leveraging of other planets.
 
 Now that the $\Delta V$EGA orbit properties are known, the lookup table solution can be extended to the actual solar system model in the tree search. The table values are represented in a rotating relative frame with respect to Earth's state vector at the launch epoch. A subsequent transformation of the departure velocity and pre-EGA incoming $\vec{\textbf{V}}_{\infty}$ can be done in order to find their specific components corresponding to an Earth epoch in the Ecliptic J2000 frame. From the initial node in the tree, a set of Earth leveraging time-of-flight nodes are created corresponding to their respective $k$ and $\theta_E$ parameters. The number of these leveraging nodes included in the tree is directly related to the angular spacing of $\theta_E$. If the resolution becomes finer by increasing the $\textit{detail}$ input, $d$, the estimated $\Delta V$ becomes more accurate. This, however, increases of the number of tree nodes created, and so for an estimation of the trajectory search space, a coarse resolution is preferred. The discontinuous $\Delta V$ post-EGA required to patch the incoming leg from the leveraging orbit and outgoing leg to the next planet node will determine if the leveraging node and its performance is effective for the transfer. Using this method, a distinction between the $\Delta V$EGA trajectory families to different outer planets can be observed.
 
-\section{Performance Evaluation}
+\section*{Performance Evaluation}
+\pdfbookmark[1]{Performance Evaluation}{cases}
 
 To validate the methods presented in this paper, multiple case studies were tested and evaluated. Three major cases were explored to highlight the different core functionalities of the algorithm. The first case is a search to find Europa Clipper's EELV\cite{Buffington2014} trajectory involving a sequence of 4 planetary flybys to test MCTS's ability to find long sequence trajectories. The second study is designed to test the limits of powered flyby $\Delta V$ theory, by finding Galileo's low budget trajectory to Jupiter with similar efficiency. The final case is not based off any historical mission, but evaluates the $\Delta V$EGA theory by finding a variety of the launch possibilities for a Trident-like mission to Neptune.
 
-In addition to roughly matching existing trajectories, search results will be used as initial conditions for an optimization process to validate the tree search's astrodynamics. While this software is primarily built for low-thrust applications, the program is capable of optimizing for ballistic and chemical propulsion trajectories \cite{Sims2006}. For each leg of the mission, the optimizer was allowed $\pm$ 100 days, unless otherwise stated, on either side of MCTS's initial guess to mitigate the coarse nature of the broad searches constraints. 
+In addition to roughly matching existing trajectories, search results will be used as initial conditions for an optimization process to validate the tree search's astrodynamics. While this software is primarily built for low-thrust applications, the program is capable of optimizing for ballistic and chemical propulsion trajectories \cite{Sims2006}. For each leg of the mission, the optimizer was allowed $\pm$ 100 days, unless otherwise stated, on either side of MCTS's initial guess to mitigate the coarse nature of the broad searches constraints.
 
 \subsection{Case 1: Europa Clipper Trajectory Recreation}
 
@@ -245,7 +247,7 @@ The first case is a search to find a sequence similar to Europa Clipper's interp
         \midrule
         Arrival Planet & Jupiter \\
         Launch Window \hspace{1em}& March 01 --- September 01, 2022 \\
-        Iterations & 75,000 \\ 
+        Iterations & 75,000 \\
         $\Delta V$ Budget & 10 $km/s$ \\
         Max C3 & 10 $km^2/s^2$ \\
         Detail ($d$) & 24 \\
@@ -253,7 +255,7 @@ The first case is a search to find a sequence similar to Europa Clipper's interp
     \end{tabular}
 \end{table}
 
-Table~\ref*{table:clipInputs} provides the search criteria for the Monte Carlo Tree Search. For general trajectory searches, an iteration budget of 50,000 was found to be sufficient, but due to the length of the planetary sequence for the nominal trajectory, we adjusted iteration limit. Runs with a $d = 16$, the ephemeris array length, were also conducted, but due to the coarseness in the separation of state pairs, the exact solution was deemed infeasible. As described earlier, this behavior is one of the drawbacks of grid searches as not all possible solutions can be found. 
+Table~\ref*{table:clipInputs} provides the search criteria for the Monte Carlo Tree Search. For general trajectory searches, an iteration budget of 50,000 was found to be sufficient, but due to the length of the planetary sequence for the nominal trajectory, we adjusted iteration limit. Runs with a $d = 16$, the ephemeris array length, were also conducted, but due to the coarseness in the separation of state pairs, the exact solution was deemed infeasible. As described earlier, this behavior is one of the drawbacks of grid searches as not all possible solutions can be found.
 
 At the completion of the search, 20 million Lambert arcs had been conducted, and a tree one million tree nodes was created. Of the 1.9 billion combinations possible for a 6 layer tree, only 275 solutions were deemed feasible for the input criteria. Figure~\ref*{fig:clipResults} (Left) shows the top 100 trajectories, sorted by their unoptimized mission $\Delta V$ with the nominal solution circled and shown on the (Right). The targeted sequence was the ninth highest result in terms of unoptimized $\Delta V$ usage behind an EEVVEJ and EEVEJ sequence. The trajectory's low placement is down to the final Earth flyby, which, even under ideal conditions, requires an unoptimized flyby $\Delta V$ of 3.23 $\sfrac{km}{s}$. Among all top trajectories, the initial two flybys of Earth and Venus were found to share similar dates. Of the EEVEEJ solutions found, the most optimal utilized a 3:1 orbital resonance for the final Earth flyby, while the nominal trajectory utilized a 2:1. The 2:1 solutions also exist within the results, but do not appear until later is the data set, utilizing an additional 250 $\sfrac{m}{s}$ of $\Delta V$. Even with this deviation, to a 3:1 orbit, the Jupiter arrival occurred only one month later than targeted and has a lower $V_{\infty-in}$.
 \begin{figure}[!ht]
@@ -271,7 +273,7 @@ At the completion of the search, 20 million Lambert arcs had been conducted, and
     \label{fig:clipResults}
 \end{figure}
 
-Utilizing the highest performing EEVEEJ transfer, the dates the tree search supplied were optimized. Table~\ref*{table:clipMInputs} shows initial guess supplied to the optimizer by MCTS as well as the post optimized dates returned. To reduce the $V_{\infty-in}$ at Jupiter, the node's date bounds were adjusted to be $\pm$ 500 days. Upon completion the optimization run, the solution on Figure \ref*{fig:clipMalto} was converged. The resulting trajectory was well within the bounds placed on the optimizer for the flybys and arrival dates, as well, the arrival $V_\infty$ was reduced. In addition, the largest departure from the initial guess dates, apart from Jupiter arrival, was the third flyby of Earth. The date had transitioned 1.5 months later than initially chosen, leading to an orbit of more than 1 complete revolution. With this test complete, it can be shown that this Monte Carlo Tree Search algorithm is capable in searching out long sequence interplanetary trajectories that need minimal tweaking in later steps of the optimization process. 
+Utilizing the highest performing EEVEEJ transfer, the dates the tree search supplied were optimized. Table~\ref*{table:clipMInputs} shows initial guess supplied to the optimizer by MCTS as well as the post optimized dates returned. To reduce the $V_{\infty-in}$ at Jupiter, the node's date bounds were adjusted to be $\pm$ 500 days. Upon completion the optimization run, the solution on Figure \ref*{fig:clipMalto} was converged. The resulting trajectory was well within the bounds placed on the optimizer for the flybys and arrival dates, as well, the arrival $V_\infty$ was reduced. In addition, the largest departure from the initial guess dates, apart from Jupiter arrival, was the third flyby of Earth. The date had transitioned 1.5 months later than initially chosen, leading to an orbit of more than 1 complete revolution. With this test complete, it can be shown that this Monte Carlo Tree Search algorithm is capable in searching out long sequence interplanetary trajectories that need minimal tweaking in later steps of the optimization process.
 \begin{table}[htb]
     \begin{center}
         \caption{MCTS output dates vs optimized dates for Europa Clipper}
@@ -284,7 +286,7 @@ Utilizing the highest performing EEVEEJ transfer, the dates the tree search supp
             \midrule
             Launch & June 04, 2022 & May 12, 2022 \\
             Earth Flyby \#1 & Jun 02, 2023 & May 12, 2023 \\
-            Venus Flyby & November 23, 2023 & November 22, 2023 \\ 
+            Venus Flyby & November 23, 2023 & November 22, 2023 \\
             Earth Flyby \#2 & October 22, 2024 & October 2, 2024 \\
             Earth Flyby \#3 & October 20, 2027 & December 2, 2027 \\
             Jupiter Arrival & February 13, 2030 & March 17, 2031 \\
@@ -320,7 +322,7 @@ Utilizing the highest performing EEVEEJ transfer, the dates the tree search supp
 \end{figure}
 \subsection{Case 2: Galileo Trajectory Recreation}
 
-For the second validation case, the nominal trajectory of Galileo has the spacecraft set to launch from Earth with a C3 of 13-17 $\sfrac{km^2}{s^2}$ on October 18, 1989, and arriving at Jupiter on December 07, 1995 with a Venus flyby and an Earth 2:1 resonance sequence. The major challenge behind this sequence was for the algorithm to be able to find the low required $\Delta V$ solution as described by D'Amario\cite{DAmario1992}. For Galileo's interplanetary leg of its trajectory design, the spacecraft was only budgeted 100 $\sfrac{m}{s} \text{ of } \Delta V$ for TCMs, trajectory correction maneuvers. 
+For the second validation case, the nominal trajectory of Galileo has the spacecraft set to launch from Earth with a C3 of 13-17 $\sfrac{km^2}{s^2}$ on October 18, 1989, and arriving at Jupiter on December 07, 1995 with a Venus flyby and an Earth 2:1 resonance sequence. The major challenge behind this sequence was for the algorithm to be able to find the low required $\Delta V$ solution as described by D'Amario\cite{DAmario1992}. For Galileo's interplanetary leg of its trajectory design, the spacecraft was only budgeted 100 $\sfrac{m}{s} \text{ of } \Delta V$ for TCMs, trajectory correction maneuvers.
 
 \begin{table}[htb]
     \centering
@@ -332,7 +334,7 @@ For the second validation case, the nominal trajectory of Galileo has the spacec
         \midrule
         Arrival Planet & Jupiter \\
         Launch Window & Jun 01 --- Dec 31, 1989 \\
-        Iterations & 50,000 \\ 
+        Iterations & 50,000 \\
         $\Delta V$ Budget & 3 $\sfrac{km}{s}$ \\
         Max Arrival $V_{\infty}$ & 7.5 $\sfrac{km}{s}$  \\
         Max C3 & 20 $\sfrac{km^2}{s^2}$ \\
@@ -358,7 +360,7 @@ Table \ref*{table:galiInputs} lays out the inputs to the search algorithm, which
     \label{fig:galiResults}
 \end{figure}
 
-At the conclusion of the search, the tree made 867,000 nodes and conducted 10 million Lambert arcs, in order to find the 12 solutions to the constraints. Of those solutions, the eighth was the nominal targeted trajectory. Figure \ref*{fig:galiResults} (Left) shows the 12 solutions ranked by their unoptimized mission $\Delta V$ usage, and the (Right) shows the circled nominal trajectory. In the same fashion as the Europa Clipper case, the optimal found trajectory deviates from what Galileo originally performed. The final Earth flyby was conducted in a 3:1 resonance rather than a 2:1 resonance and lead to an overall smaller incoming $V_\infty$. The 2:1 resonance case also exists within the found data set, but is the 11 of 12 that satisfies the criteria. Once again, similar to Europa Clipper, with the additional 1 year resonance, the spacecraft only arrives at Jupiter 3 months after targeted. With the trajectory leg dates, this solution will be optimized using MALTO to find the optimized version of this trajectory. 
+At the conclusion of the search, the tree made 867,000 nodes and conducted 10 million Lambert arcs, in order to find the 12 solutions to the constraints. Of those solutions, the eighth was the nominal targeted trajectory. Figure \ref*{fig:galiResults} (Left) shows the 12 solutions ranked by their unoptimized mission $\Delta V$ usage, and the (Right) shows the circled nominal trajectory. In the same fashion as the Europa Clipper case, the optimal found trajectory deviates from what Galileo originally performed. The final Earth flyby was conducted in a 3:1 resonance rather than a 2:1 resonance and lead to an overall smaller incoming $V_\infty$. The 2:1 resonance case also exists within the found data set, but is the 11 of 12 that satisfies the criteria. Once again, similar to Europa Clipper, with the additional 1 year resonance, the spacecraft only arrives at Jupiter 3 months after targeted. With the trajectory leg dates, this solution will be optimized using MALTO to find the optimized version of this trajectory.
 \begin{table}[htb]
     \begin{center}
         \caption{MCTS output dates vs optimized dates for Galileo}
@@ -370,7 +372,7 @@ At the conclusion of the search, the tree made 867,000 nodes and conducted 10 mi
             {} & \textbf{MCTS} & \textbf{Optimized}\\
             \midrule
             Launch          & October 21, 1989  & October 06, 1989\\
-            Venus Flyby     & February 27, 1990 & February 14, 1990 \\ 
+            Venus Flyby     & February 27, 1990 & February 14, 1990 \\
             Earth Flyby \#1 & December 29, 1990 & December 15, 1990 \\
             Earth Flyby \#2 & December 26, 1993 & December 14, 1992 \\
             Jupiter Arrival & March 03, 1996    & June 24, 1996 \\
@@ -402,8 +404,9 @@ At the conclusion of the search, the tree made 867,000 nodes and conducted 10 mi
     \label{fig:galiMalto}
 \end{figure}
 
-When inputting trajectory dates into MALTO, it was found the 3:1 sequence suggested was not as viable compared to other options. When converging the trajectory, it was found that the performance of the 3:1 trajectory was too high for MALTO to properly capture at Jupiter. Thus by increasing the bounds of the final Earth flyby to bounds of $\pm$500 days to give more leeway, MALTO converged on a solution that utilized a 2:1 orbit as opposed to the 3:1. This result can be found in Figure \ref*{fig:galiMalto}. This result aligns with the findings by Sims \cite{sims1994} where 3:1 orbits were capable of reaching aphelion heights of Uranus SMA, while 2:1 trajectories can reach aphelion heights of 8 AU. Doing so allowed, the work of the Jupiter transfer to be shared between the two Earth flybys without exceeding their energy capacities. As in Table \ref*{table:galiMInputs}, even after taking a year off the total flight time to the last Earth flyby, the Jupiter arrival was only set back 113 days. 
-\subsection{Case 3: Triton $\boldsymbol{\Delta V}$EGA Opportunity Search}
+When inputting trajectory dates into MALTO, it was found the 3:1 sequence suggested was not as viable compared to other options. When converging the trajectory, it was found that the performance of the 3:1 trajectory was too high for MALTO to properly capture at Jupiter. Thus by increasing the bounds of the final Earth flyby to bounds of $\pm$500 days to give more leeway, MALTO converged on a solution that utilized a 2:1 orbit as opposed to the 3:1. This result can be found in Figure \ref*{fig:galiMalto}. This result aligns with the findings by Sims \cite{sims1994} where 3:1 orbits were capable of reaching aphelion heights of Uranus SMA, while 2:1 trajectories can reach aphelion heights of 8 AU. Doing so allowed, the work of the Jupiter transfer to be shared between the two Earth flybys without exceeding their energy capacities. As in Table \ref*{table:galiMInputs}, even after taking a year off the total flight time to the last Earth flyby, the Jupiter arrival was only set back 113 days.
+\subsection*{Case 3: Triton $\boldsymbol{\Delta V}$EGA Opportunity Search}
+\pdfbookmark[2]{Case 3: Triton dVEGA Opportunity Search}{triton}
 
 Now that the sequencing ability of the tree search algorithm has been verified, we can now extend its use to an exploratory context. With the interest in exploring of the solar system's icy moons, a sequence to Neptune, and in turn Triton, is explored\cite{Hubbard2010}. An arbitrary launch period was selected for this evaluation, and the search is limited to trajectories with the inclusion of a $\Delta V$EGA to evaluate its integration and performance. The number of iterations was set at 15,000 as this search has a maximum depth of 4 nodes, greatly reducing the size of the tree. To achieve fast transfer times to Neptune, the use of Jupiter for gravitational assists is critical, as the energy Jupiter can add to a heliocentric orbit is significantly more efficient than any direct launch, in terms of $\Delta V$ usage \cite{Landau2010}. It is desired to have a higher incoming relative velocity at Jupiter in order to have the appropriate outgoing energy to reach Neptune. With this in mind, the intent of the search was to find $\Delta V$EGA trajectories that deliver a high post-EGA semi-major axis so the encounter velocity is maximized. The $\textit{detail}$ is set to 16 which creates 8 $k$:1$^{-}$ and 8 $k$:1$^{+}$ nodes for each $k$ family. This spread is a balanced compromise between computation time, due to the number of nodes created, and the accuracy of the DSM's $\Delta V$ estimate. The launch C3 is set to 60 $km^2/s^2$ which is set to explore the use of mainly 2:1 and 3:1 $\Delta V$EGAs with the possibility of 4:1 leveraging families, at an additional $\Delta V$ cost. The results of the input search space are summarized in Table~\ref{tab:tritonInputs}:
 
@@ -451,7 +454,7 @@ Optimization of select tree search solutions are conducted to determine the accu
         {} & \textbf{MCTS} & \textbf{Optimized} & \textbf{MCTS} & \textbf{Optimized}\\
         \midrule
         Launch            & Jan 01, 2029 & Jan 11, 2029 & May 01, 2029 & Apr 28, 2029 \\
-        Earth Flyby       & Mar 07, 2031 & Mar 05, 2031 & Mar 07, 2032 & Mar 20, 2032 \\ 
+        Earth Flyby       & Mar 07, 2031 & Mar 05, 2031 & Mar 07, 2032 & Mar 20, 2032 \\
         Jupiter Flyby \#1 & Jan 08, 2033 & Nov 16, 2032 & Jul 25, 2033 & Aug 14, 2033 \\
         Neptune Arrival   & Jun 26, 2042 & Jun 12, 2042 & May 06, 2042 & Aug 13, 2042 \\
         \bottomrule
@@ -503,11 +506,12 @@ Optimization of select tree search solutions are conducted to determine the accu
     \label{fig:maltotriton}
 \end{figure}
 
-Certain characteristics of the results were noticed when optimizing and comparing many cases from this tree search run. The deep space maneuver magnitude and direction general vary from the search results due to various factors. The optimization process takes into account the change in declination for the outgoing flyby so depending on the transfer an additional Z-component of velocity is expected. Another source of discrepancy is in the maneuver location. In the lookup table, the assumption is that the deep space maneuver is conducted at the aphelion of the leveraging orbit. However, the optimizer is able to shift the location of the maneuver within a reasonable time bound. In order to keep the look-up table two dimensional and to minimize the required $\Delta V$ at the aphelion, the minimizer was employed to reduce the normal component of velocity of the maneuver. This, in turn, limited solutions that may potentially have higher DSM $\Delta V$s for higher energy Earth gravity assists. It was also noticed that some trajectories from the search were exploiting the planar assumption resulting in lower launch velocities, DSM magnitudes, and flight times to Neptune. These limitations were only seen in the 2:1$^{-}$ set of solutions, which in theory have the lowest $\Delta V$ cost of any other trajectory type. However, with the solar system model used in MALTO, these sequences fall short due to energy limitations. When optimizing, the largest discontinuous distance and velocity across all the segments of the trajectory was under 60,000 km and 0.2 $km/s$. The flight time and $V_\infty$ was also seen to reach the lower bound indicating a lower energy trajectory to Neptune (which is roughly 0.9 AU below the ecliptic plane in 2041).
+Certain characteristics of the results were noticed when optimizing and comparing many cases from this tree search run. The deep space maneuver magnitude and direction general vary from the search results due to various factors. The optimization process takes into account the change in declination for the outgoing flyby so depending on the transfer an additional Z-component of velocity is expected. Another source of discrepancy is in the maneuver location. In the lookup table, the assumption is that the deep space maneuver is conducted at the aphelion of the leveraging orbit. However, the optimizer is able to shift the location of the maneuver within a reasonable time bound. In order to keep the look-up table two dimensional and to minimize the required $\Delta V$ at the aphelion, the minimizer was employed to reduce the normal component of velocity of the maneuver. This, in turn, limited solutions that may potentially have higher DSM $\Delta V$s for higher energy Earth gravity assists. It was also noticed that some trajectories from the search were exploiting the planar assumption resulting in lower launch velocities, DSM magnitudes, and flight times to Neptune. These limitations were primarily seen in the 2:1$^{-}$ set of solutions, which in theory have the lowest $\Delta V$ cost of any other trajectory type. However, with the solar system model used in MALTO, these sequences fall short due to energy limitations. The largest discontinuous distance and velocity across all the segments of the trajectory was under 60,000 km and 0.2 $km/s$. The flight time and $V_\infty$ was also seen to reach the lower bound indicating a lower energy trajectory to Neptune (which is roughly 0.9 AU below the ecliptic plane in 2041).
 
-\section{Future Work}
+\section*{Future Work}
+\pdfbookmark[1]{Future Work}{next}
 
-In its current capacity, the tree search algorithm is provides coarse solutions to trajectories around the entire solar system. As the premise of this paper is to validate both the tree search algorithm as a whole, and implementation of the theory for $\Delta V$\textit{X}GA (X being E for Earth, V for Venus, etc.), the scope was limited to just Earth leveraging maneuvers. Future revisions of this algorithm could include leveraging orbits of Venus, as seen in missions like Cassini. Additionally, to minimize calculation time and complexity, the algorithm employs 2D approximation of patch-conics flybys, only optimizing bend angle, $\delta$. The inclusion of crank angle, $\kappa$, optimization, as seen in Strange\cite{Strange2008}, would increase the fidelity and feasibility of output results.
+In its current capacity, the tree search algorithm provides coarse solutions to trajectories around the solar system. As the premise of this paper is to validate both the tree search algorithm as a whole, and implementation of the theory for $\Delta V$\textit{X}GA (X being E for Earth, V for Venus, etc.), the scope was limited to just Earth leveraging maneuvers. Future revisions of this algorithm can include leveraging orbits of Venus, as seen in missions like Cassini. Additionally, to minimize calculation time and complexity, the algorithm employs 2D approximation of patch-conics flybys, only optimizing the bend angle, $\delta$. Taking into account 3D flybys, as seen in Strange et al.\cite{Strange2008}, would increase the fidelity and feasibility of output results.
 
 \section{Conclusion}
 A multi-sequence broad search tool is created using Monte Carlo Tree Search which provides an efficient and effective method of solving the inherently difficult time-depended combinational problem. Through its ability to both explore and exploit the search space, the algorithm is able to build a tree of flyby sequences that are compatible with the mission input constraints. The search is extended past ballistic sequences with the inclusion of Earth leveraging ($\Delta V$EGA) orbits through the use of a lookup table to reduce the required calculations when creating the tree. It is tested against existing multi-flyby trajectory solutions of Europa Clipper's planned interplanetary sequence and Galileo's. An exploratory case is conducted which utilizes Earth leveraging for an E($\Delta V$)EJN sequence, and it demonstrated the capability of estimating deep space maneuver magnitudes for the $\Delta V$EGA implementation. All cases were optimized using initial guesses from the searched trajectories, and the all solutions converge within reasonable bounds for preliminary mission investigation.
@@ -524,14 +528,14 @@ def mcts.run():
             break
 
         # Select Most Valuable Leaf Starting from Root
-        id = select() 
+        id = select()
 
         # Expand If Prevously Visited and Pick Most Valuable Child
         if node.children is None and node.visits is not 0:
             id = expand(id)
 
         # Randomly Explores From Selected Node To Generate Cost
-        X = simulate(id) 
+        X = simulate(id)
 
         # Propagates Results Up Branch
         backprop(id, X)
@@ -540,7 +544,9 @@ def mcts.run():
 
 \appendix
 \clearpage
-\section{Appendix A: Raw MCTS Run Results}
+\section*{Appendix A: Raw MCTS Run Results for Europa Clipper and Galileo}
+\pdfbookmark[1]{Appendix A: Raw MCTS Run Results for Europa Clipper and Galileo}{appA}
+
 \begin{table}[h!]
     \centering
     \caption{Top 22 results from broad search of Europa Clipper's launch window. Gray row shows nominal solution.}
@@ -569,7 +575,7 @@ def mcts.run():
         19                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.55                                                    & 2398                       & 6.57                                                             \\
         20                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.54                                                    & 1984                       & 6.66                                                             \\
         21                          & EEVVEJ                     & 8190                            & 3.12                                                   & 5.40                                                    & 1966                       & 6.84                                                             \\
-        22                          & EEVVEJ                     & 8190                            & 3.12                                                    & 5.26                                                    & 2769                       & 7.01                                                             \\ 
+        22                          & EEVVEJ                     & 8190                            & 3.12                                                    & 5.26                                                    & 2769                       & 7.01                                                             \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -579,7 +585,7 @@ def mcts.run():
     \caption{All results from broad search of Galileo's launch window. Gray row shows nominal solution.}
     \begin{tabular}{lllllll}
         \toprule
-        \textbf{\textbf{\#}}\hspace{2em} & \textbf{\textbf{Sequence}} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$ & \textbf{$\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$} & \textbf{\textbf{ToF (Days) }} & \textbf{\textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$} \\ 
+        \textbf{\textbf{\#}}\hspace{2em} & \textbf{\textbf{Sequence}} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$ & \textbf{$\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$} & \textbf{\textbf{ToF (Days) }} & \textbf{\textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$} \\
         \midrule
         1                           & EVEJ                       & -3739                           & 19.71                                         & 1.71                                                    & 1162                       & 6.64                                                             \\
         2                           & EVEJ                       & -3739                           & 19.71                                         & 1.53                                                    & 1099                       & 7.38                                                             \\
@@ -592,7 +598,7 @@ def mcts.run():
         9                           & EEVEJ                      & -3824                           & 28.97                                         & 2.70                                                    & 2013                       & 7.09                                                             \\
         10                          & EVVEJ                      & -3710                           & 15.42                                         & 2.62                                                    & 1879                       & 7.24                                                             \\
         11                          & EVEEJ                      & -3724                           & 22.03                                         & 2.77                                                    & 2289                       & 7.20                                                             \\
-        12                          & EVVEJ                      & -3710                           & 15.42                                         & 2.65                                                    & 1869                       & 7.33                                                             \\ 
+        12                          & EVVEJ                      & -3710                           & 15.42                                         & 2.65                                                    & 1869                       & 7.33                                                             \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -603,7 +609,7 @@ def mcts.run():
     \caption{Top 25 results from $\Delta V$EGA search to Neptune launch window. Gray row shows solutions optimized above.}
     \begin{tabular}{lllllll}
     \toprule
-    \textbf{\#}\hspace{2em} & \textbf{Sequence} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$    & $\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$  & \textbf{ToF (Days)} & \textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$ \\ 
+    \textbf{\#}\hspace{2em} & \textbf{Sequence} & \textbf{Dep. Date}\footnotemark[1] & \textbf{C3} $\boldsymbol{(\frac{km^2}{s^2})}$    & $\boldsymbol{\Delta V_{unopt} (\frac{km}{s})}$  & \textbf{ToF (Days)} & \textbf{Arr.} $\boldsymbol{V_\infty (\frac{km}{s})}$ \\
     \midrule
     \rowcolor{lightgray}1                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.17        & 6385      & 7.84          \\
     2                  & E(2:1+)EJN        & 10593                 & 29.08       & 1.35        & 7240      & 6.27          \\
@@ -629,7 +635,7 @@ def mcts.run():
     22                 & E(2:1+)EJN        & 10593                 & 29.08       & 1.83        & 7302      & 6.2           \\
     23                 & E(2:1+)EJN        & 10593                 & 28.14       & 1.84        & 8936      & 4.33          \\
     24                 & E(3:1+)EJN        & 10641                 & 49.38       & 1.85        & 7457      & 6.01          \\
-    \rowcolor{lightgray}25                 & E(3:1+)EJN        & 10713                 & 48.63       & 2.35        & 4752      & 12.95         \\                                                 
+    \rowcolor{lightgray}25                 & E(3:1+)EJN        & 10713                 & 48.63       & 2.35        & 4752      & 12.95         \\
     \bottomrule
     \end{tabular}
 \end{table}
@@ -637,7 +643,9 @@ def mcts.run():
 
 \clearpage
 
-\section{Appendix B: Sequence Family Plots}
+\section*{Appendix B: Sequence Family Plots}
+\pdfbookmark[1]{Appendix B: Sequence Family Plots}{appB}
+
 \begin{figure}[h!]
     \begin{subfigure}{}
         \includegraphics[width=3in]{./fig/clipperFamilies.png}
@@ -660,6 +668,7 @@ def mcts.run():
 
 
 \clearpage
+\pdfbookmark[1]{References}{ref}
 \bibliographystyle{AAS_publication}   % Number the references.
 \bibliography{references}   % Use references.bib to resolve the labels.
 
