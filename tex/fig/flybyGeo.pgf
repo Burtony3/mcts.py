@@ -3,8 +3,9 @@
 \tikzset{>=latex,
   add/.style args={#1 and #2}{to path={%
  ($(\tikztostart)!-#1!(\tikztotarget)$)--($(\tikztotarget)!-#2!(\tikztostart)$)%
-  \tikztonodes}}
+  \tikztonodes}, }
 } 
+\tikzstyle{every node}+=[font = \LARGE]
 % VARIABLES
 	% Asthetic
 	\def\axwidth{0.33mm};
@@ -24,15 +25,15 @@
 
 % AXES
 \coordinate (uv) at (2, 1);
-\draw [line width=\axwidth, <-] (uv) node [text width=1cm,above]  {$\vec{\textbf{u}}_v$} -- ++(\axLength, 0);
+\draw [line width=\axwidth, <-] (uv) node [text width=1.2cm,above]  {$\vec{\textbf{u}}_v$} -- ++(\axLength, 0);
 \coordinate (us) at (1, 2);
-\draw [line width=\axwidth, <-] (us) node [text width=1.2cm,below]  {$\vec{\textbf{u}}_{sun}$} -- ++(0, \axLength);
+\draw [line width=\axwidth, <-] (us) node [text width=1.9cm,below]  {$\vec{\textbf{u}}_{sun}$} -- ++(0, \axLength);
 
 % TRAJECTORY
 \coordinate (asm) at (0.82, 0.82);
 \coordinate (vi) at (0.672, 1.94);
 \coordinate (vo) at (1.972, 0.782);
-\draw [line width=0.5mm, >->]  (vi) node [text width=2cm,below right] {$V_{\infty,in}$}.. controls (asm) .. (vo)node [text width=1cm,below left] {$V_{\infty,out}$};
+\draw [line width=0.5mm, >->]  (vi) node [text width=2cm,below right] {$V_{\infty,in}$}.. controls (asm) .. (vo)node [text width=1.4cm,below left] {$V_{\infty,out}$};
 \coordinate (rp) at (0.948, 0.948);
 \draw[fill=black] (rp) circle [radius=0.033in];
 \node [below left] (rp_) at (rp) {$r_p$};
