@@ -85,10 +85,17 @@ At the initialization of the tree, an array of launch nodes is specified based u
 %At the start of each iteration, the program will begin at the root of the tree, and select down the tree until a leaf node is reached. From this leaf, the algorithm will expand a set of new child states and choose from the new selection. To generate an expected future reward from this node, the program will conduct a randomly stepped search until termination conditions are met. 
 %After a fixed set of iterations of this process has been conducted, the algorithm will gather all leaf nodes, nodes with no children, that meet the user-defined criteria.
 
-\begin{figure}[htb] 
-	\centering\includegraphics[width=3.5in]{fig/mctsFuncs.png}
-	\caption{4 Main steps for the creation of a Monte Carlo Tree}
-	\label{fig:mctsFunc}
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=3.5in]{fig/mctsFuncs.png}};
+        \node[] at (0.85, 7.5) {\large\circled{1}};
+        \node[] at (6.37, 7.5) {\large\circled{2}};
+        \node[] at (0.7, 3.92) {\large\circled{3}};
+        \node[] at (6.4, 3.92) {\large\circled{4}};
+    \end{tikzpicture}
+    \caption{4 Main steps for the creation of a Monte Carlo Tree}
+    \label{fig:mctsFunc}
 \end{figure}
 
 \subsection{Selection} 
@@ -240,6 +247,7 @@ In addition to matching results found in currently published research, each case
 \subsection{Case 1: Europa Clipper Trajectory Recreation}
 
 The first case is a search to find a sequecne similar to Europa Clipper's interplanetary trajectory (15F9-A22 EEVEEJ) utilizing multiple gravitational assists of Earth and Venus to reach Jupiter \cite{Buffington2014}. The nominal trajectory has the spacecraft set to launch on June 03, 2022, and arriving at Jupiter on January 15, 2030 with an additional 3 Earth flybys and 1 Venus flyby. The primary challenge for this mission was the complexity of the sequence, as the difficulty of the combinational problem grows non-linearly with length.
+
 \begin{table}[htb]
     \centering
     \caption{Constrain Input Table for Europa Clipper Trajectory Search}
@@ -258,7 +266,6 @@ The first case is a search to find a sequecne similar to Europa Clipper's interp
     \end{tabular}
 \end{table}
 
-
 Table \ref*{table:clipInputs} provides the search criteria for the Monte Carlo Tree Search. For general trajectory searches, an iteration budget of 50,000 was found to be sufficient, but due to the length of the planetary sequence for the nominal trajectory, the iteration limit had to be adjusted. Runs with a $d = 16$, the ephemeris array length, were also conducted, but due to the coarseness in the separation of state pairs, the exact solution was deemed infeasible. As described earlier, this behavior is one of the drawbacks of grid searches as not all possible solutions can be found. 
 
 At the completion of the search, the algorithm had conducted 20 million Lambert arcs, and created one million tree nodes. Of the 1.9 billion combinations possible for a 6 layer tree, only 275 solutions were deemed feasible for the input criteria. Figure \ref*{fig:clipResults} (Left) shows the top 100 trajectories, sorted by their unoptimized mission $\Delta V$ with the nominal solution circled and shown on the (Right). The targeted sequence was the ninth highest result in terms of unoptimized $\Delta V$ usage behind an EEVVEJ and EEVEJ sequence. The trajectories non-podium finish is down to the final Earth flyby, which even under ideal dates requires an unoptimized flyby $\Delta V$ of 3.23 $\sfrac{km}{s}$. Among all top performing trajectories, the initial two flybys of Earth and Venus were found to share similar dates. Of the EEVEEJ solutions found, the most optimal utilized a 3:1 orbital resonance for the final Earth flyby, while the nominal trajectory utilized a 2:1. The 2:1 solutions also exist within the results, but do not appear until later is the data set, utilizing an additional 250 $\sfrac{m}{s}$ of $\Delta V$. Even with this deviation, the Jupiter arrival occured only one month later than targeted and has a lower incoming $V_\infty$.
@@ -269,7 +276,12 @@ At the completion of the search, the algorithm had conducted 20 million Lambert 
         \centering\includegraphics[width=2.75in]{./fig/clipperResults.png}
     \end{subfigure}
     \begin{subfigure}
-        \centering\includegraphics[width=3in]{./fig/clipperMCTS.png}
+        \centering
+        \begin{tikzpicture}
+            \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=3in]{./fig/clipperMCTS.png}};
+            \node[] (text) at (2, 6.1) {\scriptsize Jupiter SMA};
+            % \fill (text.north west) circle (0.1em);
+        \end{tikzpicture}
     \end{subfigure}
     \caption{(Left) Top 100 results from built broad search colored by sequence\hspace{1em} (Right) Circled, unoptimized trajectory from results that matches targeted sequence from Buffington \cite{Buffington2014}}
     \label{fig:clipResults}
@@ -302,11 +314,30 @@ Upon completion the optimization run, MALTO had converged on the solution in Fig
 
 \begin{figure}[t!]
     \centering
-    \includegraphics[width = 5in]{./fig/clipperMalto.png}
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width = 5in]{./fig/clipperMalto.png}};
+        % NUMBER 1
+        \node[] at (9.75, 8.5) {\large\circled{1}};
+        \node[] at (4.45, 6.55) {\large\circled{1}};
+        % NUMBER 2
+        \node[] at (9.75, 7.25) {\large\circled{2}};
+        \node[] at (4.8, 6.2) {\large\circled{2}};
+        % NUMBER 3
+        \node[] at (9.75, 5.1) {\large\circled{3}};
+        \node[] at (5.2, 7.8) {\large\circled{3}};
+        % NUMBER 4
+        \node[] at (9.75, 3) {\large\circled{4}};
+        \node[] at (7.2, 7.8) {\large\circled{4}};
+        % NUMBER 5
+        \node[] at (7.2, 3) {\large\circled{5}};
+        \node[] at (6.5, 8.6) {\large\circled{5}};
+        % NUMBER 6
+        \node[] at (4.75, 2.9) {\large\circled{6}};
+        \node[] at (4.45, 1.8) {\large\circled{6}};
+    \end{tikzpicture}
     \caption{MALTO optimized Europa Clipper trajectory from MCTS dates}
     \label{fig:clipMalto}
 \end{figure}
-
 
 \subsection{Case 2: Galileo Trajectory Recreation}
 
@@ -338,7 +369,13 @@ Table \ref*{table:galiInputs} lays out the inputs to the search algorithm, which
         \centering\includegraphics[width=2.75in]{./fig/galileoResults.png}
     \end{subfigure}
     \begin{subfigure}
-        \centering\includegraphics[width=3in]{./fig/galileoMCTS.png}
+        \centering
+        \begin{tikzpicture}
+            \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=3in]{./fig/galileoMCTS.png}};
+            \node[] (text) at (2, 6.3) {\scriptsize Jupiter SMA};
+            % \fill (text.north west) circle (0.1em);
+        \end{tikzpicture}
+        % \centering\includegraphics[width=3in]{./fig/galileoMCTS.png}
     \end{subfigure}
     \caption{(Left) Top results from built broad search colored by sequence\hspace{1em} (Right) Circled, unoptimized trajectory from results that matches targeted sequence from D'Amario \cite{DAmario1992}}
     \label{fig:galiResults}

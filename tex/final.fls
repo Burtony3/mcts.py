@@ -349,6 +349,8 @@ INPUT /home/burtonyale/Documents/repos/MCTS.py/tex/fig/mctsFuncs.png
 INPUT /home/burtonyale/Documents/repos/MCTS.py/tex/fig/mctsFuncs.png
 INPUT /home/burtonyale/Documents/repos/MCTS.py/tex/fig/mctsFuncs.png
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /home/burtonyale/Documents/repos/MCTS.py/tex/fig/flyby.png
