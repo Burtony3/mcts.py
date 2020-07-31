@@ -15,11 +15,6 @@ H.~Li, S.~Chen, D.~Izzo, and H.~Baoyin, ``{Deep Networks as Approximators of
   Optimal Transfers Solutions in Multitarget Missions},''  {\em arXiv
   preprint}, 2019.
 
-\bibitem{Jiang2012}
-F.~Jiang, H.~Baoyin, and J.~Li, ``{Practical techniques for low-thrust
-  trajectory optimization with homotopic approach},''  {\em Journal of
-  Guidance, Control, and Dynamics}, 2012, 10.2514/1.52476.
-
 \bibitem{Izzo2019}
 D.~Izzo, C.~I. Sprague, and D.~V. Tailor, ``{Machine Learning and Evolutionary
   Techniques in Interplanetary Trajectory Design},''  {\em Springer
@@ -62,6 +57,11 @@ S.~Wagner and B.~Wie, ``{Hybrid algorithm for multiple gravity-assist and
   impulsive Delta-V maneuvers},''  {\em Journal of Guidance, Control, and
   Dynamics}, Vol.~38, No.~11, 2015, pp.~2096--2107, 10.2514/1.G000874.
 
+\bibitem{Adams2010}
+R.~B. Adams and G.~A. Richardson, ``{Using the Two-Burn Escape Maneuver for
+  Fast Transfers in the Solar System and Beyond},''  {\em AIAA Joint Propulsion
+  Conference}, Nashville, Tennessee, 2010.
+
 \bibitem{Brennan2015}
 M.~J. Brennan, ``{Preliminary Interplanetary Trajectory Design Tools using
   Ballistic and Powered Gravity Assists},''  2015.
@@ -84,16 +84,16 @@ A.~{Sims, Jon; Longuski, James; Staugler}, ``V(infinity) Leveraging for
   Journal of Guidance, Control, and Dynamics}, Vol.~20, No.~3, 1997,
   pp.~409--415.
 
+\bibitem{Buffington2014}
+B.~Buffington, ``{Trajectory design for the europa clipper mission concept},''
+  {\em AIAA/AAS Astrodynamics Specialist Conference 2014}, 2014.
+
 \bibitem{Sims2006}
 J.~A. Sims, P.~A. Finlayson, E.~A. Rinderle, M.~A. Vavrina, and T.~D.
   Kowalkowski, ``{Implementation of a low-thrust trajectory optimization
   algorithm for preliminary design},''  {\em Collection of Technical Papers -
   AIAA/AAS Astrodynamics Specialist Conference, 2006}, 2006,
   10.2514/6.2006-6746.
-
-\bibitem{Buffington2014}
-B.~Buffington, ``{Trajectory design for the europa clipper mission concept},''
-  {\em AIAA/AAS Astrodynamics Specialist Conference 2014}, 2014.
 
 \bibitem{DAmario1992}
 L.~A. D'Amario, L.~E. Bright, and A.~A. Wolf, ``{Galileo trajectory design},''
