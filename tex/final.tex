@@ -373,9 +373,7 @@ Table \ref*{table:galiInputs} lays out the inputs to the search algorithm, which
         \begin{tikzpicture}
             \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=3in]{./fig/galileoMCTS.png}};
             \node[] (text) at (2, 6.3) {\scriptsize Jupiter SMA};
-            % \fill (text.north west) circle (0.1em);
         \end{tikzpicture}
-        % \centering\includegraphics[width=3in]{./fig/galileoMCTS.png}
     \end{subfigure}
     \caption{(Left) Top results from built broad search colored by sequence\hspace{1em} (Right) Circled, unoptimized trajectory from results that matches targeted sequence from D'Amario \cite{DAmario1992}}
     \label{fig:galiResults}
@@ -436,7 +434,11 @@ Now that the sequencing ability of the tree search algorithm has been verified, 
 \end{table}
 
 \begin{figure}[ht]
-	\centering\includegraphics[width=3.6in]{./fig/tridentMCTS}
+    \centering
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=3.6in]{./fig/tridentMCTS}};
+        \node[] (text) at (2, 7.75) {\scriptsize Jupiter SMA};
+    \end{tikzpicture}
 	\caption{Different resulting E($\boldsymbol{\Delta V}$)EJN sequence types from the search. The outermost dashed line is the semi-major axis of Jupiter, the middle dashed line is Earth's, and the innermost is Venus's. The $\boldsymbol{\Delta V}$EGA type is labeled above and the mark on the leveraging orbit denotes the approximate DSM location.}
 	\label{fig:tridentMCTS}
 \end{figure}
@@ -446,17 +448,49 @@ The search completed and resulted in 65 sequences from the 704,000 nodes created
 Optimization of selected tree search solutions are conducted to determine the accuracy of the sequences found and to further investigate the deep space maneuver performance. The 2:1 and 3:1 $\Delta V$EGA trajectories are of interest as these families are able to reach Jupiter with favorable flight times, launch energies, and incoming relative velocities. The flight time and encounter epochs from the tree search are compared to the optimized solution to better understand the performance and limitations of the search algorithm. For the optimization process, all initial guess conditions were taken from the tree search output and the following bounds were set for encounter epochs. For Earth flybys and the DSM epoch, a plus or minus 30 day span is used. For the Jupiter and Neptune flybys 50 and 300 days respectively are used. This looser date bound accounts for the larger spacing in epochs for the outer planets' nodes in the tree. The maximum launch $V_\infty$ is allowed to be 0.1 $km/s$ over the predicted requirement from the search, and the limits on the DSM $\Delta V$ are plus or minus 0.4 $km/s$ from the estimated value from the lookup table solution. Figure~\ref{fig:maltotriton} shows examples of two optimized trajectories resulting from the search. The left plot is an example of a 2:1$^{+}$ $\Delta V$EGA which requires a launch $V_\infty$ magnitude of 5.20 $km/s$ (as opposed to the \hspace{0.5px} 5.15 $km/s$ from the prediction). The 2:1 leveraging trajectory has an incoming $V_\infty$ to Jupiter of around 9 $km/s$ which yields a 4900 day (13.4 year) flight time to Neptune. This case utilized an intercept $\theta_E$ of 42$^\circ$ which has an estimated DSM $\Delta V$ of 0.43 $km/s$, while the optimizer's computed 0.66 $km/s$. The right plot from Figure~\ref{fig:maltotriton} shows a 3:1$^{-}$ trajectory with an Earth departure $V_\infty$ of 6.98 $km/s$ and a DSM $\Delta V$ of 0.41 $km/s$. The estimated performance from the tree search is 6.97 $km/s$ and 0.40 $km/s$ for the launch relative velocity and DSM respectively. The similarities between the tree results and the optimized cases presented indicate that the search algorithm is generally able to produce useful initial guesses for the optimization process.
 
 \begin{figure}[ht]
-		\centering
-		\begin{minipage}{0.50\textwidth}
-				\centering
-				\includegraphics[width=1.0\textwidth]{./fig/eejn21plus}
-    \end{minipage}\hfill
-		\begin{minipage}{0.50\textwidth}
-				\centering
-				\includegraphics[width=1.0\textwidth]{./fig/eejn31minus4850}
-		\end{minipage}
-		\caption{Optimized trajectory examples from the search. The left plot is an example of a 2:1$^{+}$ and the right is a 3:1$^{-}$. The 2:1$^{+}$ is able to reach Neptune with a much lower $\boldsymbol{V_\infty}$ due to a slower relative velocity into Jupiter when compared to the 3:1$^{-}$ sequence.}
-		\label{fig:maltotriton}
+    \centering
+    \begin{subfigure}
+        \centering
+        \begin{tikzpicture}
+            \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=2.9in]{./fig/eejn21plus}};
+            % NUMBER 1
+            \node[] at (3, 4.9) {\scriptsize\circled{1}};
+            \node[] at (1.33, 5) {\scriptsize\circled{1}};
+            % NUMBER 2
+            \node[] at (1.35, 1.55) {\scriptsize\circled{2}};
+            \node[] at (2.5, 3.0) {\scriptsize\circled{2}};
+            % % NUMBER 3
+            \node[] at (0.8, 3) {\scriptsize\circled{3}};
+            \node[] at (0.85, 4.4) {\scriptsize\circled{3}};
+            % % NUMBER 4
+            \node[] at (3.3, 2.6) {\scriptsize\circled{4}};
+            \node[] at (4.3, 1) {\scriptsize\circled{4}};
+            % % NUMBER 5
+            \node[] at (5.7, 4.15) {\scriptsize\circled{5}};
+        \end{tikzpicture}
+    \end{subfigure}\hfill
+    \begin{subfigure}
+        \centering
+        \begin{tikzpicture}
+            \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=2.9in]{./fig/eejn31minus4850}};
+            % NUMBER 1
+            \node[] at (0.9, 1.95) {\scriptsize\circled{1}};
+            \node[] at (1.25, 2.85) {\scriptsize\circled{1}};
+            % NUMBER 2
+            \node[] at (3.5, 5) {\scriptsize\circled{2}};
+            \node[] at (3.15, 4.5) {\scriptsize\circled{2}};
+            % % NUMBER 3
+            \node[] at (1.6, 4.5) {\scriptsize\circled{3}};
+            \node[] at (1.15, 3.2) {\scriptsize\circled{3}};
+            % % NUMBER 4
+            \node[] at (3.8, 2.7) {\scriptsize\circled{4}};
+            \node[] at (5, 1.05) {\scriptsize\circled{4}};
+            % % NUMBER 5
+            \node[] at (5.7, 3.9) {\scriptsize\circled{5}};
+        \end{tikzpicture}
+    \end{subfigure}
+    \caption{Optimized trajectory examples from the search. The left plot is an example of a 2:1$^{+}$ and the right is a 3:1$^{-}$. The 2:1$^{+}$ is able to reach Neptune with a much lower $\boldsymbol{V_\infty}$ due to a slower relative velocity into Jupiter when compared to the 3:1$^{-}$ sequence.}
+    \label{fig:maltotriton}
 \end{figure}
 
 Certain characteristics of the results were noticed when optimizing and comparing many cases from this tree search run. The deep space maneuver magnitude and direction general vary from the search results due to various factors. The optimization process takes into account the change in declination for the outgoing flyby so depending on the transfer an additional Z-component of velocity is expected. Another source of discrepancy is in the maneuver location. In the lookup table, the assumption is that the deep space maneuver is conducted at the aphelion of the leveraging orbit. However, the optimizer is able to shift the location of the maneuver within a reasonable time bound. In order to keep the look-up table two dimensional and to minimize the required $\Delta V$ at the aphelion, the minimizer was employed to reduce the normal component of velocity of the maneuver. This in turn limited solutions that may potentially have higher DSM $\Delta V$s for higher energy Earth gravity assists. It was also noticed that some trajectories from the search were exploiting the planar assumption resulting in lower launch velocities, DSM magnitudes, and flight times to Neptune. These limitations were only seen in the 2:1$^{-}$ set of solutions, which in theory have the lowest $\Delta V$ cost of any other trajectory type. However, with the solar system model used in MALTO, these sequences fall short due to energy limitations. When optimizing them, the largest discontinuous distance and velocity across all the segments of the trajectory was under 60,000 km and 0.2 $km/s$. The flight time and $V_\infty$ was also seen to reach the lower bound indicating a lower energy trajectory to Neptune (which is roughly 0.9 AU below the ecliptic plane in 2041).
