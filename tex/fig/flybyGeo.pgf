@@ -17,7 +17,7 @@
 	\def\vpLength{1.25in}; % Body velocity vector length
 
 % SOI
- \draw (cntr) circle (3in);
+ %\draw (cntr) circle (3in);
 
 %CTRL BODY
 \draw[line width=\vwidth, ->] (cntr) -- ++(\vpLength, 0) node [text width=1cm,above] {$\vec{V}_p$};
