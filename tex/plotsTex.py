@@ -8,7 +8,7 @@ import numpy as np
 import dill
 import sys
 sys.path.insert(0, "/home/burtonyale/Documents/repos/MCTS.py/src")
-f = open("../src/tridentCaseC.pckl", "rb")
+f = open("../results/clipper/clipper70k.pckl", "rb")
 tree = dill.load(f)
 tree.loadKernels()
 # idList = np.loadtxt("idList.txt", delimiter="\n")
@@ -33,6 +33,7 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
         "dvTot": (r"Unoptimized Mission $\displaystyle\Delta$v ($\displaystyle\sfrac{km}{s}$)", "on"),
         "vInfF": (r"Arrival $\displaystyle V_\infty$ ($\displaystyle\sfrac{km}{s}$)", "on"),
         "seq":   (r'Planetary Arrival Sequence', "off"),
+        "DSMDV": (r"Leveraging Orbit $\displaystyle\Delta V$ ($\displaystyle\sfrac{km}{s}$)", "on")
         }
     shapeList = ["o", "^", "s", "*", "X", "d", "h", ".", "1", "+", "p"]
     cList = ["blue", "orange", "green", "red", "purple", "gray", "pink", "cyan", "olive", "brown"]
@@ -62,9 +63,18 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
         idList = idList[::-1]
     for id in idList:
         attr = tree.queryBranchAttributes(id)
+        ##################### HARDCODE ##################### 
+        if attr['seq'] == "EJN" or attr['seq'] == "E(3:1+)EJN": continue
+        ####################################################
         x.append(attr[xAttr])
         if yAttr == 'dvTot' and removeVinfdv:
             y.append(attr[yAttr] - attr['vInfF'])
+        elif yAttr == 'DSMDV':
+            if attr['K'][1] != "None":
+                val = attr["dvLeg"][0]
+            else:
+                val = 0
+            y.append(val)
         else:
             y.append(attr[yAttr])
         if cAttr and cAttr[:3] != 'top':
@@ -133,16 +143,18 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
     if cAttr == "seq":
         ncol = len(sDict) // 2 + (1 if len(sDict) % 2 == 1 else 0)
         if len(sDict) % 2 == 0 and pickID != None: ncol += 1
+        if len(sDict) < 4: ncol = len(sDict)
         plt.legend(
             numpoints = 1, 
-            loc = "lower left", 
+            loc = "upper center", 
             ncol = ncol, 
             handletextpad = 0.1, prop={'size': 12}, 
-            bbox_to_anchor = (0, 1.02, 1, 0.2)
+            bbox_to_anchor = (0.5, 1.25)
         )
 
     # ADDING COLORBAR
     plt.tight_layout()
+    ax.set_xlim([4250, 6000])
 
     if action == "show":
         plt.show()
@@ -151,7 +163,16 @@ def state(tree, xAttr, yAttr, cAttr, showTop = 50, cmap = "turbo", action = "sho
         plt.savefig("filename.png")
 
 
-def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
+def orbit(tree, showTop = 50, N = 60, id = None, seqT = None, zAx = False):
+    def axisEqual3D(ax):
+        extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+        sz = extents[:,1] - extents[:,0]
+        centers = np.mean(extents, axis=1)
+        maxsize = max(abs(sz))
+        r = maxsize/2
+        for ctr, dim in zip(centers, 'xyz'):
+            getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
+
     def plotLam(l):
         r = l.get_r1()
         v = l.get_v1()[0]
@@ -162,13 +183,15 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
         x = np.array([0.0] * N)
         y = np.array([0.0] * N)
+        z = np.array([0.0] * N)
 
         for i in range(N):
             x[i] = r[0] / AU2m
             y[i] = r[1] / AU2m
+            z[i] = r[2] / AU2m            
             # print(r, type(r), v, type(v), dt, type(dt), mu, type(mu))
             r, v = propagate_lagrangian(r, v, dt, mu)
-        return x, y
+        return x, y, z
 
     AU2m = 149597870700
     AU2km = AU2m/1000
@@ -180,7 +203,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
     # STARTING PLOT WINDOW
     fig = plt.figure()
-    ax = fig.gca()
+    ax = fig.gca() if not zAx else fig.gca(projection = '3d')
 
     ax.set_xlabel(xLabel)
     ax.set_ylabel(yLabel)
@@ -207,7 +230,6 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
 
 
     # FINDING INITIAL EPOCH
-    print(idList)
     et0 = tree.node[id].state[1]
     if tree.enableDSM: tree.P.append("3") # Adding Earth for DSM Case
     for P in tree.P:
@@ -219,14 +241,16 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
         # COLLECTING DATA POINTS
         x = []
         y = []
+        z = []
         for et_ in et:
             r = tree.spk.spkezr(P, et_, tree.frame, tree.abcorr, tree.cntrBody)[0][:3]/tree.AU2km
             x.append(r[0])
             y.append(r[1])
-        ax.plot(x, y, ':k', linewidth=1)
+            z.append(r[2])
+        ax.plot(x, y, ':w', linewidth=1) if not zAx else ax.plot3D(x, y, z, ':k', linewidth=1)
 
     # PLOTTING CENTER BODY SURFACE
-    ax.scatter(0, 0, s = 50, c = "#FFCC33", zorder = 4)
+    ax.scatter(0, 0, s = 50, c = "#FFCC33", zorder = 4) if not zAx else ax.scatter(0, 0, 0, s = 50, c = "#FFCC33", zorder = 4)
 
     # RETRIEVING PLOTTED VALUES
     itr = 0
@@ -235,7 +259,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
         seq = attr['seq']
         lineage = tree.getLineage(id)[-3::-1]
 
-        if len(seq) == 10: #not seqT or seq in seqT:
+        if not seqT or seq in seqT:
             if seq in cDict.keys():
                 color = cDict[seq]
             else:
@@ -267,7 +291,7 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
                     ra = [ra*tree.math.cos(phi), ra*tree.math.sin(phi), 0]  # Apehelion vector
 
                     # MARKING DSM MANEUVER POINT
-                    ax.scatter(ra[0]/tree.AU2km, ra[1]/tree.AU2km, color = color, marker='x')
+                    ax.scatter(ra[0]/tree.AU2km, ra[1]/tree.AU2km, color = color, marker='x') if not zAx else ax.scatter(ra[0]/tree.AU2km, ra[1]/tree.AU2km, ra[2]/tree.AU2km, color = color, marker='x')
 
                     # CREATING LAMBERT ARC INPUTS
                     ra = tree.np.array(ra)
@@ -280,8 +304,8 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
                         tof = tof,
                         mu = tree.pk.MU_SUN
                     )
-                    x, y = plotLam(l1)
-                    ax.plot(x, y, linewidth = 1, color = color)
+                    x, y, z = plotLam(l1)
+                    ax.plot(x, y, linewidth = 1, color = color) if not zAx else ax.plot3D(x, y, z, linewidth = 1, color = color)
 
                     # LAMBERT ARC FROM DSM POINT TO FLYBY
                     l2 = tree.pk.lambert_problem(
@@ -290,15 +314,15 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
                         tof = (dt*86400 - tof),
                         mu = tree.pk.MU_SUN
                     )
-                    x, y = plotLam(l2)
-                    ax.plot(x, y, linewidth = 1, color = color)
+                    x, y, z = plotLam(l2)
+                    ax.plot(x, y, linewidth = 1, color = color) if not zAx else ax.plot3D(x, y, z, linewidth = 1, color = color)
 
                 else:
                     l = tree.computeLambert(id_)
 
-                    x, y = plotLam(l)
+                    x, y, z = plotLam(l)
 
-                    ax.plot(x, y, linewidth = 1, color = color)
+                    ax.plot(x, y, linewidth = 1, color = color) if not zAx else ax.plot3D(x, y, z, linewidth = 1, color = color)
 
     # print(cDict)
 
@@ -315,15 +339,25 @@ def orbit(tree, showTop = 50, N = 60, id = None, seqT = None):
         dataKey = mpatches.Patch(color = cDict[key], label=key)
         patchList.append(dataKey)
 
-    if len(patchList) > 1:
-        plt.legend(handles = patchList)
+    ######################## CHANGES ########################
+    # if len(patchList) > 1:
+    #     plt.legend(handles = patchList)
+    ax.set_axis_off()
+    ax.set_facecolor("k")
+    fig.set_facecolor("k")
+    #########################################################
 
     ax.grid(zorder = 3)
-    ax.set_aspect('equal', 'box')
+    if zAx:
+        axisEqual3D(ax)
+    else:
+        ax.set_aspect('equal', 'box')
+        plt.tight_layout()
     # ADDING COLORBAR
-    plt.tight_layout()
+    plt.savefig('test.png', dpi = 500, facecolor = "k", edgecolor = "k")
     plt.show()
 
 
-# state(tree, 'tof', 'dvTot', "seq", showTop = 100, pickID = 384842)
-orbit(tree, showTop = 30)
+
+# state(tree, 'tof', 'DSMDV', "seq")
+orbit(tree, zAx = True)
