@@ -1,7 +1,9 @@
-This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+This is BibTeX, Version 0.99d
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: final.aux
+Reallocating 'name_of_file' (item size: 1) to 16 items.
 The style file: AAS_publication.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 Warning--entry type for "Brennan2015" isn't style-file defined
 --line 176 of file references.bib
